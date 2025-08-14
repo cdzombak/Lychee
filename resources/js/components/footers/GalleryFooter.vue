@@ -54,6 +54,16 @@
 			{{ footerData.copyright }}
 		</p>
 		<p
+			class="personal_text w-full text-muted-color leading-6 font-normal"
+		>
+			<b><a href="https://photography.dzombak.com">Shop Photo Prints</a></b> •
+			<a href="https://www.dzombak.com">Home</a> •
+			<a href="https://www.dzombak.com/blog">Blog</a> •
+			<a href="https://www.dzombak.com/contact">Contact</a> •
+			<a href="https://www.dzombak.com/etc">/etc</a> •
+			<a href="https://www.dzombak.com/feeds">Feeds</a>
+		</p>
+		<p
 			v-if="footerData.footer_additional_text !== ''"
 			class="personal_text w-full text-muted-color leading-6 font-normal"
 			v-html="footerData.footer_additional_text"
