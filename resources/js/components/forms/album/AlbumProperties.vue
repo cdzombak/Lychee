@@ -4,13 +4,13 @@
 			<form>
 				<div class="h-12">
 					<FloatLabel variant="on">
-						<InputText id="title" type="text" v-model="title" />
+						<InputText id="title" v-model="title" type="text" />
 						<label for="title">{{ $t("gallery.album.properties.title") }}</label>
 					</FloatLabel>
 				</div>
 				<div class="my-4 h-48">
 					<FloatLabel variant="on">
-						<Textarea id="description" class="w-full h-48" v-model="description" :rows="6" :cols="30" />
+						<Textarea id="description" v-model="description" class="w-full h-48" :rows="6" :cols="30" />
 						<label for="description">{{ $t("gallery.album.properties.description") }}</label>
 					</FloatLabel>
 				</div>
@@ -18,11 +18,11 @@
 					<FloatLabel variant="on">
 						<Select
 							id="photoSortingColumn"
-							class="w-56 border-none"
 							v-model="photoSortingColumn"
+							class="w-56 border-none"
 							:options="photoSortingColumnsOptions"
-							optionLabel="label"
-							showClear
+							option-label="label"
+							show-clear
 						>
 							<template #value="slotProps">
 								<div v-if="slotProps.value" class="flex items-center">
@@ -40,11 +40,11 @@
 					<FloatLabel variant="on">
 						<Select
 							id="photoSortingOrder"
-							class="w-56 border-none"
 							v-model="photoSortingOrder"
+							class="w-56 border-none"
 							:options="sortingOrdersOptions"
-							optionLabel="label"
-							showClear
+							option-label="label"
+							show-clear
 						>
 							<template #value="slotProps">
 								<div v-if="slotProps.value" class="flex items-center">
@@ -65,11 +65,11 @@
 						<FloatLabel variant="on">
 							<Select
 								id="albumSortingColumn"
-								class="w-56 border-none"
 								v-model="albumSortingColumn"
+								class="w-56 border-none"
 								:options="albumSortingColumnsOptions"
-								optionLabel="label"
-								showClear
+								option-label="label"
+								show-clear
 							>
 								<template #value="slotProps">
 									<div v-if="slotProps.value" class="flex items-center">
@@ -87,11 +87,11 @@
 						<FloatLabel variant="on">
 							<Select
 								id="albumSortingOrder"
-								class="w-56 border-none"
 								v-model="albumSortingOrder"
+								class="w-56 border-none"
 								:options="sortingOrdersOptions"
-								optionLabel="label"
-								showClear
+								option-label="label"
+								show-clear
 							>
 								<template #value="slotProps">
 									<div v-if="slotProps.value" class="flex items-center">
@@ -109,7 +109,14 @@
 					</div>
 					<div class="h-10 my-2">
 						<FloatLabel variant="on">
-							<Select id="header" class="w-72 border-none" v-model="header_id" :options="headersOptions" optionLabel="title" showClear>
+							<Select
+								id="header"
+								v-model="header_id"
+								class="w-72 border-none"
+								:options="headersOptions"
+								option-label="title"
+								show-clear
+							>
 								<template #value="slotProps">
 									<div v-if="slotProps.value && slotProps.value.id === 'compact'">
 										<i class="pi pi-arrow-down-left-and-arrow-up-right-to-center" />
@@ -136,7 +143,7 @@
 					</div>
 					<div class="h-10 my-2">
 						<FloatLabel variant="on">
-							<Select id="license" class="w-72 border-none" v-model="license" :options="licenseOptions" optionLabel="label" showClear>
+							<Select id="license" v-model="license" class="w-72 border-none" :options="licenseOptions" option-label="label" show-clear>
 								<template #value="slotProps">
 									<div v-if="slotProps.value" class="flex items-center">
 										<div>{{ $t(slotProps.value.label) }}</div>
@@ -161,11 +168,11 @@
 						<FloatLabel variant="on">
 							<Select
 								id="aspectRatio"
-								class="w-72 border-none"
 								v-model="aspectRatio"
+								class="w-72 border-none"
 								:options="aspectRationOptions"
-								optionLabel="label"
-								showClear
+								option-label="label"
+								show-clear
 							>
 								<template #value="slotProps">
 									<div v-if="slotProps.value" class="flex items-center">
@@ -183,11 +190,11 @@
 						<FloatLabel variant="on">
 							<Select
 								id="albumTimeline"
-								class="w-72 border-none"
 								v-model="albumTimeline"
+								class="w-72 border-none"
 								:options="albumTimelineOptions"
-								optionLabel="label"
-								showClear
+								option-label="label"
+								show-clear
 							>
 								<template #value="slotProps">
 									<div v-if="slotProps.value" class="flex items-center">
@@ -208,11 +215,11 @@
 					<FloatLabel variant="on">
 						<Select
 							id="photoLayout"
-							class="w-72 border-none"
 							v-model="photoLayout"
+							class="w-72 border-none"
 							:options="photoLayoutOptions"
-							optionLabel="label"
-							showClear
+							option-label="label"
+							show-clear
 						>
 							<template #value="slotProps">
 								<div v-if="slotProps.value" class="flex items-center">
@@ -230,11 +237,11 @@
 					<FloatLabel variant="on">
 						<Select
 							id="photoTimeline"
-							class="w-72 border-none"
 							v-model="photoTimeline"
+							class="w-72 border-none"
 							:options="photoTimelineOptions"
-							optionLabel="label"
-							showClear
+							option-label="label"
+							show-clear
 						>
 							<template #value="slotProps">
 								<div v-if="slotProps.value" class="flex items-center">
@@ -253,18 +260,15 @@
 
 				<div v-if="is_model_album" class="h-10 my-2 pt-4"></div>
 
-				<div v-if="!is_model_album" class="mb-8 h-10">
+				<div v-if="!is_model_album" class="my-4 flex flex-col gap-2">
 					<FloatLabel variant="on">
-						<AutoComplete
-							id="tags"
-							v-model="tags"
-							:typeahead="false"
-							multiple
-							class="pt-3 border-b hover:border-b-0 w-full"
-							pt:inputmultiple:class="w-full border-t-0 border-l-0 border-r-0 border-b hover:border-b-primary-400 focus:border-b-primary-400"
-						/>
+						<TagsInput v-model="tags" :add="false" />
 						<label for="tags">{{ $t("gallery.album.properties.show_tags") }}</label>
 					</FloatLabel>
+					<div class="flex gap-2 items-center my-2">
+						<ToggleSwitch v-model="is_and" input-id="pp_is_and" />
+						<label for="pp_is_and" class="text-muted-color-emphasis">{{ $t("gallery.album.properties.all_tags_must_match") }}</label>
+					</div>
 				</div>
 				<Button class="p-3 mt-4 w-full font-bold border-none shrink" @click="save">
 					{{ $t("dialogs.button.save") }}
@@ -296,9 +300,10 @@ import {
 } from "@/config/constants";
 import { useToast } from "primevue/usetoast";
 import { trans } from "laravel-vue-i18n";
-import AutoComplete from "primevue/autocomplete";
 import { useLycheeStateStore } from "@/stores/LycheeState";
 import { storeToRefs } from "pinia";
+import TagsInput from "@/components/forms/basic/TagsInput.vue";
+import ToggleSwitch from "primevue/toggleswitch";
 
 type HeaderOption = {
 	id: string;
@@ -331,6 +336,7 @@ const copyright = ref<string | undefined>(undefined);
 const tags = ref<string[]>([]);
 const aspectRatio = ref<SelectOption<App.Enum.AspectRatioType> | undefined>(undefined);
 const header_id = ref<HeaderOption | undefined>(undefined);
+const is_and = ref<boolean>(false);
 
 const photoTimelineOptions = computed(() => {
 	if (is_se_enabled.value) {
@@ -399,6 +405,7 @@ function load(editable: App.Http.Resources.Editable.EditableBaseAlbumResource, p
 	photoTimeline.value = SelectBuilders.buildTimelinePhotoGranularity(editable.photo_timeline ?? undefined);
 	header_id.value = buildHeaderId(editable.header_id, photos);
 	tags.value = editable.tags;
+	is_and.value = editable.is_and ?? false;
 }
 
 load(props.editable, props.photos);
@@ -428,7 +435,7 @@ function saveAlbum() {
 		photo_layout: photoLayout.value?.value ?? null,
 		album_timeline: albumTimeline.value?.value ?? null,
 		photo_timeline: photoTimeline.value?.value ?? null,
-		is_pinned: props.editable.is_pinned,
+		is_pinned: props.editable.is_pinned ?? false,
 	};
 	AlbumService.updateAlbum(data).then(() => {
 		toast.add({ severity: "success", summary: trans("toasts.success"), life: 3000 });
@@ -452,7 +459,8 @@ function saveTagAlbum() {
 		copyright: copyright.value ?? null,
 		photo_layout: photoLayout.value?.value ?? null,
 		photo_timeline: photoTimeline.value?.value ?? null,
-		is_pinned: props.editable.is_pinned,
+		is_pinned: props.editable.is_pinned ?? false,
+		is_and: is_and.value,
 	};
 	AlbumService.updateTag(data).then(() => {
 		toast.add({ severity: "success", summary: trans("toasts.success"), life: 3000 });
@@ -463,8 +471,7 @@ function saveTagAlbum() {
 watch(
 	() => [props.editable, props.photos],
 	([editable, photos]) => {
-		// @ts-expect-error
-		load(editable, photos);
+		load(editable as App.Http.Resources.Editable.EditableBaseAlbumResource, photos as App.Http.Resources.Models.PhotoResource[]);
 	},
 );
 </script>

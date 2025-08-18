@@ -7,7 +7,7 @@ return [
 	*/
     'title' => 'Gallery',
     'smart_albums' => 'Smart albums',
-    'pinned_albums' => '釘選相册',
+    'pinned_albums' => '釘選相冊',
     'albums' => 'Albums',
     'root' => 'Albums',
     'favourites' => 'Favourites',
@@ -111,6 +111,7 @@ return [
             'layout' => 'Set photo layout',
             'show_tags' => 'Set tags to show',
             'tags_required' => 'Tags are required.',
+            'all_tags_must_match' => 'All tags must match.',
         ],
     ],
     'photo' => [

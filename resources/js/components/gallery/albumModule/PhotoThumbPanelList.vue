@@ -1,14 +1,14 @@
 <template>
-	<div class="relative flex flex-wrap flex-row shrink w-full justify-start align-top" :id="'photoListing' + props.groupIdx">
+	<div :id="'photoListing' + props.groupIdx" class="relative flex flex-wrap flex-row shrink w-full justify-start align-top">
 		<template v-for="(photo, idx) in props.photos" :key="photo.id">
 			<PhotoThumb
-				@click="maySelect(idx + props.iter, $event)"
-				@contextmenu.prevent="menuOpen(idx + props.iter, $event)"
 				:photo="photo"
 				:is-selected="props.selectedPhotos.includes(photo.id)"
 				:is-lazy="idx + props.iter > 10"
 				:is-cover-id="props.coverId === photo.id"
 				:is-header-id="props.headerId === photo.id"
+				@click="maySelect(idx + props.iter, $event)"
+				@contextmenu.prevent="menuOpen(idx + props.iter, $event)"
 			/>
 		</template>
 	</div>
@@ -31,17 +31,17 @@ const props = defineProps<{
 	groupIdx: number;
 	coverId: string | undefined;
 	headerId: string | undefined;
+	isTimeline?: boolean;
 }>();
 
 const lycheeStore = useLycheeStateStore();
 const layout = defineModel("layout") as Ref<App.Enum.PhotoLayoutType>;
-const isTimeline = defineModel("isTimeline") as Ref<boolean>;
 const { is_timeline_left_border_visible } = storeToRefs(lycheeStore);
 
 const route = useRoute();
 
 const timelineData: TimelineData = {
-	isTimeline: isTimeline,
+	isTimeline: props.isTimeline === true,
 	isLeftBorderVisible: is_timeline_left_border_visible,
 };
 

@@ -35,7 +35,7 @@ export function useLeftMenu(
 	const { user } = storeToRefs(authStore);
 
 	const { initData, left_menu_open } = storeToRefs(LeftMenuStateStore);
-	const { clockwork_url, is_se_enabled, is_se_preview_enabled, is_se_info_hidden, is_favourite_enabled } = storeToRefs(lycheeStore);
+	const { clockwork_url, is_se_enabled, is_se_preview_enabled, is_se_info_hidden } = storeToRefs(lycheeStore);
 	const openLycheeAbout = ref(false);
 	const logsEnabled = ref(true);
 
@@ -73,6 +73,12 @@ export function useLeftMenu(
 				icon: "pi pi-arrows-v",
 				access: !(route.name as string).startsWith("flow") && (initData.value.modules.is_mod_flow_enabled ?? false),
 				route: "/flow",
+			},
+			{
+				label: "tags.title",
+				icon: "pi pi-tags",
+				access: user.value?.id !== null,
+				route: "/tags",
 			},
 			{
 				label: "left-menu.frame",

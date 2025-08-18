@@ -8,7 +8,6 @@
 
 namespace App\Models;
 
-use App\Casts\ArrayCast;
 use App\Exceptions\InvalidPropertyException;
 use App\ModelFunctions\HasAbstractAlbumProperties;
 use App\Models\Builders\TagAlbumBuilder;
@@ -18,12 +17,14 @@ use App\Models\Extensions\ToArrayThrowsNotImplemented;
 use App\Relations\HasManyPhotosByTag;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 
 /**
  * App\Models\TagAlbum.
  *
- * @property string[] $show_tags
+ * @property Collection<int,Tag> $tags
+ * @property bool                $is_and
  *
  * @method static TagAlbumBuilder|TagAlbum query()                       Begin querying the model.
  * @method static TagAlbumBuilder|TagAlbum with(array|string $relations) Begin querying the model with eager loading.
@@ -74,17 +75,20 @@ class TagAlbum extends BaseAlbum
 	 */
 	protected $attributes = [
 		'id' => null,
-		'show_tags' => null,
+		'is_and' => null,
 	];
 
 	/**
-	 * @var array<string, string>
+	 * @return array<string,string>
 	 */
-	protected $casts = [
-		'min_taken_at' => 'datetime',
-		'max_taken_at' => 'datetime',
-		'show_tags' => ArrayCast::class,
-	];
+	protected function casts(): array
+	{
+		return [
+			'is_and' => 'boolean',
+			'min_taken_at' => 'datetime',
+			'max_taken_at' => 'datetime',
+		];
+	}
 
 	/**
 	 * @var list<string> The list of attributes which exist as columns of the DB
@@ -156,5 +160,21 @@ class TagAlbum extends BaseAlbum
 	public function newEloquentBuilder($query): TagAlbumBuilder
 	{
 		return new TagAlbumBuilder($query);
+	}
+
+	/**
+	 * Returns the relationship between a tag and all photos with whom
+	 * this tag is attached.
+	 *
+	 * @return BelongsToMany<Tag,$this>
+	 */
+	public function tags(): BelongsToMany
+	{
+		return $this->belongsToMany(
+			Tag::class,
+			'tag_albums_tags',
+			'album_id',
+			'tag_id',
+		);
 	}
 }

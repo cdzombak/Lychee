@@ -10,6 +10,7 @@ namespace App\Actions\Album;
 
 use App\Exceptions\ModelDBException;
 use App\Exceptions\UnauthenticatedException;
+use App\Models\Tag;
 use App\Models\TagAlbum;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,23 +20,28 @@ class CreateTagAlbum
 	 * Create a new smart album based on tags.
 	 *
 	 * @param string   $title
-	 * @param string[] $show_tags
+	 * @param string[] $tags
+	 * @param bool     $is_and
 	 *
 	 * @return TagAlbum
 	 *
 	 * @throws ModelDBException
 	 * @throws UnauthenticatedException
 	 */
-	public function create(string $title, array $show_tags): TagAlbum
+	public function create(string $title, array $tags, bool $is_and): TagAlbum
 	{
 		/** @var int */
 		$user_id = Auth::id() ?? throw new UnauthenticatedException();
 
 		$album = new TagAlbum();
 		$album->title = $title;
-		$album->show_tags = $show_tags;
 		$album->owner_id = $user_id;
+		$album->is_and = $is_and;
 		$album->save();
+
+		$tag_models = Tag::from($tags);
+		$album->tags()->sync($tag_models->pluck('id')->all());
+
 		$this->setStatistics($album);
 
 		return $album;

@@ -75,6 +75,8 @@ class RequestAttribute
 	public const GRANTS_EDIT_ATTRIBUTE = 'grants_edit';
 	public const GRANTS_DELETE_ATTRIBUTE = 'grants_delete';
 
+	public const IS_AND_ATTRIBUTE = 'is_and';
+
 	public const FILE_ATTRIBUTE = 'file';
 	public const SHALL_OVERRIDE_ATTRIBUTE = 'shall_override';
 	public const IS_STARRED_ATTRIBUTE = 'is_starred';
@@ -83,6 +85,7 @@ class RequestAttribute
 	public const SINGLE_PATH_ATTRIBUTE = 'path';
 	public const SIZE_VARIANT_ATTRIBUTE = 'variant';
 
+	public const TAG_ID = 'tag_id';
 	public const TAGS_ATTRIBUTE = 'tags';
 	public const MAY_UPLOAD_ATTRIBUTE = 'may_upload';
 	public const MAY_EDIT_OWN_SETTINGS_ATTRIBUTE = 'may_edit_own_settings';

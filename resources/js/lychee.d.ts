@@ -151,7 +151,7 @@ declare namespace App.Http.Resources.Diagnostics {
 		type: App.Enum.MessageType;
 		message: string;
 		from: string;
-		details: Array<any>;
+		details: string[];
 	};
 	export type Permissions = {
 		left: string;
@@ -194,6 +194,7 @@ declare namespace App.Http.Resources.Editable {
 		album_timeline: App.Enum.TimelineAlbumGranularity | null;
 		photo_timeline: App.Enum.TimelinePhotoGranularity | null;
 		tags: Array<string>;
+		is_and: boolean;
 		is_model_album: boolean;
 		is_pinned: boolean;
 	};
@@ -303,6 +304,7 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		album_decoration_orientation: App.Enum.AlbumDecorationOrientation;
 		number_albums_per_row_mobile: 1 | 2 | 3;
 		photo_thumb_info: App.Enum.PhotoThumbInfoType;
+		is_photo_thumb_tags_enabled: boolean;
 		is_thumb_download_enabled: boolean;
 		is_thum2x_download_enabled: boolean;
 		is_small_download_enabled: boolean;
@@ -821,5 +823,21 @@ declare namespace App.Http.Resources.Statistics {
 		id: number;
 		username: string;
 		size: number;
+	};
+}
+declare namespace App.Http.Resources.Tags {
+	export type TagResource = {
+		id: number;
+		name: string;
+		num: number;
+	};
+	export type TagWithPhotosResource = {
+		id: number;
+		name: string;
+		photos: App.Http.Resources.Models.PhotoResource[];
+	};
+	export type TagsResource = {
+		can_edit: boolean;
+		tags: App.Http.Resources.Tags.TagResource[];
 	};
 }

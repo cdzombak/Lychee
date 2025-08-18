@@ -2,7 +2,7 @@
 	<LoadingProgress v-model:loading="isLoading" />
 
 	<!-- Modals Upload, login, Create -->
-	<UploadPanel v-if="album?.rights.can_upload" @refresh="refresh" key="upload_modal" />
+	<UploadPanel v-if="album?.rights.can_upload" key="upload_modal" @refresh="refresh" />
 	<LoginModal v-if="user?.id === null" @logged-in="refresh" />
 	<WebauthnModal v-if="user?.id === null" @logged-in="refresh" />
 	<AlbumCreateDialog v-if="album?.rights.can_upload && config?.is_model_album" key="create_album_modal" />
@@ -14,14 +14,14 @@
 	<!-- Album panel -->
 	<AlbumPanel
 		v-if="layoutConfig"
+		:key="album?.id ?? 'not-found'"
 		:model-album="modelAlbum"
 		:album="album"
 		:photos="photos"
 		:photos-timeline="photosTimeline"
 		:config="config"
 		:user="user"
-		:layoutConfig="layoutConfig"
-		:key="album?.id ?? 'not-found'"
+		:layout-config="layoutConfig"
 		:is-photo-open="photo !== undefined"
 		@refresh="refresh"
 		@toggle-slide-show="toggleSlideShow"
@@ -52,9 +52,9 @@
 	/>
 	<!-- Dialogs -->
 	<template v-if="photo">
-		<PhotoEdit v-if="photo?.rights.can_edit" :photo="photo" v-model:visible="is_photo_edit_open" />
-		<MoveDialog :photo="photo" v-model:visible="is_move_visible" @moved="refresh" />
-		<DeleteDialog :photo="photo" v-model:visible="is_delete_visible" @deleted="refresh" />
+		<PhotoEdit v-if="photo?.rights.can_edit" v-model:visible="is_photo_edit_open" :photo="photo" />
+		<MoveDialog v-model:visible="is_move_visible" :photo="photo" @moved="refresh" />
+		<DeleteDialog v-model:visible="is_delete_visible" :photo="photo" @deleted="refresh" />
 	</template>
 	<template v-else>
 		<PhotoTagDialog
@@ -134,7 +134,7 @@
 </template>
 <script setup lang="ts">
 import { useAuthStore } from "@/stores/Auth";
-import { computed, ref, watch, onMounted, onUnmounted } from "vue";
+import { ref, watch, onMounted, onUnmounted, computed } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useLycheeStateStore } from "@/stores/LycheeState";
 import { onKeyStroke, useDebounceFn } from "@vueuse/core";
@@ -224,8 +224,6 @@ const { isPasswordProtected, isLoading, user, modelAlbum, album, photo, transiti
 const { refreshPhoto } = usePhotoRefresher(photo, photos, photoId);
 const { getParentId } = usePhotoRoute(router);
 
-const children = computed<App.Http.Resources.Models.ThumbAlbumResource[]>(() => modelAlbum.value?.albums ?? []);
-
 const { toggleStar, rotatePhotoCCW, rotatePhotoCW, setAlbumHeader, rotateOverlay } = usePhotoActions(photo, albumId, toast, lycheeStore);
 
 const { getNext, getPrevious } = getNextPreviousPhoto(router, photo);
@@ -243,9 +241,12 @@ function toggleSlideShow() {
 
 const { layoutConfig, loadLayoutConfig } = useGetLayoutConfig();
 
+const selectableAlbum = computed<App.Http.Resources.Models.ThumbAlbumResource[]>(() => modelAlbum.value?.albums ?? []);
 const { selectedPhoto, selectedAlbum, selectedPhotosIds, selectedAlbumsIds, selectEverything, unselect, hasSelection } = useSelection(
-	photos,
-	children,
+	{
+		photos: photos,
+		albums: selectableAlbum,
+	},
 	togglableStore,
 );
 

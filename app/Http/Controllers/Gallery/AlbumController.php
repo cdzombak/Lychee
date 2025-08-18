@@ -58,6 +58,7 @@ use App\Http\Resources\Models\TargetAlbumResource;
 use App\Http\Resources\Models\Utils\AlbumProtectionPolicy;
 use App\Models\Album;
 use App\Models\Extensions\BaseAlbum;
+use App\Models\Tag;
 use App\Models\TagAlbum;
 use App\SmartAlbums\BaseSmartAlbum;
 use Illuminate\Routing\Controller;
@@ -117,7 +118,7 @@ class AlbumController extends Controller
 		// Root
 		AlbumRouteCacheUpdated::dispatch('');
 
-		return $create->create($request->title(), $request->tags())->id;
+		return $create->create($request->title(), $request->tags(), $request->is_and())->id;
 	}
 
 	/**
@@ -167,13 +168,16 @@ class AlbumController extends Controller
 		}
 		$album->title = $request->title();
 		$album->description = $request->description();
-		$album->show_tags = $request->tags();
 		$album->copyright = $request->copyright();
 		$album->photo_sorting = $request->photoSortingCriterion();
 		$album->photo_layout = $request->photoLayout();
 		$album->photo_timeline = $request->photo_timeline();
 		$album->is_pinned = $request->is_pinned();
+		$album->is_and = $request->is_and();
 		$album->save();
+
+		$tag_models = Tag::from($request->tags());
+		$album->tags()->sync($tag_models->pluck('id')->all());
 
 		// Root
 		return EditableBaseAlbumResource::fromModel($album);

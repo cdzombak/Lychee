@@ -1,33 +1,24 @@
 <template>
-	<Drawer :closeOnEsc="false" v-model:visible="isEditOpen" position="right" pt:root:class="w-full p-card border-transparent">
-		<Card id="lychee_sidebar" v-if="props.photo" class="h-full pr-4 break-words max-w-4xl mx-auto">
+	<Drawer v-model:visible="isEditOpen" :close-on-esc="false" position="right" pt:root:class="w-full p-card border-transparent">
+		<Card v-if="props.photo" id="lychee_sidebar" class="h-full pr-4 break-words max-w-4xl mx-auto">
 			<template #content>
 				<form class="w-full flex flex-col md:gap-y-4 md:grid md:grid-cols-[200px_minmax(auto,_1fr)] justify-center">
 					<label for="title" class="font-bold self-center">{{ $t("gallery.photo.edit.set_title") }}</label>
-					<InputText id="title" type="text" v-model="title" :invalid="!title" />
+					<InputText id="title" v-model="title" type="text" :invalid="!title" />
 
 					<label for="description" class="font-bold mt-4 md:mt-0">{{ $t("gallery.photo.edit.set_description") }}</label>
-					<Textarea id="description" class="w-full h-48" v-model="description" :rows="5" :cols="30" />
+					<Textarea id="description" v-model="description" class="w-full h-48" :rows="5" :cols="30" />
 
 					<label for="tags" class="font-bold h-11 mt-4 md:mt-0 self-center">{{ $t("gallery.photo.edit.set_tags") }}</label>
-					<AutoComplete
-						id="tags"
-						v-model="tags"
-						:typeahead="false"
-						multiple
-						class="border-b hover:border-b-0"
-						:placeholder="$t('gallery.photo.edit.no_tags')"
-						pt:inputmultiple:class="w-full border-t-0 border-l-0 border-r-0 border-b hover:border-b-primary-400 focus:border-b-primary-400"
-					/>
-
+					<TagsInput id="tags" v-model="tags" :add="true" :placeholder="$t('gallery.photo.edit.no_tags')" />
 					<label for="uploadDate" class="font-bold mt-4 md:mt-0 self-center">{{ $t("gallery.photo.edit.set_created_at") }}</label>
 					<DatePicker
 						id="uploadDate"
 						v-model="uploadDate"
-						:showTime="true"
-						hourFormat="24"
-						dateFormat=""
-						:showSeconds="true"
+						:show-time="true"
+						hour-format="24"
+						date-format=""
+						:show-seconds="true"
 						:invalid="!uploadDate"
 						class="border-0 p-0 w-full border-b hover:border-b-primary-400 focus:border-b-primary-400"
 					/>
@@ -36,15 +27,15 @@
 
 					<InputGroup>
 						<InputGroupAddon class="border-t-0 rounded-t-none">
-							<Checkbox v-model="is_taken_at_modified" :binary="true" v-tooltip="'Modify taken date'" />
+							<Checkbox v-model="is_taken_at_modified" v-tooltip="'Modify taken date'" :binary="true" />
 						</InputGroupAddon>
 						<DatePicker
 							id="takenAtDate"
 							v-model="takenAtDate"
-							:showTime="true"
-							hourFormat="24"
-							dateFormat=""
-							:showSeconds="true"
+							:show-time="true"
+							hour-format="24"
+							date-format=""
+							:show-seconds="true"
 							:disabled="!is_taken_at_modified"
 							:class="{
 								'border-0 p-0 w-full border-b hover:border-b-primary-400 focus:border-b-primary-400 ltr:rounded-br-none rtl:rounded-bl-none': true,
@@ -77,11 +68,11 @@
 					<label for="license" class="font-bold mt-4 md:mt-0 self-center">{{ $t("gallery.photo.edit.set_license") }}</label>
 					<Select
 						id="license"
-						class="w-72 border-none"
 						v-model="license"
+						class="w-72 border-none"
 						:options="licenseOptions"
-						optionLabel="label"
-						showClear
+						option-label="label"
+						show-clear
 						:invalid="!license"
 					>
 						<template #value="slotProps">
@@ -112,7 +103,6 @@ import { licenseOptions, SelectOption, SelectBuilders, timeZoneOptions } from "@
 import Select from "primevue/select";
 import Textarea from "@/components/forms/basic/Textarea.vue";
 import DatePicker from "primevue/datepicker";
-import AutoComplete from "primevue/autocomplete";
 import PhotoService from "@/services/photo-service";
 import Button from "primevue/button";
 import InputGroup from "primevue/inputgroup";
@@ -122,6 +112,9 @@ import Checkbox from "primevue/checkbox";
 import { sprintf } from "sprintf-js";
 import { useRouter } from "vue-router";
 import { usePhotoRoute } from "@/composables/photo/photoRoute";
+import TagsInput from "@/components/forms/basic/TagsInput.vue";
+import TagsService from "@/services/tags-service";
+import AlbumService from "@/services/album-service";
 
 const props = defineProps<{
 	photo: App.Http.Resources.Models.PhotoResource;
@@ -185,6 +178,12 @@ function save() {
 		taken_at: is_taken_at_modified.value ? takenDate : null,
 	}).then((response) => {
 		toast.add({ severity: "success", summary: "Success", life: 3000 });
+		// Clear cache of tags just in case we added any.
+		TagsService.clearCache();
+		// Update the parent album cache.
+		// This is needed to ensure that the album view is updated with the new photo data
+		// and that the tags input is updated with the new tags.
+		AlbumService.clearCache(getParentId());
 		load(response.data);
 	});
 }

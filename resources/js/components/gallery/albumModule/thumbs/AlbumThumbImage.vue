@@ -1,7 +1,7 @@
 <template>
 	<span
 		class="thumbimg absolute w-full h-full bg-neutral-800 shadow-md shadow-black/25 border-solid border border-neutral-400 ease-out transition-transform overflow-hidden"
-		:class="props.class"
+		:class="isDragging && !isSelectable ? '' : props.class"
 	>
 		<img
 			v-show="placeholderSrc"
@@ -19,16 +19,18 @@
 			:class="classObject"
 			:src="src"
 			:srcset="srcSet"
-			@load="onImageLoad"
 			data-overlay="false"
 			draggable="false"
 			loading="lazy"
+			@load="onImageLoad"
 		/>
 	</span>
 </template>
 <script setup lang="ts">
 import { useImageHelpers } from "@/utils/Helpers";
+import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { watch, ref, computed } from "vue";
+import { storeToRefs } from "pinia";
 
 const { isNotEmpty, getPlayIcon, getPlaceholderIcon, getNoImageIcon, getPaswwordIcon } = useImageHelpers();
 
@@ -36,7 +38,11 @@ const props = defineProps<{
 	thumb: App.Http.Resources.Models.ThumbResource | undefined | null;
 	class: string;
 	isPasswordProtected: boolean;
+	isSelectable?: boolean;
 }>();
+
+const togglableStore = useTogglablesStateStore();
+const { isDragging } = storeToRefs(togglableStore);
 
 const isImageLoaded = ref(false);
 const src = ref("");
@@ -73,7 +79,7 @@ load(props.thumb, props.isPasswordProtected);
 
 watch(
 	() => props.thumb,
-	(newThumb: App.Http.Resources.Models.ThumbResource | undefined | null, _oldThumb: any) => {
+	(newThumb: App.Http.Resources.Models.ThumbResource | undefined | null, _oldThumb) => {
 		load(newThumb, props.isPasswordProtected);
 	},
 );

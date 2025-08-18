@@ -7,8 +7,8 @@
 			v-if="isTimeline === false"
 			:photos="props.photos"
 			:layout="layout"
-			:galleryConfig="props.galleryConfig"
-			:selectedPhotos="props.selectedPhotos"
+			:gallery-config="props.galleryConfig"
+			:selected-photos="props.selectedPhotos"
 			:iter="0"
 			:group-idx="0"
 			:cover-id="props.coverId"
@@ -16,7 +16,6 @@
 			@clicked="propagateClicked"
 			@selected="propagateSelected"
 			@contexted="propagateMenuOpen"
-			:isTimeline="isTimeline"
 		/>
 		<template v-else>
 			<Timeline
@@ -38,11 +37,11 @@
 						<PhotoThumbPanelList
 							:photos="slotProps.item.data"
 							:layout="layout"
-							:galleryConfig="props.galleryConfig"
-							:selectedPhotos="props.selectedPhotos"
+							:gallery-config="props.galleryConfig"
+							:selected-photos="props.selectedPhotos"
 							:iter="slotProps.item.iter"
 							:group-idx="slotProps.index"
-							:isTimeline="isTimeline"
+							:is-timeline="true"
 							:cover-id="props.coverId"
 							:header-id="props.headerId"
 							@contexted="propagateMenuOpen"
@@ -65,11 +64,11 @@
 						<PhotoThumbPanelList
 							:photos="photoTimeline.data"
 							:layout="layout"
-							:galleryConfig="props.galleryConfig"
-							:selectedPhotos="props.selectedPhotos"
+							:gallery-config="props.galleryConfig"
+							:selected-photos="props.selectedPhotos"
 							:iter="photoTimeline.iter"
 							:group-idx="idx"
-							:isTimeline="isTimeline"
+							:is-timeline="true"
 							:cover-id="props.coverId"
 							:header-id="props.headerId"
 							@contexted="propagateMenuOpen"
@@ -103,11 +102,11 @@ const { is_timeline_left_border_visible, is_debug_enabled } = storeToRefs(lychee
 const props = defineProps<{
 	header: string;
 	photos: App.Http.Resources.Models.PhotoResource[];
-	photosTimeline: SplitData<App.Http.Resources.Models.PhotoResource>[] | undefined;
+	photosTimeline?: SplitData<App.Http.Resources.Models.PhotoResource>[] | undefined;
 	photoLayout: App.Enum.PhotoLayoutType;
 	galleryConfig: App.Http.Resources.GalleryConfigs.PhotoLayoutConfig;
 	selectedPhotos: string[];
-	isTimeline: boolean;
+	isTimeline?: boolean;
 	withControl: boolean;
 	coverId: string | undefined;
 	headerId: string | undefined;

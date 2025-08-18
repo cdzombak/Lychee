@@ -24,6 +24,7 @@ use App\Models\Album;
 use App\Models\Configs;
 use App\Models\Palette;
 use App\Models\Photo;
+use App\Models\Tag;
 use App\Models\TagAlbum;
 use App\Models\User;
 use App\Models\UserGroup;
@@ -33,9 +34,59 @@ use Tests\Traits\RequiresEmptyColourPalettes;
 use Tests\Traits\RequiresEmptyGroups;
 use Tests\Traits\RequiresEmptyLiveMetrics;
 use Tests\Traits\RequiresEmptyPhotos;
+use Tests\Traits\RequiresEmptyTags;
 use Tests\Traits\RequiresEmptyUsers;
 use Tests\Traits\RequiresEmptyWebAuthnCredentials;
 
+/**
+ * BaseApiWithDataTest serves as a foundational testing class for Lychee's API features.
+ *
+ * Goal: This class provides a comprehensive test environment with pre-configured data
+ * structures to simulate various user scenarios and permissions within the Lychee photo
+ * management system.
+ *
+ * Architecture:
+ * - Extends BaseApiTest for core API testing functionality
+ * - Incorporates multiple traits for test environment setup and teardown
+ * - Creates a complete hierarchical data structure with users, albums, photos, permissions, and groups
+ *
+ * Data Structure Graph:
+ * - 👥 Users:
+ *   ├─ 👑 admin (god allmighty)
+ *   │  └─ 📁 album5 (root)
+ *   │
+ *   ├─ 👤 userMayUpload1
+ *   │  ├─ 📁 album1 (root)
+ *   │  │  ├─ 🔑 perm1 (👤 userMayUpload2)
+ *   │  │  ├─ 🔑 perm11 (👥 group1 → album1)
+ *   │  │  ├─ 🖼️ photo1 (🏷️ `test`, 🎨 palette)
+ *   │  │  ├─ 🖼️ photo1b
+ *   │  │  └─ 📁 subAlbum1
+ *   │  │     └─ 🖼️ subPhoto1
+ *   │  ├─ 🏷️ tagAlbum1 (linked to `test`)
+ *   │  └─ 🖼️ photoUnsorted
+ *   │
+ *   ├─ 👤 userMayUpload2
+ *   │  └─ 📁 album2 (root)
+ *   │     ├─ 🖼️ photo2
+ *   │     └─ 📁 subAlbum2
+ *   │        └─ 🖼️ subPhoto2
+ *   │
+ *   ├─ 👤 userNoUpload
+ *   │  └─ 📁 album3 (root)
+ *   │     └─ 🖼️ photo3
+ *   │
+ *   └─ 👤 userLocked
+ *      └─ 📁 album4 (root)
+ *         ├─ 🔑 perm4 (🌐 public visibility)
+ *         ├─ 🖼️ photo4
+ *         └─ 📁 subAlbum4 (🌐 public visibility)
+ *            ├─ 🔑 perm44 (🌐 public visibility)
+ *            └─ 🖼️ subPhoto4
+ * - 👥 Groups:
+ *   ├─ 👥 group1 (contains 👤 userWithGroup1, 👤 userWithGroupAdmin )
+ *   └─ 👥 group2
+ */
 abstract class BaseApiWithDataTest extends BaseApiTest
 {
 	use RequiresEmptyUsers;
@@ -46,6 +97,7 @@ abstract class BaseApiWithDataTest extends BaseApiTest
 	use RequiresEmptyWebAuthnCredentials;
 	use InteractWithSmartAlbums;
 	use RequiresEmptyGroups;
+	use RequiresEmptyTags;
 
 	protected User $admin;
 	protected User $userMayUpload1;
@@ -73,6 +125,9 @@ abstract class BaseApiWithDataTest extends BaseApiTest
 	// album 3 belongs to userNoUpload
 	protected Album $album3;
 	protected Photo $photo3;
+
+	// Tags
+	protected Tag $tag_test;
 
 	// album 4 belongs to userLocked
 	// album 4 is visible without being logged in
@@ -103,6 +158,7 @@ abstract class BaseApiWithDataTest extends BaseApiTest
 		$this->setUpRequiresEmptyColourPalettes();
 		$this->setUpRequiresEmptyLiveMetrics();
 		$this->setUpRequiresEmptyGroups();
+		$this->setUpRequiresEmptyTags();
 
 		$this->admin = User::factory()->may_administrate()->create();
 		$this->userMayUpload1 = User::factory()->may_upload()->create();
@@ -115,13 +171,15 @@ abstract class BaseApiWithDataTest extends BaseApiTest
 		$this->userWithGroup1 = User::factory()->with_group($this->group1)->create();
 		$this->userWithGroupAdmin = User::factory()->with_group($this->group1, UserGroupRole::ADMIN)->create();
 
+		$this->tag_test = Tag::factory()->with_name('test')->create();
+
 		$this->album1 = Album::factory()->as_root()->owned_by($this->userMayUpload1)->create();
-		$this->photo1 = Photo::factory()->owned_by($this->userMayUpload1)->with_GPS_coordinates()->with_tags('test')->with_palette()->in($this->album1)->create();
+		$this->photo1 = Photo::factory()->owned_by($this->userMayUpload1)->with_GPS_coordinates()->with_tags([$this->tag_test])->with_palette()->in($this->album1)->create();
 		$this->palette1 = $this->photo1->palette;
 		$this->photo1b = Photo::factory()->owned_by($this->userMayUpload1)->with_subGPS_coordinates()->in($this->album1)->create();
 		$this->subAlbum1 = Album::factory()->children_of($this->album1)->owned_by($this->userMayUpload1)->create();
 		$this->subPhoto1 = Photo::factory()->owned_by($this->userMayUpload1)->with_GPS_coordinates()->in($this->subAlbum1)->create();
-		$this->tagAlbum1 = TagAlbum::factory()->owned_by($this->userMayUpload1)->of_tags('test')->create();
+		$this->tagAlbum1 = TagAlbum::factory()->owned_by($this->userMayUpload1)->of_tags([$this->tag_test])->create();
 
 		$this->album2 = Album::factory()->as_root()->owned_by($this->userMayUpload2)->create();
 		$this->photo2 = Photo::factory()->owned_by($this->userMayUpload2)->with_GPS_coordinates()->in($this->album2)->create();
@@ -174,6 +232,7 @@ abstract class BaseApiWithDataTest extends BaseApiTest
 
 	public function tearDown(): void
 	{
+		$this->tearDownRequiresEmptyTags();
 		$this->tearDownRequiresEmptyLiveMetrics();
 		$this->tearDownRequiresEmptyColourPalettes();
 		$this->tearDownRequiresEmptyPhotos();

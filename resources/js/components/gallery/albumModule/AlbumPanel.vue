@@ -12,7 +12,8 @@
 			@go-back="emits('goBack')"
 		/>
 		<template v-if="config && album">
-			<div id="galleryView" class="relative flex flex-wrap content-start w-full justify-start overflow-y-auto h-full">
+			<div id="galleryView" class="relative flex flex-wrap content-start w-full justify-start overflow-y-auto h-full select-none">
+				<SelectDrag :photos="photos" :albums="children" :with-scroll="true" />
 				<AlbumEdit v-if="album.rights.can_edit" :album="album" :config="config" />
 				<div v-if="noData" class="flex w-full flex-col h-full items-center justify-center text-xl text-muted-color gap-8">
 					<span class="block">
@@ -21,9 +22,9 @@
 					<Button
 						v-if="album.rights.can_upload && modelAlbum !== undefined"
 						severity="warn"
-						@click="toggleUpload"
 						class="rounded max-w-xs w-full border-none font-bold"
 						icon="pi pi-upload"
+						@click="toggleUpload"
 						>{{ $t("gallery.album.upload") }}</Button
 					>
 				</div>
@@ -38,11 +39,11 @@
 				/>
 				<template v-if="is_se_enabled && user?.id !== null">
 					<AlbumStatistics
+						:key="'statistics_' + album.id"
+						v-model:visible="areStatisticsOpen"
 						:photos="photos"
 						:config="config"
 						:album="album"
-						v-model:visible="areStatisticsOpen"
-						:key="'statistics_' + album.id"
 					/>
 				</template>
 				<AlbumThumbPanel
@@ -52,11 +53,11 @@
 					:albums="children"
 					:config="albumPanelConfig"
 					:is-alone="!photos?.length"
-					@clicked="albumClick"
-					@contexted="albumMenuOpen"
 					:idx-shift="0"
 					:selected-albums="selectedAlbumsIds"
 					:is-timeline="config.is_album_timeline_enabled"
+					@clicked="albumClick"
+					@contexted="albumMenuOpen"
 				/>
 				<PhotoThumbPanel
 					v-if="layoutConfig !== null && photos !== null && photos.length > 0"
@@ -77,7 +78,7 @@
 				<GalleryFooter v-once />
 				<ScrollTop v-if="!props.isPhotoOpen" target="parent" />
 			</div>
-			<ShareAlbum v-model:visible="is_share_album_visible" :title="album.title" :key="'share_modal_' + album.id" />
+			<ShareAlbum :key="'share_modal_' + album.id" v-model:visible="is_share_album_visible" :title="album.title" />
 
 			<!-- Dialogs -->
 			<ContextMenu ref="menu" :model="Menu" :class="Menu.length === 0 ? 'hidden' : ''">
@@ -121,6 +122,7 @@ import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { usePhotoRoute } from "@/composables/photo/photoRoute";
 import { useRouter } from "vue-router";
 import { type SplitData } from "@/composables/album/splitter";
+import SelectDrag from "@/components/forms/album/SelectDrag.vue";
 
 const router = useRouter();
 
@@ -163,6 +165,7 @@ const emits = defineEmits<{
 const { is_se_enabled } = storeToRefs(lycheeStore);
 
 const children = computed<App.Http.Resources.Models.ThumbAlbumResource[]>(() => modelAlbum.value?.albums ?? []);
+const selectableAlbums = computed<App.Http.Resources.Models.ThumbAlbumResource[]>(() => modelAlbum.value?.albums ?? []);
 const noData = computed(() => children.value.length === 0 && (photos.value === null || photos.value.length === 0));
 
 const { is_share_album_visible, toggleDelete, toggleMergeAlbum, toggleMove, toggleRename, toggleShareAlbum, toggleTag, toggleCopy, toggleUpload } =
@@ -180,7 +183,13 @@ const {
 	photoSelect,
 	albumClick,
 	unselect,
-} = useSelection(photos, children, togglableStore);
+} = useSelection(
+	{
+		photos,
+		albums: selectableAlbums,
+	},
+	togglableStore,
+);
 
 const { photoRoute, getParentId } = usePhotoRoute(router);
 

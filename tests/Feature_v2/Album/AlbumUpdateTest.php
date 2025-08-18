@@ -99,6 +99,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'photo_sorting_order' => 'ASC',
 			'copyright' => '',
 			'is_pinned' => false,
+			'is_and' => true,
 			'photo_layout' => null,
 			'photo_timeline' => null,
 		]);
@@ -113,6 +114,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'photo_sorting_order' => 'ASC',
 			'copyright' => '',
 			'is_pinned' => false,
+			'is_and' => true,
 			'photo_layout' => null,
 			'photo_timeline' => null,
 		]);
@@ -130,6 +132,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'photo_sorting_order' => 'ASC',
 			'copyright' => '',
 			'is_pinned' => false,
+			'is_and' => true,
 			'photo_layout' => null,
 			'photo_timeline' => null,
 		]);
@@ -148,6 +151,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'resource' => [
 				'id' => $this->tagAlbum1->id,
 				'title' => 'title', // from modified above.
+				'show_tags' => ['tag1', 'tag2'],
 				'photos' => [],
 			],
 		]);
@@ -192,6 +196,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'photo_sorting_order' => 'ASC',
 			'copyright' => '',
 			'is_pinned' => true,
+			'is_and' => true,
 			'photo_layout' => null,
 			'photo_timeline' => null,
 		]);
@@ -238,6 +243,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'photo_sorting_order' => 'ASC',
 			'copyright' => '',
 			'is_pinned' => false,
+			'is_and' => true,
 			'photo_layout' => null,
 			'photo_timeline' => null,
 		]);
@@ -282,6 +288,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'photo_sorting_order' => 'ASC',
 			'copyright' => '',
 			'is_pinned' => true,
+			'is_and' => true,
 			'photo_layout' => null,
 			'photo_timeline' => null,
 		]);
@@ -318,6 +325,7 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 			'photo_sorting_order' => 'ASC',
 			'copyright' => '',
 			'is_pinned' => true,
+			'is_and' => true,
 			'photo_layout' => null,
 			'photo_timeline' => null,
 		]);

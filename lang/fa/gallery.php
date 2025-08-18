@@ -111,6 +111,7 @@ return [
             'layout' => 'تنظیم چیدمان عکس',
             'show_tags' => 'تنظیم برچسب‌های قابل نمایش',
             'tags_required' => 'برچسب‌ها الزامی هستند.',
+            'all_tags_must_match' => 'همه برچسب‌ها باید مطابقت داشته باشند.',
         ],
     ],
     'photo' => [
@@ -160,9 +161,9 @@ return [
                 'number_of_favourites' => 'تعداد علاقه‌مندی‌ها',
             ],
             'links' => [
-                'header' => 'Links',
-                'copy' => 'Copy',
-                'copy_success' => 'Link copied to clipboard.',
+                'header' => 'لینک‌ها',
+                'copy' => 'کپی',
+                'copy_success' => 'لینک در کلیپ‌بورد کپی شد.',
             ],
         ],
         'edit' => [

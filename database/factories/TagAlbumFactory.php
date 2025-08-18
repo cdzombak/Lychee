@@ -9,6 +9,7 @@
 namespace Database\Factories;
 
 use App\Models\Statistics;
+use App\Models\Tag;
 use App\Models\TagAlbum;
 use Database\Factories\Traits\OwnedBy;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -37,15 +38,26 @@ class TagAlbumFactory extends Factory
 		return [
 			'title' => 'Tag Album ' . fake()->year(),
 			'owner_id' => 1,
+			'is_and' => true,
 		];
 	}
 
-	public function of_tags(string $tags): self
+	/**
+	 * Define tags for that picture.
+	 *
+	 * @param array<int,Tag> $tags
+	 *
+	 * @return PhotoFactory
+	 */
+	public function of_tags(array $tags): self
 	{
-		return $this->state(function (array $attributes) use ($tags) {
-			return [
-				'show_tags' => $tags,
-			];
+		return $this->afterCreating(function (TagAlbum $tag_album) use ($tags) {
+			foreach ($tags as $tag) {
+				if (!$tag instanceof Tag) {
+					throw new \TypeError('Expected Tag instance, got ' . gettype($tag));
+				}
+				$tag_album->tags()->attach($tag);
+			}
 		});
 	}
 
