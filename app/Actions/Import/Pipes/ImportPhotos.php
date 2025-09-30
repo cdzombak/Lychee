@@ -75,7 +75,6 @@ class ImportPhotos implements ImportPipe
 		foreach ($image_paths as $idx => $image_path) {
 			$this->importSingleImage($image_path, $node->album, $idx / $total * 100);
 		}
-		$this->report(ImportEventReport::createDebug('importing', null, 'Importing photos for: ' . $node->name));
 	}
 
 	/**
@@ -98,9 +97,16 @@ class ImportPhotos implements ImportPipe
 		foreach ($image_paths as $key => $image_path) {
 			$basename = basename($image_path);
 			$filename = pathinfo($image_path, PATHINFO_FILENAME);
+			$renamed_basename = $this->state->getRenamer()->handle($basename);
+			$renamed_filename = $this->state->getRenamer()->handle($filename);
 
-			if (in_array($basename, $already_existing, true) || in_array($filename, $already_existing, true)) {
-				$this->report(ImportEventReport::createWarning('skip_duplicate', basename($image_path), 'Skipped existing photo with same filename'));
+			if (in_array($basename, $already_existing, true) ||
+				in_array($filename, $already_existing, true) ||
+				in_array($renamed_basename, $already_existing, true) ||
+				in_array($renamed_filename, $already_existing, true)
+			) {
+				// If the photo already exists in the album, skip it
+				$this->report(ImportEventReport::createWarning('skip_duplicate', basename($image_path), 'Skipped existing photo with same filename' . ($this->state->import_mode->shall_rename_photo_title ? ' (or renamed)' : '')));
 				unset($image_paths[$key]);
 			}
 		}
@@ -119,14 +125,8 @@ class ImportPhotos implements ImportPipe
 	private function importSingleImage(string $image_path, ?Album $album, int $progress): void
 	{
 		$file = new NativeLocalFile($image_path);
-		try {
-			ImportImageJob::dispatch($file, $this->state->intended_owner_id, $this->state->import_mode, $album);
-		} catch (\Throwable $e) {
-			$this->report(ImportEventReport::createFromException($e, $image_path));
-		}
-
-		$action = config('queue.default') === 'sync' ? 'Imported photo: ' : 'Created Import job for photo: ';
-		$this->report(ImportEventReport::createDebug('imported', $image_path, $action . $progress . '%'));
+		$this->state->job_bus[] = new ImportImageJob($file, $this->state->intended_owner_id, $this->state->import_mode, $album);
+		$this->report(ImportEventReport::createDebug('imported', $image_path, 'Created Import job for photo: ' . $progress . '%'));
 	}
 
 	/**
@@ -142,6 +142,11 @@ class ImportPhotos implements ImportPipe
 		$base_names = array_map(fn ($i) => basename($i), $image_paths);
 		$file_names = array_map(fn ($i) => pathinfo($i, PATHINFO_FILENAME), $image_paths);
 		$candidates = array_merge($base_names, $file_names);
+
+		if ($this->state->import_mode->shall_rename_photo_title) {
+			$candidates_renamed = $this->state->getRenamer()->handleMany($candidates);
+			$candidates = array_merge($candidates, $candidates_renamed);
+		}
 
 		return Photo::query()
 			->join(PA::PHOTO_ALBUM, PA::PHOTO_ID, '=', 'photos.id')

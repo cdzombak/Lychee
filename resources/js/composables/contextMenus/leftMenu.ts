@@ -1,6 +1,6 @@
 import Constants from "@/services/constants";
 import InitService from "@/services/init-service";
-import { AuthStore } from "@/stores/Auth";
+import { UserStore } from "@/stores/UserState";
 import { FavouriteStore } from "@/stores/FavouriteState";
 import { LeftMenuStateStore } from "@/stores/LeftMenuState";
 import { LycheeStateStore } from "@/stores/LycheeState";
@@ -28,14 +28,15 @@ export type MenyType =
 export function useLeftMenu(
 	lycheeStore: LycheeStateStore,
 	LeftMenuStateStore: LeftMenuStateStore,
-	authStore: AuthStore,
+	authStore: UserStore,
 	favourites: FavouriteStore,
 	route: RouteLocationNormalizedLoadedGeneric,
 ) {
 	const { user } = storeToRefs(authStore);
 
 	const { initData, left_menu_open } = storeToRefs(LeftMenuStateStore);
-	const { clockwork_url, is_se_enabled, is_se_preview_enabled, is_se_info_hidden } = storeToRefs(lycheeStore);
+	const { clockwork_url, is_se_enabled, is_se_preview_enabled, is_se_info_hidden, is_favourite_enabled, is_timeline_page_enabled } =
+		storeToRefs(lycheeStore);
 	const openLycheeAbout = ref(false);
 	const logsEnabled = ref(true);
 
@@ -50,8 +51,8 @@ export function useLeftMenu(
 		);
 	});
 
-	function load() {
-		InitService.fetchGlobalRights().then((data) => {
+	async function load(): Promise<void> {
+		return InitService.fetchGlobalRights().then((data) => {
 			initData.value = data.data;
 		});
 	}
@@ -75,16 +76,28 @@ export function useLeftMenu(
 				route: "/flow",
 			},
 			{
+				label: "gallery.timeline.title",
+				icon: "pi pi-clock",
+				route: "/timeline",
+				access: !(route.name as string).includes("timeline") && is_timeline_page_enabled.value,
+			},
+			{
 				label: "tags.title",
 				icon: "pi pi-tags",
 				access: user.value?.id !== null,
 				route: "/tags",
 			},
 			{
+				label: "gallery.favourites",
+				icon: "pi pi-heart",
+				route: "/gallery/favourites",
+				access: is_favourite_enabled.value && (favourites.photos?.length ?? 0) > 0,
+			},
+			{
 				label: "left-menu.frame",
 				icon: "pi pi-desktop",
-				access: initData.value.modules.is_mod_frame_enabled ?? false,
 				route: "/frame",
+				access: initData.value.modules.is_mod_frame_enabled ?? false,
 			},
 			{
 				label: "left-menu.map",
@@ -280,6 +293,12 @@ export function useLeftMenu(
 				route: "/statistics",
 				access: is_se_enabled.value === false && is_se_preview_enabled.value === true,
 				seTag: true,
+			},
+			{
+				label: "renamer.title",
+				icon: "pi pi-file-edit",
+				access: initData.value.modules.is_mod_renamer_enabled ?? false,
+				route: "/renamerRules",
 			},
 		];
 

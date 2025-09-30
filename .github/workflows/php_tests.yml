@@ -2,17 +2,8 @@ name: PHP Tests
 
 on:
   workflow_call:
-    inputs:
-      test-suite:
-        required: true
-        type: string
-        description: 'The test suite to run'
-      env-file:
-        required: true
-        type: string
-        description: 'The env files to use'
     secrets:
-      CODECOV_TOKEN: 
+      CODECOV_TOKEN:
         required: true
         description: 'codecov token secret'
 
@@ -23,8 +14,8 @@ jobs:
   tests:
     permissions:
       contents: read  # for actions/checkout to fetch code
-      pull-requests: read 
-    name: ${{ matrix.php-version }} - ${{ matrix.sql-versions }} -- ${{ inputs.test-suite }}
+      pull-requests: read
+    name: ${{ matrix.php-version }} - ${{ matrix.sql-versions }} -- ${{ matrix.test-suite }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -35,6 +26,19 @@ jobs:
           - mariadb
           - postgresql
           - sqlite
+        test-suite:
+          - Unit
+          - Feature_v2
+          - Install
+          - Webshop
+        exclude:
+        # Some skips to reduce the number of runs
+          - php-version: 8.4
+            test-suite: Unit
+          - php-version: 8.4
+            test-suite: Feature_v2
+          - php-version: 8.4
+            test-suite: Webshop
     # Service containers to run with `container-job`
     services:
       # Label used to access the service container
@@ -58,7 +62,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
@@ -78,7 +82,7 @@ jobs:
           mysql -uroot -proot -e 'create database homestead_test;'
 
       - name: Setup PHP Action
-        uses: shivammathur/setup-php@20529878ed81ef8e78ddf08b480401e6101a850f # 2.35.3
+        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f # 2.35.5
         with:
           php-version: ${{ matrix.php-version }}
           extensions: ${{ env.extensions }}
@@ -90,7 +94,7 @@ jobs:
 
       - name: copy Env
         run: |
-          cp .github/workflows/${{ inputs.env-file }}.${{ matrix.sql-versions }} .env
+          cp .github/workflows/.env.${{ matrix.sql-versions }} .env
 
       - name: Generate secure key & Optimize application & Migrate
         run: |
@@ -98,13 +102,13 @@ jobs:
           php artisan optimize
           php artisan migrate
 
-      - name: Apply tests ${{ inputs.test-suite }}
-        run: XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.ci.xml --testsuite ${{ inputs.test-suite }}
+      - name: Apply tests ${{ matrix.test-suite }}
+        run: XDEBUG_MODE=coverage vendor/bin/phpunit --configuration phpunit.ci.xml --testsuite ${{ matrix.test-suite }}
 
       - name: Make sure we can go backward
         run: php artisan migrate:rollback
 
       - name: Codecov
-        uses: codecov/codecov-action@18283e04ce6e62d37312384ff67231eb8fd56d24 # v5.4.3
+        uses: codecov/codecov-action@5a1091511ad55cbe89839c7260b706298ca349f7 # v5.5.1
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

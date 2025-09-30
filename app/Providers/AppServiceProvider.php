@@ -15,6 +15,7 @@ use App\Assets\SizeVariantGroupedWithRandomSuffixNamingStrategy;
 use App\Contracts\Models\AbstractSizeVariantNamingStrategy;
 use App\Contracts\Models\SizeVariantFactory;
 use App\Factories\AlbumFactory;
+use App\Factories\OmnipayFactory;
 use App\Image\SizeVariantDefaultFactory;
 use App\Image\StreamStatFilter;
 use App\Metadata\Json\CommitsRequest;
@@ -28,6 +29,7 @@ use App\Models\Configs;
 use App\Policies\AlbumQueryPolicy;
 use App\Policies\PhotoQueryPolicy;
 use App\Policies\SettingsPolicy;
+use App\Services\MoneyService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -68,6 +70,7 @@ class AppServiceProvider extends ServiceProvider
 			Helpers::class => Helpers::class,
 			CheckUpdate::class => CheckUpdate::class,
 			AlbumFactory::class => AlbumFactory::class,
+			OmnipayFactory::class => OmnipayFactory::class,
 			AlbumQueryPolicy::class => AlbumQueryPolicy::class,
 			PhotoQueryPolicy::class => PhotoQueryPolicy::class,
 
@@ -85,6 +88,8 @@ class AppServiceProvider extends ServiceProvider
 			GitTags::class => GitTags::class,
 
 			Verify::class => Verify::class,
+
+			MoneyService::class => MoneyService::class,
 		];
 
 	/**
@@ -113,7 +118,9 @@ class AppServiceProvider extends ServiceProvider
 		}
 
 		if (config('database.db_log_sql', false) === true) {
+			// @codeCoverageIgnoreStart
 			DB::listen(fn ($q) => $this->logSQL($q));
+			// @codeCoverageIgnoreEnd
 		}
 
 		try {
@@ -189,6 +196,9 @@ class AppServiceProvider extends ServiceProvider
 		);
 	}
 
+	/**
+	 * @codeCoverageIgnore
+	 */
 	private function logSQL(QueryExecuted $query): void
 	{
 		// Quick exit
@@ -216,7 +226,6 @@ class AppServiceProvider extends ServiceProvider
 
 			return;
 		}
-		// @codeCoverageIgnoreStart
 		// For mysql we perform an explain as this is usually the one being slower...
 		$bindings = collect($query->bindings)->map(function ($q) {
 			return match (gettype($q)) {
@@ -238,6 +247,5 @@ class AppServiceProvider extends ServiceProvider
 		$msg .= $sql_with_bindings . PHP_EOL;
 		$msg .= $renderer->getTable($explain);
 		Log::debug($msg);
-		// @codeCoverageIgnoreEnd
 	}
 }

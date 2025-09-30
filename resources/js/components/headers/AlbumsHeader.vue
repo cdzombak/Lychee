@@ -1,11 +1,10 @@
 <template>
-	<ImportFromLink v-if="canUpload" v-model:visible="is_import_from_link_open" />
-	<DropBox v-if="canUpload" v-model:visible="is_import_from_dropbox_open" :album-id="null" />
 	<Toolbar
+		v-if="albumsStore.rootConfig && albumsStore.rootRights"
 		:class="{
-			'bg-transparent': props.config.is_header_bar_transparent,
+			'bg-transparent': albumsStore.rootConfig.is_header_bar_transparent,
 			'bg-linear-to-b dark:from-surface-800 from-surface-50 via-75% light:via-surface-50/80 light:to-surface-50/20':
-				props.config.is_header_bar_gradient,
+				albumsStore.rootConfig.is_header_bar_gradient,
 		}"
 		:pt:root:class="'w-full z-10 border-0 h-14 flex-nowrap relative rounded-none'"
 		:pt:center:class="'absolute top-0 py-3 left-1/2 -translate-x-1/2 h-14'"
@@ -15,7 +14,7 @@
 		</template>
 
 		<template #center>
-			<template v-if="props.config.header_image_url === ''">
+			<template v-if="albumsStore.rootConfig.header_image_url === ''">
 				<span class="lg:hidden font-bold text-shadow-sm text-shadow-black">
 					{{ $t("gallery.albums") }}
 				</span>
@@ -28,7 +27,7 @@
 		</template>
 
 		<template #end>
-			<template v-if="props.user.id === null">
+			<template v-if="userStore.isGuest">
 				<Button
 					as="router-link"
 					:to="{ name: 'login' }"
@@ -69,7 +68,7 @@
 					</template>
 				</template>
 				<!-- Not logged in. -->
-				<BackLinkButton v-if="props.user.id === null" :config="props.config" />
+				<BackLinkButton v-if="userStore.user?.id === null && albumsStore.rootConfig" :config="albumsStore.rootConfig" />
 			</div>
 			<SpeedDial
 				:model="menu"
@@ -91,7 +90,7 @@
 			</SpeedDial>
 		</template>
 	</Toolbar>
-	<ContextMenu v-if="props.rights.can_upload" ref="addmenu" :model="addMenu">
+	<ContextMenu v-if="albumsStore.rootRights?.can_upload" ref="addmenu" :model="addMenu">
 		<template #item="{ item, props }">
 			<Divider v-if="item.is_divider" />
 			<a v-else v-ripple v-bind="props.action" @click="item.callback">
@@ -103,8 +102,8 @@
 			</a>
 		</template>
 	</ContextMenu>
-	<div v-if="props.config.header_image_url !== ''" class="relative w-full h-[calc(100vh/2)] -mt-14 z-0">
-		<img :src="props.config.header_image_url" class="object-cover h-full w-full" />
+	<div v-if="albumsStore.rootConfig?.header_image_url !== ''" class="relative w-full h-[calc(100vh/2)] -mt-14 z-0">
+		<img :src="albumsStore.rootConfig?.header_image_url" class="object-cover h-full w-full" />
 		<div class="absolute top-0 left-0 w-full h-full flex items-center justify-center px-20">
 			<h1
 				class="text-sm font-bold sm:text-lg md:text-3xl md:font-normal text-surface-0 uppercase text-center text-shadow-md text-shadow-black/25"
@@ -120,7 +119,6 @@ import SpeedDial from "primevue/speeddial";
 import Toolbar from "primevue/toolbar";
 import ContextMenu from "primevue/contextmenu";
 import Divider from "primevue/divider";
-import ImportFromLink from "@/components/modals/ImportFromLink.vue";
 import { computed, ComputedRef } from "vue";
 import { onKeyStroke } from "@vueuse/core";
 import { useLycheeStateStore } from "@/stores/LycheeState";
@@ -130,27 +128,15 @@ import { useRouter } from "vue-router";
 import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { useContextMenuAlbumsAdd } from "@/composables/contextMenus/contextMenuAlbumsAdd";
 import { useGalleryModals } from "@/composables/modalsTriggers/galleryModals";
-import DropBox from "@/components/modals/DropBox.vue";
 import BackLinkButton from "./BackLinkButton.vue";
 import OpenLeftMenu from "./OpenLeftMenu.vue";
 import { useFavouriteStore } from "@/stores/FavouriteState";
 import { useLeftMenuStateStore } from "@/stores/LeftMenuState";
+import { useAlbumsStore } from "@/stores/AlbumsState";
+import { useUserStore } from "@/stores/UserState";
 
 const props = defineProps<{
-	user: App.Http.Resources.Models.UserResource;
 	title: string;
-	rights: App.Http.Resources.Rights.RootAlbumRightsResource;
-	config: {
-		is_search_accessible: boolean;
-		show_keybinding_help_button: boolean;
-		back_button_enabled: boolean;
-		back_button_text: string;
-		back_button_url: string;
-		header_image_url: string;
-		is_header_bar_transparent: boolean;
-		is_header_bar_gradient: boolean;
-	};
-	hasHidden: boolean;
 }>();
 
 const emits = defineEmits<{
@@ -158,25 +144,22 @@ const emits = defineEmits<{
 	help: [];
 }>();
 
+const userStore = useUserStore();
 const leftMenuStore = useLeftMenuStateStore();
 const lycheeStore = useLycheeStateStore();
 const togglableStore = useTogglablesStateStore();
 const favourites = useFavouriteStore();
+const albumsStore = useAlbumsStore();
 
 const { dropbox_api_key, is_favourite_enabled, is_se_preview_enabled, is_live_metrics_enabled, is_registration_enabled } = storeToRefs(lycheeStore);
 const { is_login_open, is_upload_visible, is_create_album_visible, is_create_tag_album_visible, is_metrics_open } = storeToRefs(togglableStore);
 
 const router = useRouter();
 
-const {
-	toggleCreateAlbum,
-	toggleCreateTagAlbum,
-	is_import_from_link_open,
-	toggleImportFromLink,
-	is_import_from_dropbox_open,
-	toggleImportFromDropbox,
-	toggleUpload,
-} = useGalleryModals(togglableStore);
+const { toggleCreateAlbum, toggleCreateTagAlbum, toggleImportFromLink, toggleImportFromDropbox, toggleUpload, toggleImportFromServer } =
+	useGalleryModals(togglableStore);
+
+const is_owner = computed(() => albumsStore.rootRights?.can_import_from_server ?? false);
 
 const { addmenu, addMenu } = useContextMenuAlbumsAdd(
 	{
@@ -185,11 +168,11 @@ const { addmenu, addMenu } = useContextMenuAlbumsAdd(
 		toggleImportFromLink: toggleImportFromLink,
 		toggleImportFromDropbox: toggleImportFromDropbox,
 		toggleCreateTagAlbum: toggleCreateTagAlbum,
+		toggleImportFromServer: toggleImportFromServer,
 	},
 	dropbox_api_key,
+	is_owner,
 );
-
-const canUpload = computed(() => props.user.id !== null);
 
 function openAddMenu(event: Event) {
 	addmenu.value.show(event);
@@ -203,15 +186,15 @@ function openSearch() {
 	router.push({ name: "search" });
 }
 
-onKeyStroke("n", () => !shouldIgnoreKeystroke() && props.rights.can_upload && (is_create_album_visible.value = true));
-onKeyStroke("u", () => !shouldIgnoreKeystroke() && props.rights.can_upload && (is_upload_visible.value = true));
-onKeyStroke("/", () => !shouldIgnoreKeystroke() && props.config.is_search_accessible && openSearch());
+onKeyStroke("n", () => !shouldIgnoreKeystroke() && albumsStore.rootRights?.can_upload && (is_create_album_visible.value = true));
+onKeyStroke("u", () => !shouldIgnoreKeystroke() && albumsStore.rootRights?.can_upload && (is_upload_visible.value = true));
+onKeyStroke("/", () => !shouldIgnoreKeystroke() && albumsStore.rootConfig?.is_search_accessible && openSearch());
 
 // on key stroke escape:
 // 1. lose focus
 // 2. close modals
 // 3. go back
-onKeyStroke("escape", () => {
+onKeyStroke("Escape", () => {
 	// 1. lose focus
 	if (document.activeElement instanceof HTMLElement) {
 		document.activeElement.blur();
@@ -260,56 +243,56 @@ const menu = computed(() =>
 			to: { name: "favourites" },
 			type: "link",
 			icon: "pi pi-heart",
-			if: props.user.id !== null && is_favourite_enabled.value && (favourites.photos?.length ?? 0) > 0,
+			if: userStore.isLoggedIn && is_favourite_enabled.value && (favourites.photos?.length ?? 0) > 0,
 			key: "favourites",
 		},
 		{
 			icon: "pi pi-search",
 			type: "fn",
 			callback: openSearch,
-			if: props.config.is_search_accessible,
+			if: albumsStore.rootConfig?.is_search_accessible,
 			key: "search",
 		},
 		{
 			icon: "pi pi-bell",
 			type: "fn",
 			callback: () => (is_metrics_open.value = true),
-			if: is_live_metrics_enabled.value && props.rights.can_see_live_metrics,
+			if: is_live_metrics_enabled.value && albumsStore.rootRights?.can_see_live_metrics,
 			key: "metrics",
 		},
 		{
 			icon: "pi pi-bell text-primary-emphasis",
 			type: "fn",
 			callback: () => (is_metrics_open.value = true),
-			if: is_se_preview_enabled.value && props.rights.can_see_live_metrics,
+			if: is_se_preview_enabled.value && albumsStore.rootRights?.can_see_live_metrics,
 			key: "se_preview",
 		},
 		{
 			icon: "pi pi-question-circle",
 			type: "fn",
 			callback: openHelp,
-			if: !isTouchDevice() && props.user.id !== null && props.config.show_keybinding_help_button && document.body.scrollWidth > 800,
+			if: !isTouchDevice() && userStore.isLoggedIn && albumsStore.rootConfig?.show_keybinding_help_button && document.body.scrollWidth > 800,
 			key: "help",
 		},
 		{
 			icon: "pi pi-plus",
 			type: "fn",
 			callback: openAddMenu,
-			if: props.rights.can_upload,
+			if: albumsStore.rootRights?.can_upload,
 			key: "add_menu",
 		},
 		{
 			icon: "pi pi-eye-slash",
 			type: "fn",
 			callback: () => (lycheeStore.are_nsfw_visible = false),
-			if: isTouchDevice() && props.hasHidden && lycheeStore.are_nsfw_visible,
+			if: isTouchDevice() && albumsStore.hasHidden && lycheeStore.are_nsfw_visible,
 			key: "hide_nsfw",
 		},
 		{
 			icon: "pi pi-eye",
 			type: "fn",
 			callback: () => (lycheeStore.are_nsfw_visible = true),
-			if: isTouchDevice() && props.hasHidden && !lycheeStore.are_nsfw_visible,
+			if: isTouchDevice() && albumsStore.hasHidden && !lycheeStore.are_nsfw_visible,
 			key: "show_nsfw",
 		},
 	].filter((item) => item.if),

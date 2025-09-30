@@ -1,8 +1,6 @@
 <template>
-	<ImportFromLink v-if="canUpload" v-model:visible="is_import_from_link_open" @refresh="emits('refresh')" />
-	<DropBox v-if="canUpload" v-model:visible="is_import_from_dropbox_open" :album-id="props.album.id" />
 	<Toolbar
-		v-if="album"
+		v-if="albumStore.album"
 		class="w-full border-0 transition-all duration-100 ease-in-out"
 		:class="{
 			'max-h-14': !is_full_screen,
@@ -14,7 +12,7 @@
 		</template>
 
 		<template #center>
-			{{ album.title }}
+			{{ albumStore.album.title }}
 		</template>
 
 		<template #end>
@@ -27,15 +25,15 @@
 				<Button icon="pi pi-heart" class="border-none" severity="secondary" text />
 			</router-link>
 			<Button
-				v-if="props.config.is_search_accessible"
+				v-if="albumStore.config?.is_search_accessible"
 				icon="pi pi-search"
 				class="border-none hidden sm:inline-flex"
 				severity="secondary"
 				text
 				@click="emits('openSearch')"
 			/>
-			<Button v-if="props.album.rights.can_upload" icon="pi pi-plus" class="border-none" severity="secondary" text @click="openAddMenu" />
-			<template v-if="props.album.rights.can_edit">
+			<Button v-if="albumStore.rights?.can_upload" icon="pi pi-plus" class="border-none" severity="secondary" text @click="openAddMenu" />
+			<template v-if="albumStore.rights?.can_edit">
 				<Button
 					:icon="is_album_edit_open ? 'pi pi-angle-up' : 'pi pi-angle-down'"
 					severity="secondary"
@@ -46,7 +44,7 @@
 			</template>
 		</template>
 	</Toolbar>
-	<ContextMenu v-if="props.album.rights.can_upload" ref="addmenu" :model="addMenu">
+	<ContextMenu v-if="albumStore.rights?.can_upload" ref="addmenu" :model="addMenu">
 		<template #item="{ item, props }">
 			<Divider v-if="item.is_divider" />
 			<a v-else v-ripple v-bind="props.action" @click="item.callback">
@@ -63,36 +61,28 @@
 <script setup lang="ts">
 import Button from "primevue/button";
 import Toolbar from "primevue/toolbar";
-import { computed } from "vue";
 import ContextMenu from "primevue/contextmenu";
-import ImportFromLink from "@/components/modals/ImportFromLink.vue";
 import { useContextMenuAlbumAdd } from "@/composables/contextMenus/contextMenuAlbumAdd";
 import Divider from "primevue/divider";
 import { useGalleryModals } from "@/composables/modalsTriggers/galleryModals";
 import { useLycheeStateStore } from "@/stores/LycheeState";
 import { storeToRefs } from "pinia";
 import AlbumService from "@/services/album-service";
-import DropBox from "@/components/modals/DropBox.vue";
 import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { useFavouriteStore } from "@/stores/FavouriteState";
 import GoBack from "./GoBack.vue";
-
-const props = defineProps<{
-	config: App.Http.Resources.GalleryConfigs.AlbumConfig;
-	album: App.Http.Resources.Models.AlbumResource | App.Http.Resources.Models.TagAlbumResource | App.Http.Resources.Models.SmartAlbumResource;
-	user: App.Http.Resources.Models.UserResource;
-}>();
+import { onMounted } from "vue";
+import { useAlbumStore } from "@/stores/AlbumState";
 
 const togglableStore = useTogglablesStateStore();
 const lycheeStore = useLycheeStateStore();
-lycheeStore.init();
 const favourites = useFavouriteStore();
+const albumStore = useAlbumStore();
 
 const { dropbox_api_key, is_favourite_enabled } = storeToRefs(lycheeStore);
 const { is_album_edit_open, is_full_screen } = storeToRefs(togglableStore);
 
-const { toggleCreateAlbum, is_import_from_link_open, toggleImportFromLink, is_import_from_dropbox_open, toggleImportFromDropbox, toggleUpload } =
-	useGalleryModals(togglableStore);
+const { toggleCreateAlbum, toggleImportFromLink, toggleImportFromDropbox, toggleUpload, toggleImportFromServer } = useGalleryModals(togglableStore);
 
 const emits = defineEmits<{
 	refresh: [];
@@ -106,20 +96,26 @@ function toggleUploadTrack() {
 }
 
 function uploadTrack(e: Event) {
+	if (albumStore.album === undefined) {
+		return;
+	}
+
 	const target: HTMLInputElement = e.target as HTMLInputElement;
 	if (target.files === null) {
 		return;
 	}
-	AlbumService.uploadTrack(props.album.id, target.files[0] as Blob);
+	AlbumService.uploadTrack(albumStore.album.id, target.files[0] as Blob);
 }
 
 function deleteTrack() {
-	AlbumService.deleteTrack(props.album.id);
+	if (albumStore.album === undefined) {
+		return;
+	}
+	AlbumService.deleteTrack(albumStore.album.id);
 }
 
 const { addmenu, addMenu, openAddMenu } = useContextMenuAlbumAdd(
-	props.album,
-	props.config,
+	albumStore,
 	{
 		toggleUpload,
 		toggleCreateAlbum,
@@ -127,9 +123,12 @@ const { addmenu, addMenu, openAddMenu } = useContextMenuAlbumAdd(
 		toggleUploadTrack,
 		deleteTrack,
 		toggleImportFromDropbox,
+		toggleImportFromServer,
 	},
 	dropbox_api_key,
 );
 
-const canUpload = computed(() => props.user.id !== null && props.album.rights.can_upload === true);
+onMounted(() => {
+	lycheeStore.load();
+});
 </script>

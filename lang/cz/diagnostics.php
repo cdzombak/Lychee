@@ -6,9 +6,8 @@ return [
 	| Diagnostics page
 	|--------------------------------------------------------------------------
 	*/
-	'title' => 'Diagnostics',
-
-	'copy_to_clipboard' => 'Copy diagnostics to clipboard',
+	'title' => 'Diagnostika',
+	'copy_to_clipboard' => 'Zkopírovat diagnostiku do schránky',
 	'self-diagnosis' => 'Self-diagnosis',
 	'info' => 'Info',
 	'space' => 'Space',
@@ -16,7 +15,6 @@ return [
 	'configuration' => 'Configuration',
 	'loading' => 'Loading...',
 	'identical_content' => 'Identical content',
-
 	'toast' => [
 		'info' => 'Info',
 		'copy' => 'Diagnostics copied to clipboard!',

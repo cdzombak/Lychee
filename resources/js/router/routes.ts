@@ -4,6 +4,7 @@ import Albums from "@/views/gallery-panels/Albums.vue";
 const Landing = () => import("@/views/Landing.vue");
 const Favourites = () => import("@/views/gallery-panels/Favourites.vue");
 const Home = () => import("@/views/Home.vue");
+const Timeline = () => import("@/views/gallery-panels/Timeline.vue");
 const Frame = () => import("@/views/gallery-panels/Frame.vue");
 const Search = () => import("@/views/gallery-panels/Search.vue");
 const MapView = () => import("@/views/gallery-panels/Map.vue");
@@ -25,6 +26,7 @@ const RegisterPage = () => import("@/views/RegisterPage.vue");
 const Flow = () => import("@/views/gallery-panels/Flow.vue");
 const TagsManagement = () => import("@/views/TagsManagement.vue");
 const Tag = () => import("@/views/gallery-panels/Tag.vue");
+const RenamerRules = () => import("@/views/RenamerRules.vue");
 
 const routes_ = [
 	{
@@ -59,6 +61,11 @@ const routes_ = [
 		component: TagsManagement,
 	},
 	{
+		name: "renamer-rules",
+		path: "/renamerRules",
+		component: RenamerRules,
+	},
+	{
 		name: "tag",
 		path: "/tag/:tagId/:photoId?",
 		component: Tag,
@@ -79,6 +86,12 @@ const routes_ = [
 		name: "frame",
 		path: "/frame/:albumId?",
 		component: Frame,
+		props: true,
+	},
+	{
+		name: "timeline",
+		path: "/timeline/:date?/:photoId?",
+		component: Timeline,
 		props: true,
 	},
 	{

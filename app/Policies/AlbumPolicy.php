@@ -44,6 +44,7 @@ class AlbumPolicy extends BasePolicy
 	public const CAN_IMPORT_FROM_SERVER = 'canImportFromServer';
 	public const CAN_SHARE_ID = 'canShareById';
 	public const CAN_READ_METRICS = 'canReadMetrics';
+	public const CAN_MAKE_PURCHASABLE = 'canMakePurchasable';
 
 	/**
 	 * This ensures that current album is owned by current user.
@@ -515,15 +516,16 @@ class AlbumPolicy extends BasePolicy
 
 	/**
 	 * Check whether user can import from server.
-	 * Only Admin can do that.
+	 * Only the owner of Lychee can use this functionality (if not disabled in .env config).
 	 *
-	 * @param User|null $user
+	 * @param User $user
 	 *
 	 * @return bool
 	 */
-	public function canImportFromServer(?User $user): bool
+	public function canImportFromServer(User $user): bool
 	{
-		return false;
+		return $user->id === Configs::getValueAsInt('owner_id') &&
+			config('features.disable-import-from-server', true) === false;
 	}
 
 	// The following methods are not to be called by Gate.
@@ -598,5 +600,19 @@ class AlbumPolicy extends BasePolicy
 			MetricsAccess::ADMIN => $user?->may_administrate === true,
 			default => false,
 		};
+	}
+
+	/**
+	 * Check whether the user can make the album purchasable.
+	 * Only admins can do that, so we return false here.
+	 * Admin case is handled by the before() method in BasePolicy.
+	 *
+	 * @param User $user
+	 *
+	 * @return bool
+	 */
+	public function canMakePurchasable(User $user): bool
+	{
+		return false;
 	}
 }

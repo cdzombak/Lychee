@@ -30,7 +30,18 @@ declare namespace App.Enum {
 		| "taken_at"
 		| "is_starred"
 		| "type";
-	export type ConfigType = "int" | "positive" | "string" | "string_required" | "0|1" | "0|1|2" | "" | "admin_user" | "license" | "map_provider";
+	export type ConfigType =
+		| "int"
+		| "positive"
+		| "string"
+		| "string_required"
+		| "0|1"
+		| "0|1|2"
+		| ""
+		| "admin_user"
+		| "license"
+		| "map_provider"
+		| "currency";
 	export type CountType = "taken_at" | "created_at";
 	export type CoverFitType = "cover" | "fit";
 	export type DateOrderingType = "older_younger" | "younger_older";
@@ -95,18 +106,46 @@ declare namespace App.Enum {
 	export type OrderSortingType = "ASC" | "DESC";
 	export type PhotoLayoutType = "square" | "justified" | "masonry" | "grid";
 	export type PhotoThumbInfoType = "title" | "description";
+	export type RenamerModeType = "first" | "all" | "regex" | "trim" | "strtolower" | "strtoupper" | "ucwords" | "ucfirst";
 	export type SeverityType = "emergency" | "alert" | "critical" | "error" | "warning" | "notice" | "info" | "debug";
+	export type ShiftType = "relative" | "absolute";
+	export type ShiftX = "left" | "right";
+	export type ShiftY = "up" | "down";
 	export type SizeVariantType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 	export type SmallLargeType = "small" | "large";
 	export type SmartAlbumType = "unsorted" | "starred" | "recent" | "on_this_day";
 	export type StorageDiskType = "images" | "s3";
-	export type ThumbAlbumSubtitleType = "description" | "takedate" | "creation" | "oldstyle";
+	export type ThumbAlbumSubtitleType = "description" | "takedate" | "creation" | "oldstyle" | "num_photos" | "num_albums" | "num_photos_albums";
 	export type ThumbOverlayVisibilityType = "never" | "always" | "hover";
 	export type TimelineAlbumGranularity = "default" | "disabled" | "year" | "month" | "day";
 	export type TimelinePhotoGranularity = "default" | "disabled" | "year" | "month" | "day" | "hour";
 	export type UpdateStatus = 0 | 1 | 2 | 3;
 	export type UserGroupRole = "member" | "admin";
 	export type VersionChannelType = "release" | "git" | "tag";
+	export type WatermarkPosition = "top-left" | "top" | "top-right" | "left" | "center" | "right" | "bottom-left" | "bottom" | "bottom-right";
+}
+declare namespace App.Http.Resources.Admin {
+	export type ImportDirectoryResource = {
+		directory: string;
+		status: boolean;
+		message: string | null;
+		jobs_count: number | null;
+	};
+	export type ImportFromServerOptionsResource = {
+		delete_imported: boolean;
+		import_via_symlink: boolean;
+		skip_duplicates: boolean;
+		resync_metadata: boolean;
+		delete_missing_photos: boolean;
+		delete_missing_albums: boolean;
+		directory: string;
+	};
+	export type ImportFromServerResource = {
+		status: boolean;
+		message: string;
+		results: App.Http.Resources.Admin.ImportDirectoryResource[];
+		job_count: number;
+	};
 }
 declare namespace App.Http.Resources.Collections {
 	export type PositionDataResource = {
@@ -327,6 +366,7 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		is_scroll_to_navigate_photos_enabled: boolean;
 		is_swipe_vertically_to_go_back_enabled: boolean;
 		default_homepage: string;
+		is_timeline_page_enabled: boolean;
 	};
 	export type LandingPageResource = {
 		landing_page_enable: boolean;
@@ -514,6 +554,17 @@ declare namespace App.Http.Resources.Models {
 		favourite_count: number;
 		shared_count: number;
 	};
+	export type RenamerRuleResource = {
+		id: number;
+		order: number;
+		owner_id: number;
+		rule: string;
+		description: string;
+		needle: string;
+		replacement: string;
+		mode: App.Enum.RenamerModeType;
+		is_enabled: boolean;
+	};
 	export type SizeVariantResource = {
 		type: App.Enum.SizeVariantType;
 		locale: string;
@@ -521,6 +572,7 @@ declare namespace App.Http.Resources.Models {
 		height: number;
 		width: number;
 		url: string | null;
+		is_watermarked: boolean;
 	};
 	export type SizeVariantsResouce = {
 		original: App.Http.Resources.Models.SizeVariantResource | null;
@@ -718,6 +770,7 @@ declare namespace App.Http.Resources.Rights {
 		can_transfer: boolean;
 		can_access_original: boolean;
 		can_pasword_protect: boolean;
+		can_import_from_server: boolean;
 	};
 	export type GlobalRightsResource = {
 		root_album: App.Http.Resources.Rights.RootAlbumRightsResource;
@@ -730,7 +783,9 @@ declare namespace App.Http.Resources.Rights {
 		is_map_enabled: boolean;
 		is_mod_frame_enabled: boolean;
 		is_mod_flow_enabled: boolean;
+		is_watermarker_enabled: boolean;
 		is_photo_timeline_enabled: boolean;
+		is_mod_renamer_enabled: boolean;
 	};
 	export type PhotoRightsResource = {
 		can_edit: boolean;
@@ -741,6 +796,7 @@ declare namespace App.Http.Resources.Rights {
 		can_edit: boolean;
 		can_upload: boolean;
 		can_see_live_metrics: boolean;
+		can_import_from_server: boolean;
 	};
 	export type SettingsRightsResource = {
 		can_edit: boolean;
@@ -839,5 +895,22 @@ declare namespace App.Http.Resources.Tags {
 	export type TagsResource = {
 		can_edit: boolean;
 		tags: App.Http.Resources.Tags.TagResource[];
+	};
+}
+declare namespace App.Http.Resources.Timeline {
+	export type InitResource = {
+		photo_layout: App.Enum.PhotoLayoutType;
+		is_timeline_page_enabled: boolean;
+		config: App.Http.Resources.GalleryConfigs.RootConfig;
+		rights: App.Http.Resources.Rights.RootAlbumRightsResource;
+	};
+	export type TimelineResource = {
+		photos: App.Http.Resources.Models.PhotoResource[];
+		current_page: number;
+		from: number;
+		last_page: number;
+		per_page: number;
+		to: number;
+		total: number;
 	};
 }

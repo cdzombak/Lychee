@@ -21,6 +21,8 @@
 - Use Typescript in composition API for Vue3. Use PrimeVue for UI components.
 - Do not use await async calls in Vue3, use .then() instead.
 - Do not use const function = () => {}, use function functionName() {} instead.
+- the <template> comes first, then <script lang="ts">, then <style>.
+- axios requests should be in the services/ directory and make use of `${Constants.getApiUrl()}` to specify the base URL.
 
 # Documentation Conventions
 
@@ -32,3 +34,10 @@
 - Tests in the tests/Unit directory should extend from AbstractTestCase.
 - Tests in the tests/Feature_v2 directory should extend from BaseApiWithDataTest.
 - No need to mock the database in tests, we use the in-memory SQLite database instead.
+
+# Working with Money and Currency
+
+When dealing with monetary values in PHP, it's crucial to handle them with precision to avoid rounding errors and inaccuracies. Here are how we handle money and currency in our application:
+we use the `moneyphp/money` library, which provides a robust way to manage monetary values and currencies.
+
+Never use floats or doubles to represent monetary values. Instead, use integers to represent the smallest currency unit (e.g., cents for USD). This means that $10.99 should be stored as 1099 (cents).

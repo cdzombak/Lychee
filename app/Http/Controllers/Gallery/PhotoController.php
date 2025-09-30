@@ -15,8 +15,8 @@ use App\Actions\Photo\Rotate;
 use App\Constants\FileSystem;
 use App\Contracts\Models\AbstractAlbum;
 use App\Enum\FileStatus;
+use App\Enum\SizeVariantType;
 use App\Exceptions\ConfigurationException;
-use App\Factories\AlbumFactory;
 use App\Http\Requests\Photo\CopyPhotosRequest;
 use App\Http\Requests\Photo\DeletePhotosRequest;
 use App\Http\Requests\Photo\EditPhotoRequest;
@@ -27,20 +27,24 @@ use App\Http\Requests\Photo\RotatePhotoRequest;
 use App\Http\Requests\Photo\SetPhotosStarredRequest;
 use App\Http\Requests\Photo\SetPhotosTagsRequest;
 use App\Http\Requests\Photo\UploadPhotoRequest;
+use App\Http\Requests\Photo\WatermarkPhotoRequest;
 use App\Http\Resources\Editable\UploadMetaResource;
 use App\Http\Resources\Models\PhotoResource;
 use App\Image\Files\NativeLocalFile;
 use App\Image\Files\ProcessableJobFile;
 use App\Image\Files\UploadedFile;
+use App\Jobs\ExtractZip;
 use App\Jobs\ProcessImageJob;
+use App\Jobs\WatermarkerJob;
 use App\Models\Configs;
-use App\Models\Photo;
+use App\Models\SizeVariant;
 use App\Models\Tag;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use LycheeVerify\Verify;
 
 /**
  * Controller responsible for fetching Photo Data.
@@ -90,16 +94,20 @@ class PhotoController extends Controller
 		$processable_file->close();
 		// End of work-around
 
-		if (Configs::getValueAsBool('use_job_queues')) {
-			ProcessImageJob::dispatch($processable_file, $album, $file_last_modified_time);
-			$meta->stage = FileStatus::READY;
+		$is_zip = strtolower(pathinfo($meta->file_name, PATHINFO_EXTENSION)) === 'zip';
+		$is_se = resolve(Verify::class)->is_supporter();
+		if ($is_se && Configs::getValueAsBool('extract_zip_on_upload') && $is_zip) {
+			ExtractZip::dispatch($processable_file, $album?->get_id(), $file_last_modified_time);
+			// We return DONE no matter what:
+			// - if we are in sync mode, this will be executed after the job
+			// - if we are in async mode, the job will be executed later, but we need to notify the front-end we are clear.
+			$meta->stage = FileStatus::DONE;
 
 			return $meta;
 		}
 
-		$job = new ProcessImageJob($processable_file, $album, $file_last_modified_time);
-		$job->handle(resolve(AlbumFactory::class));
-		$meta->stage = FileStatus::DONE;
+		ProcessImageJob::dispatch($processable_file, $album, $file_last_modified_time);
+		$meta->stage = config('queue.default') === 'sync' ? FileStatus::DONE : FileStatus::READY;
 
 		return $meta;
 	}
@@ -230,5 +238,34 @@ class PhotoController extends Controller
 			});
 			DB::commit();
 		});
+	}
+
+	/**
+	 * Watermark all SizeVariants of a single photo.
+	 *
+	 * Dispatches a WatermarkerJob for each SizeVariant where short_path_watermarked is not set.
+	 */
+	public function watermark(WatermarkPhotoRequest $request): void
+	{
+		/** @var int $user_id */
+		$user_id = Auth::id();
+
+		// Get all photos from the request and process their size variants
+		// Filter variants that need watermarking and dispatch jobs
+		SizeVariant::query()
+			->whereIn('photo_id', $request->photoIds())
+			->whereNot('type', SizeVariantType::PLACEHOLDER)
+			->get()
+			->filter(fn (SizeVariant $v) => $this->shouldWatermark($v))
+			->each(fn (SizeVariant $v) => WatermarkerJob::dispatch($v, $user_id));
+	}
+
+	private function shouldWatermark(?SizeVariant $size_variant): bool
+	{
+		if ($size_variant->type === SizeVariantType::ORIGINAL && !Configs::getValueAsBool('watermark_original')) {
+			return false;
+		}
+
+		return !$size_variant->is_watermarked;
 	}
 }

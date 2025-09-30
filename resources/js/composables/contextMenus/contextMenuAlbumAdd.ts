@@ -1,3 +1,4 @@
+import { AlbumStore } from "@/stores/AlbumState";
 import { computed, Ref, ref } from "vue";
 
 export type AddMenuItem =
@@ -19,17 +20,10 @@ type Callbacks = {
 	toggleUploadTrack: () => void;
 	deleteTrack: () => void;
 	toggleImportFromDropbox: () => void;
+	toggleImportFromServer: () => void;
 };
 
-export function useContextMenuAlbumAdd(
-	abstractAlbum:
-		| App.Http.Resources.Models.AlbumResource
-		| App.Http.Resources.Models.TagAlbumResource
-		| App.Http.Resources.Models.SmartAlbumResource,
-	config: App.Http.Resources.GalleryConfigs.AlbumConfig,
-	callbacks: Callbacks,
-	dropbox_api_key: Ref<string>,
-) {
+export function useContextMenuAlbumAdd(albumStore: AlbumStore, callbacks: Callbacks, dropbox_api_key: Ref<string>) {
 	const addmenu = ref(); // ! Reference to the context menu
 	const addMenu = computed(function () {
 		const menu: AddMenuItem[] = [
@@ -53,31 +47,36 @@ export function useContextMenuAlbumAdd(
 				if: dropbox_api_key.value !== "disabled",
 			},
 			{
+				label: "gallery.menus.import_server",
+				icon: "pi pi-server",
+				callback: callbacks.toggleImportFromServer,
+				if: albumStore.rights?.can_import_from_server && albumStore.config?.is_model_album,
+			},
+			{
 				is_divider: true,
-				if: config.is_model_album,
+				if: albumStore.config?.is_model_album,
 			},
 			{
 				label: "gallery.menus.new_album",
 				icon: "pi pi-folder",
 				callback: callbacks.toggleCreateAlbum,
-				if: config.is_model_album,
+				if: albumStore.config?.is_model_album,
 			},
 		];
 
-		const album: App.Http.Resources.Models.AlbumResource = abstractAlbum as App.Http.Resources.Models.AlbumResource;
-		if (album.track_url !== null) {
+		if (albumStore.modelAlbum?.track_url !== null && albumStore.modelAlbum?.track_url !== undefined) {
 			menu.push({
 				label: "gallery.menus.delete_track",
 				icon: "pi pi-compass",
 				callback: callbacks.deleteTrack,
-				if: config.is_model_album,
+				if: albumStore.config?.is_model_album,
 			});
 		} else {
 			menu.push({
 				label: "gallery.menus.upload_track",
 				icon: "pi pi-compass",
 				callback: callbacks.toggleUploadTrack,
-				if: config.is_model_album,
+				if: albumStore.config?.is_model_album,
 			});
 		}
 

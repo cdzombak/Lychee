@@ -6,7 +6,7 @@ return [
 	| Settings page
 	|--------------------------------------------------------------------------
 	*/
-	'title' => 'Settings',
+	'title' => 'Nastavení',
 	'small_screen' => 'For better a experience on the Settings page,<br />we recommend you use a larger screen.',
 	'tabs' => [
 		'basic' => 'Basic',
@@ -81,13 +81,11 @@ return [
 		'save' => 'Save',
 		'back_to_settings' => 'Back to grouped settings',
 	],
-
 	'tool_option' => [
 		'disabled' => 'disabled',
 		'enabled' => 'enabled',
 		'discover' => 'discover',
 	],
-
 	'groups' => [
 		'general' => 'General',
 		'system' => 'System',

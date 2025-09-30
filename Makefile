@@ -138,6 +138,12 @@ build:
 test_unit:
 	vendor/bin/phpunit --testsuite Unit --stop-on-failure --stop-on-error --no-coverage --log-junit report_unit.xml
 
+test_webshop:
+	vendor/bin/phpunit --testsuite Webshop --stop-on-failure --stop-on-error --no-coverage --log-junit report_webshop.xml
+
+test_install:
+	vendor/bin/phpunit --testsuite Install --stop-on-failure --stop-on-error --no-coverage --log-junit report_install.xml
+
 test_v2:
 	vendor/bin/phpunit --testsuite Feature_v2 --stop-on-failure --stop-on-error --no-coverage --log-junit report_v2.xml
 

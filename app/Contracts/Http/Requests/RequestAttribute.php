@@ -38,6 +38,7 @@ class RequestAttribute
 	public const HEADER_ID_ATTRIBUTE = 'header_id';
 
 	public const TITLE_ATTRIBUTE = 'title';
+	public const DATE_ATTRIBUTE = 'date';
 	public const UPLOAD_DATE_ATTRIBUTE = 'upload_date';
 	public const TAKEN_DATE_ATTRIBUTE = 'taken_at';
 	public const DESCRIPTION_ATTRIBUTE = 'description';
@@ -77,6 +78,8 @@ class RequestAttribute
 
 	public const IS_AND_ATTRIBUTE = 'is_and';
 
+	public const ALL_ATTRIBUTE = 'all';
+
 	public const FILE_ATTRIBUTE = 'file';
 	public const SHALL_OVERRIDE_ATTRIBUTE = 'shall_override';
 	public const IS_STARRED_ATTRIBUTE = 'is_starred';
@@ -110,4 +113,25 @@ class RequestAttribute
 	public const CONFIGS_ARRAY_VALUE_ATTRIBUTE = 'configs.*.value';
 	public const CONFIGS_KEY_ATTRIBUTE = 'key';
 	public const CONFIGS_VALUE_ATTRIBUTE = 'value';
+
+	public const RENAMER_RULE_ID_ATTRIBUTE = 'rule_id';
+	public const RULE_ATTRIBUTE = 'rule';
+	public const NEEDLE_ATTRIBUTE = 'needle';
+	public const REPLACEMENT_ATTRIBUTE = 'replacement';
+	public const MODE_ATTRIBUTE = 'mode';
+	public const ORDER_ATTRIBUTE = 'order';
+	public const IS_ENABLED_ATTRIBUTE = 'is_enabled';
+
+	/**
+	 * Shop management attributes.
+	 */
+	public const BASKET_ID_ATTRIBUTE = 'basket_id';
+	public const TRANSACTION_ID_ATTRIBUTE = 'transaction_id';
+	public const PRICES_ATTRIBUTE = 'prices';
+	public const SIZE_VARIANT_TYPE_ATTRIBUTE = 'size_variant_type';
+	public const LICENSE_TYPE_ATTRIBUTE = 'license_type';
+	public const IS_ACTIVE_ATTRIBUTE = 'is_active';
+	public const APPLIES_TO_SUBALBUMS_ATTRIBUTE = 'applies_to_subalbums';
+	public const PURCHASABLE_ID_ATTRIBUTE = 'purchasable_id';
+	public const PURCHASABLE_IDS_ATTRIBUTE = 'purchasable_ids';
 }

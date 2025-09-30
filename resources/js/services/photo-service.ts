@@ -57,8 +57,8 @@ const PhotoService = {
 		return axios.post(`${Constants.getApiUrl()}Photo::duplicate`, { album_id: destination_id, photo_ids: photo_ids });
 	},
 
-	rotate(photo_id: string, direction: "1" | "-1"): Promise<AxiosResponse> {
-		return axios.post(`${Constants.getApiUrl()}Photo::rotate`, { photo_id: photo_id, direction: direction });
+	rotate(photo_id: string, direction: "1" | "-1", album_id: string | null): Promise<AxiosResponse> {
+		return axios.post(`${Constants.getApiUrl()}Photo::rotate`, { photo_id: photo_id, direction: direction, from_id: album_id });
 	},
 
 	setAsCover(photo_id: string, album_id: string): Promise<AxiosResponse> {
@@ -71,6 +71,10 @@ const PhotoService = {
 
 	download(photo_ids: string[], from_id: string | undefined, download_type: App.Enum.DownloadVariantType = "ORIGINAL"): void {
 		location.href = `${Constants.getApiUrl()}Zip?photo_ids=${photo_ids.join(",")}&variant=${download_type}&from_id=${from_id ?? null}`;
+	},
+
+	watermark(photo_ids: string[]): Promise<AxiosResponse> {
+		return axios.post(`${Constants.getApiUrl()}Photo::watermark`, { photo_ids: photo_ids });
 	},
 };
 

@@ -22,11 +22,13 @@ class RootAlbumRightsResource extends Data
 	public bool $can_edit;
 	public bool $can_upload;
 	public bool $can_see_live_metrics;
+	public bool $can_import_from_server;
 
 	public function __construct()
 	{
 		$this->can_edit = Gate::check(AlbumPolicy::CAN_EDIT, [AbstractAlbum::class, null]);
 		$this->can_upload = Gate::check(AlbumPolicy::CAN_UPLOAD, [AbstractAlbum::class, null]);
 		$this->can_see_live_metrics = Gate::check(MetricsPolicy::CAN_SEE_LIVE, LiveMetrics::class);
+		$this->can_import_from_server = Gate::check(AlbumPolicy::CAN_IMPORT_FROM_SERVER, [AbstractAlbum::class]);
 	}
 }

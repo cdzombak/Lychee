@@ -22,13 +22,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/LandingPage', LandingPageController::class);
+Route::get('/LandingPage', LandingPageController::class)->middleware(['cache_control']);
 Route::get('/Frame', [Gallery\FrameController::class, 'get']);
 
 Route::get('/Gallery::Init', [Gallery\ConfigController::class, 'getInit']);
 Route::get('/Gallery::Footer', [Gallery\ConfigController::class, 'getFooter'])->middleware(['cache_control']);
 Route::get('/Gallery::getLayout', [Gallery\ConfigController::class, 'getGalleryLayout'])->middleware(['cache_control']);
 Route::get('/Gallery::getUploadLimits', [Gallery\ConfigController::class, 'getUploadCOnfig'])->middleware(['cache_control']);
+
+Route::get('/Timeline', [Gallery\TimelineController::class, '__invoke'])->middleware(['cache_control']);
+Route::get('/Timeline::dates', [Gallery\TimelineController::class, 'dates'])->middleware(['cache_control']);
+Route::get('/Timeline::init', [Gallery\TimelineController::class, 'init'])->middleware(['cache_control']);
 
 /**
  * ALBUMS.
@@ -56,6 +60,7 @@ Route::post('/Album::track', [Gallery\AlbumController::class, 'setTrack'])
 	->withoutMiddleware(['content_type:json'])
 	->middleware(['content_type:multipart']);
 Route::delete('/Album::track', [Gallery\AlbumController::class, 'deleteTrack']);
+Route::post('/Album::watermark', [Gallery\AlbumController::class, 'watermarkAlbumPhotos'])->middleware('support:se');
 
 Route::post('/TagAlbum', [Gallery\AlbumController::class, 'createTagAlbum']);
 Route::patch('/TagAlbum', [Gallery\AlbumController::class, 'updateTagAlbum']);
@@ -90,13 +95,9 @@ Route::get('/Sharing::albums', [Gallery\SharingController::class, 'listAlbums'])
 /**
  * IMPORT.
  */
-// Route::post('/Import::server', [ImportController::class, 'server']);
-// Route::post('/Import::serverCancel', [ImportController::class, 'serverCancel']);
-
-/**
- * LEGACY.
- */
-// Route::post('/Legacy::translateLegacyModelIDs', [LegacyController::class, 'translateLegacyModelIDs']);
+Route::post('/Import', Admin\ImportFromServerController::class);
+Route::get('/Import', [Admin\ImportFromServerController::class, 'options']);
+Route::get('/Import::browse', [Admin\ImportFromServerController::class, 'browse']);
 
 /**
  * PHOTO.
@@ -113,6 +114,7 @@ Route::post('/Photo::move', [Gallery\PhotoController::class, 'move']);
 Route::post('/Photo::copy', [Gallery\PhotoController::class, 'copy']);
 Route::post('/Photo::star', [Gallery\PhotoController::class, 'star']);
 Route::post('/Photo::rotate', [Gallery\PhotoController::class, 'rotate']);
+Route::post('/Photo::watermark', [Gallery\PhotoController::class, 'watermark'])->middleware('support:se');
 Route::delete('/Photo', [Gallery\PhotoController::class, 'delete']);
 
 // Route::get('/Photo::getArchive', [PhotoController::class, 'getArchive'])
@@ -279,3 +281,12 @@ Route::get('/Tag', [TagController::class, 'get'])->middleware(['cache_control'])
 Route::patch('/Tag', [TagController::class, 'edit']);
 Route::put('/Tag', [TagController::class, 'merge']);
 Route::delete('/Tag', [TagController::class, 'delete']);
+
+/**
+ * RENAMER RULES.
+ */
+Route::get('/Renamer', [RenamerController::class, 'index'])->middleware(['support:se']);
+Route::post('/Renamer', [RenamerController::class, 'store'])->middleware(['support:se']);
+Route::put('/Renamer', [RenamerController::class, 'update'])->middleware(['support:se']);
+Route::delete('/Renamer', [RenamerController::class, 'destroy'])->middleware(['support:se']);
+Route::post('/Renamer::test', [RenamerController::class, 'test'])->middleware(['support:se']);

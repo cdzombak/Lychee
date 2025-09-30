@@ -6,22 +6,19 @@ return [
 	| Left Menu
 	|--------------------------------------------------------------------------
 	*/
-	'back_to_gallery' => 'Back to Gallery',
-
-	'login' => 'Login',
-	'frame' => 'Frame',
-	'map' => 'Map',
-	'admin' => 'Admin',
-	'clockwork' => 'Clockwork App',
-	'logs' => 'Show Logs',
-	'jobs' => 'Show Job History',
-	'user' => 'User',
-
-	'sign_out' => 'Sign Out',
-
-	'about' => 'About',
-	'changelog' => 'Changelog',
-	'api' => 'API Documentation',
-	'source_code' => 'Source Code',
-	'support' => 'Support',
+	'back_to_gallery' => 'Tilbake til galleriet',
+	'login' => 'Logg inn',
+	'frame' => 'Ramme',
+	'map' => 'Kart',
+	'admin' => 'Administrator',
+	'clockwork' => 'Clockwork-appen',
+	'logs' => 'Vis logger',
+	'jobs' => 'Vis jobbhistorikk',
+	'user' => 'Bruker',
+	'sign_out' => 'Logg ut',
+	'about' => 'Om',
+	'changelog' => 'Endringslogg',
+	'api' => 'API-dokumentasjon',
+	'source_code' => 'Kildekode',
+	'support' => 'Brukerstøtte',
 ];

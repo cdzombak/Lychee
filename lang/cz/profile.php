@@ -6,8 +6,7 @@ return [
 	| Profile page
 	|--------------------------------------------------------------------------
 	*/
-	'title' => 'Profile',
-
+	'title' => 'Uživatelský profil',
 	'login' => [
 		'header' => 'Profile',
 		'enter_current_password' => 'Enter your current password:',
@@ -20,7 +19,6 @@ return [
 		'email' => 'Email',
 		'change' => 'Change Login',
 		'api_token' => 'API Token ...',
-
 		'missing_fields' => 'Missing fields',
 	],
 	'register' => [
@@ -30,7 +28,6 @@ return [
 		'error' => 'An error occurred while registering your account.',
 		'success' => 'Your account has been successfully created.',
 	],
-
 	'token' => [
 		'unavailable' => 'You have already viewed this token.',
 		'no_data' => 'No token API have been generated.',
@@ -40,7 +37,6 @@ return [
 		'reset' => 'Reset the token',
 		'create' => 'Create a new token',
 	],
-
 	'oauth' => [
 		'header' => 'OAuth',
 		'header_not_available' => 'OAuth is not available',
@@ -50,7 +46,6 @@ return [
 		'reset' => 'reset',
 		'credential_deleted' => 'Credential deleted!',
 	],
-
 	'u2f' => [
 		'header' => 'Passkey/MFA/2FA',
 		'info' => 'This only provides the ability to use WebAuthn to authenticate instead of username & password.',

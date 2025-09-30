@@ -22,8 +22,6 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		is_nsfw_banner_backdrop_blurred: false,
 		nsfw_banner_override: "",
 
-		nsfw_consented: [] as string[],
-
 		// Image overlay settings
 		image_overlay_type: "exif" as App.Enum.ImageOverlayType,
 		can_rotate: false,
@@ -64,6 +62,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		title: "gallery.title",
 		dropbox_api_key: "disabled",
 		default_homepage: "gallery",
+		is_timeline_page_enabled: false,
 
 		// Login options
 		is_basic_auth_enabled: true,
@@ -88,15 +87,12 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		is_swipe_vertically_to_go_back_enabled: true,
 	}),
 	actions: {
-		init(): Promise<void> {
+		load(): Promise<void> {
 			// Check if already initialized
 			if (this.is_init) {
 				return Promise.resolve();
 			}
-			return this.load();
-		},
 
-		load(): Promise<void> {
 			// semaphore to avoid multiple calls
 			if (this.is_loading) {
 				return Promise.resolve();
@@ -167,6 +163,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.is_swipe_vertically_to_go_back_enabled = data.is_swipe_vertically_to_go_back_enabled;
 
 					this.default_homepage = data.default_homepage;
+					this.is_timeline_page_enabled = data.is_timeline_page_enabled;
 				})
 				.catch((error) => {
 					// In this specific case, even though it has been possibly disabled, we really need to see the error.

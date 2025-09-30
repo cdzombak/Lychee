@@ -6,12 +6,10 @@ return [
 	| Statistics page
 	|--------------------------------------------------------------------------
 	*/
-	'title' => 'Statistics',
-
+	'title' => 'Statistiky',
 	'preview_text' => 'This is a preview of the statistics page available in Lychee <span class="text-primary-emphasis font-bold">SE</span>.<br />The data shown here are randomly generated and do not reflect your server.',
 	'no_data' => 'User does not have data on server.',
 	'collapse' => 'Collapse albums sizes',
-
 	'total' => [
 		'total' => 'Total',
 		'albums' => 'Albums',
