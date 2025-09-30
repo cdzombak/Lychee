@@ -156,7 +156,7 @@ export function useLeftMenu(
 						icon: "pi pi-thumbs-up",
 						url: "https://www.dzombak.com/support-me/",
 						access: true,
-					}
+					},
 				],
 			},
 			{
