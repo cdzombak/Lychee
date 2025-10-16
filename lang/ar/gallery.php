@@ -42,6 +42,7 @@ return [
 		'recent' => 'الأحدث',
 		'public' => 'عام',
 		'on_this_day' => 'في هذا اليوم',
+		'untagged' => 'Untagged',
 	],
 	'layout' => [
 		'squares' => 'مصغرات مربعة',
@@ -234,5 +235,6 @@ return [
 		'private' => 'خاص',
 		'public' => 'عام',
 		'inherit_from_parent' => 'وراثة من الوالد',
+		'public_but_hidden' => 'عام لكن مخفي',
 	],
 ];

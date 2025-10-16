@@ -81,13 +81,11 @@ return [
 		'save' => 'Сохранить',
 		'back_to_settings' => 'Назад к сгруппированным настройкам',
 	],
-
 	'tool_option' => [
 		'disabled' => 'отключено',
 		'enabled' => 'включено',
 		'discover' => 'обнаружить',
 	],
-
 	'groups' => [
 		'general' => 'Основные',
 		'system' => 'Система',

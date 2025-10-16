@@ -42,6 +42,7 @@ return [
 		'recent' => 'اخیر',
 		'public' => 'عمومی',
 		'on_this_day' => 'در این روز',
+		'untagged' => 'Untagged',
 	],
 	'layout' => [
 		'squares' => 'تصویر کوچک مربعی',
@@ -234,5 +235,6 @@ return [
 		'private' => 'خصوصی',
 		'public' => 'عمومی',
 		'inherit_from_parent' => 'ارث بری از والد',
+		'public_but_hidden' => 'عمومی اما مخفی',
 	],
 ];

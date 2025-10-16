@@ -42,6 +42,7 @@ return [
 		'recent' => '最近',
 		'public' => '公开',
 		'on_this_day' => '历史上的今天',
+		'untagged' => 'Untagged',
 	],
 	'layout' => [
 		'squares' => '方形缩略图',
@@ -234,5 +235,6 @@ return [
 		'private' => '私密',
 		'public' => '公开',
 		'inherit_from_parent' => '继承自父级',
+		'public_but_hidden' => '公开但隐藏',
 	],
 ];

@@ -42,6 +42,7 @@ return [
 		'recent' => 'Recent',
 		'public' => 'Openbaar',
 		'on_this_day' => 'Op deze dag',
+		'untagged' => 'Untagged',
 	],
 	'layout' => [
 		'squares' => 'Vierkante miniaturen',
@@ -234,5 +235,6 @@ return [
 		'private' => 'Privé',
 		'public' => 'Openbaar',
 		'inherit_from_parent' => 'Overnemen van ouder',
+		'public_but_hidden' => 'openbaar maar verborgen',
 	],
 ];

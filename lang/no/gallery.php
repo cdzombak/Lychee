@@ -42,6 +42,7 @@ return [
 		'recent' => 'Nylig',
 		'public' => 'Offentlig',
 		'on_this_day' => 'På denne dagen',
+		'untagged' => 'Untagged',
 	],
 	'layout' => [
 		'squares' => 'Kvadrat miniatyrbilder',
@@ -234,5 +235,6 @@ return [
 		'private' => 'private',
 		'public' => 'public',
 		'inherit_from_parent' => 'inherit from parent',
+		'public_but_hidden' => 'offentlig men skjult',
 	],
 ];

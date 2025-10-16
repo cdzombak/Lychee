@@ -42,6 +42,7 @@ return [
 		'recent' => 'Recent',
 		'public' => 'Public',
 		'on_this_day' => 'On This Day',
+		'untagged' => 'Untagged',
 	],
 	'layout' => [
 		'squares' => 'Square thumbnails',
@@ -234,5 +235,6 @@ return [
 		'private' => 'private',
 		'public' => 'public',
 		'inherit_from_parent' => 'inherit from parent',
+		'public_but_hidden' => '公開但隱藏',
 	],
 ];

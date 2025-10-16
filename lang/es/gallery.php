@@ -42,6 +42,7 @@ return [
 		'recent' => 'Reciente',
 		'public' => 'Público',
 		'on_this_day' => 'En este día',
+		'untagged' => 'Untagged',
 	],
 	'layout' => [
 		'squares' => 'Miniaturas cuadradas',
@@ -234,5 +235,6 @@ return [
 		'private' => 'privado',
 		'public' => 'público',
 		'inherit_from_parent' => 'Heredar del padre',
+		'public_but_hidden' => 'público pero oculto',
 	],
 ];

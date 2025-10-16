@@ -7,23 +7,20 @@ return [
 	|--------------------------------------------------------------------------
 	*/
 	'title' => 'Profile',
-
 	'login' => [
 		'header' => 'Profile',
 		'enter_current_password' => 'Enter your current password:',
 		'current_password' => 'Current password',
 		'credentials_update' => 'Your credentials will be changed to the following:',
-		'username' => 'Username',
+		'username' => '使用者名稱',
 		'new_password' => 'New password',
 		'confirm_new_password' => 'Confirm new password',
 		'email_instruction' => 'Add your email below to enable receiving email notifications. To stop receiving emails, simply remove your email below.',
 		'email' => 'Email',
 		'change' => 'Change Login',
 		'api_token' => 'API Token ...',
-
 		'missing_fields' => 'Missing fields',
 	],
-
 	'register' => [
 		'username_exists' => 'Username already exists.',
 		'password_mismatch' => 'The passwords do not match.',
@@ -31,7 +28,6 @@ return [
 		'error' => 'An error occurred while registering your account.',
 		'success' => 'Your account has been successfully created.',
 	],
-	
 	'token' => [
 		'unavailable' => 'You have already viewed this token.',
 		'no_data' => 'No token API have been generated.',
@@ -41,7 +37,6 @@ return [
 		'reset' => 'Reset the token',
 		'create' => 'Create a new token',
 	],
-
 	'oauth' => [
 		'header' => 'OAuth',
 		'header_not_available' => 'OAuth is not available',
@@ -51,7 +46,6 @@ return [
 		'reset' => 'reset',
 		'credential_deleted' => 'Credential deleted!',
 	],
-
 	'u2f' => [
 		'header' => 'Passkey/MFA/2FA',
 		'info' => 'This only provides the ability to use WebAuthn to authenticate instead of username & password.',
