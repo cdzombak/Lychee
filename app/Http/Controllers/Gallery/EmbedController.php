@@ -12,6 +12,7 @@ use App\Http\Resources\Embed\EmbedAlbumResource;
 use App\Http\Resources\Models\Utils\AlbumProtectionPolicy;
 use App\Models\Album;
 use App\Models\Extensions\BaseAlbum;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -26,16 +27,31 @@ class EmbedController extends Controller
 	 *
 	 * Only public albums that don't require authentication can be embedded.
 	 *
-	 * @param string $albumId The album ID to embed
+	 * Supports optional pagination via query parameters:
+	 * - limit: Maximum number of photos to return (default: all, max: 100)
+	 * - offset: Number of photos to skip (default: 0)
 	 *
-	 * @return \Illuminate\Http\JsonResponse The album data formatted for embedding
+	 * @param Request $request The HTTP request
+	 * @param string  $albumId The album ID to embed
+	 *
+	 * @return EmbedAlbumResource The album data formatted for embedding
 	 *
 	 * @throws NotFoundHttpException     if album doesn't exist
 	 * @throws AccessDeniedHttpException if album is not publicly accessible
 	 */
-	public function getAlbum(string $albumId): \Illuminate\Http\JsonResponse
+	public function getAlbum(Request $request, string $albumId): EmbedAlbumResource
 	{
-		$album = $this->findAlbum($albumId);
+		// Parse pagination parameters
+		$limit = $request->query('limit', null);
+		$offset = $request->query('offset', 0);
+
+		// Validate and cap limit to 100 max
+		if ($limit !== null) {
+			$limit = max(1, min((int) $limit, 100));
+		}
+		$offset = max(0, (int) $offset);
+
+		$album = $this->findAlbum($albumId, $limit, $offset);
 
 		// Verify album is publicly accessible
 		if (!$this->isPubliclyAccessible($album)) {
@@ -47,28 +63,24 @@ class EmbedController extends Controller
 			throw new AccessDeniedHttpException('Album must be publicly accessible for embedding');
 		}
 
-		$resource = new EmbedAlbumResource($album);
-
-		// Explicitly return JSON response to ensure proper serialization
-		// when bypassing standard API middleware
-		return response()->json($resource->toArray(request()));
+		return EmbedAlbumResource::fromModel($album);
 	}
 
 	/**
 	 * Find album by ID with photos and size variants loaded.
 	 *
-	 * @param string $albumId The album ID
+	 * @param string   $albumId The album ID
+	 * @param int|null $limit   Maximum number of photos to load (null = all)
+	 * @param int      $offset  Number of photos to skip
 	 *
 	 * @return BaseAlbum The album instance
 	 *
 	 * @throws NotFoundHttpException if album doesn't exist
 	 */
-	private function findAlbum(string $albumId): BaseAlbum
+	private function findAlbum(string $albumId, ?int $limit = null, int $offset = 0): BaseAlbum
 	{
 		/** @var Album|null $album */
-		$album = Album::query()
-			->with(['photos', 'photos.size_variants'])
-			->find($albumId);
+		$album = Album::query()->find($albumId);
 
 		if ($album === null) {
 			\Log::info('Embed album not found', [
@@ -77,6 +89,21 @@ class EmbedController extends Controller
 			]);
 			throw new NotFoundHttpException('Album not found');
 		}
+
+		// Build query for photos with size variants
+		$photosQuery = $album->photos()->getQuery();
+
+		// Apply pagination if requested
+		if ($limit !== null) {
+			$photosQuery->skip($offset)->take($limit);
+		}
+
+		// Load photos with size variants
+		$photos = $photosQuery->get();
+		$photos->load('size_variants');
+
+		// Replace the photos relation with the paginated results
+		$album->setRelation('photos', $photos);
 
 		return $album;
 	}

@@ -81,7 +81,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from "vue";
-import type { EmbedConfig, EmbedApiResponse, PositionedPhoto, Photo, SizeVariantData } from "../types";
+import type { EmbedConfig, EmbedApiResponse, PositionedPhoto, SizeVariantData } from "../types";
 import { createApiClient } from "../api";
 import { layoutSquare } from "../layouts/square";
 import { layoutMasonry } from "../layouts/masonry";
@@ -217,7 +217,8 @@ function closeLightbox() {
 onMounted(async () => {
 	try {
 		const apiClient = createApiClient(props.config.apiUrl);
-		albumData.value = await apiClient.fetchAlbum(props.config.albumId);
+		// Use pagination to fetch only the photos we need
+		albumData.value = await apiClient.fetchAlbum(props.config.albumId, props.config.maxPhotos);
 		loading.value = false;
 
 		// Calculate layout after data loads
