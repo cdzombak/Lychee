@@ -74,6 +74,7 @@ return [
 		'tabs' => [
 			'about' => 'Om Album',
 			'share' => 'Del Album',
+			'embed' => 'Embed Album',
 			'move' => 'Flytt Album',
 			'danger' => 'FARESONE',
 		],
@@ -84,6 +85,7 @@ return [
 			'images' => 'Bilder',
 			'download' => 'Last ned Album',
 			'share' => 'Del Album',
+			'embed' => 'Embed Album',
 			'stats_only_se' => 'Statistikk tilgjengelig i Supporter Edition',
 		],
 		'stats' => [
