@@ -93,6 +93,21 @@ Route::get('/Sharing::all', [Gallery\SharingController::class, 'listAll']);
 Route::get('/Sharing::albums', [Gallery\SharingController::class, 'listAlbums']);
 
 /**
+ * Embed.
+ * Public endpoints for embedding albums on external websites.
+ * Note: This route intentionally has minimal middleware to allow cross-origin embedding.
+ */
+Route::match(['GET', 'OPTIONS'], '/Embed/{albumId}', [Gallery\EmbedController::class, 'getAlbum'])
+	->withoutMiddleware('api')
+	->middleware([
+		\Illuminate\Http\Middleware\HandleCors::class,
+		\Illuminate\Routing\Middleware\SubstituteBindings::class,
+		'cache_control',
+		'throttle:60,1', // 60 requests per minute per IP
+	])
+	->name('embed.album');
+
+/**
  * IMPORT.
  */
 Route::post('/Import', Admin\ImportFromServerController::class);

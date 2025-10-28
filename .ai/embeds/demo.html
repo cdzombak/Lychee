@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lychee Embed Widget - Interactive Demo</title>
+    <link rel="stylesheet" href="../../public/embed/lychee-embed.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f5f5f5;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 2rem;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .config-section {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        .widget-container {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+
+        .error {
+            padding: 1rem;
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 4px;
+            color: #c33;
+            margin-top: 1rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🖼️ Lychee Embed Widget - Interactive Demo</h1>
+            <p>Test the embed widget with your own Lychee instance</p>
+        </header>
+
+        <div class="config-section">
+            <h2>Configuration</h2>
+            <form id="configForm" onsubmit="loadWidget(event)">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="apiUrl">Lychee API URL *</label>
+                        <input type="url" id="apiUrl" placeholder="https://your-lychee.com" required value="http://localhost:90">
+                    </div>
+                    <div class="form-group">
+                        <label for="albumId">Album ID *</label>
+                        <input type="text" id="albumId" placeholder="abc123" required>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="layout">Layout</label>
+                        <select id="layout">
+                            <option value="square">Square</option>
+                            <option value="masonry">Masonry</option>
+                            <option value="grid">Grid</option>
+                            <option value="justified" selected>Justified</option>
+                            <option value="filmstrip">Filmstrip</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="theme">Theme</label>
+                        <select id="theme">
+                            <option value="light" selected>Light</option>
+                            <option value="dark">Dark</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="spacing">Spacing (px)</label>
+                        <input type="number" id="spacing" value="8" min="0" max="50">
+                    </div>
+                    <div class="form-group">
+                        <label for="maxPhotos">Max Photos</label>
+                        <input type="number" id="maxPhotos" value="15" min="1" max="100">
+                    </div>
+                </div>
+
+                <button type="submit">Load Widget</button>
+            </form>
+
+            <div id="error" class="error" style="display: none;"></div>
+        </div>
+
+        <div class="widget-container" id="widgetContainer">
+            <p style="text-align: center; padding: 2rem; color: #999;">
+                Configure your Lychee instance above and click "Load Widget" to see the embed in action.
+            </p>
+        </div>
+    </div>
+
+    <script src="../../public/embed/lychee-embed.js"></script>
+    <script>
+        let currentApp = null;
+
+        function loadWidget(event) {
+            event.preventDefault();
+
+            // Hide previous error
+            document.getElementById('error').style.display = 'none';
+
+            // Unmount previous instance
+            if (currentApp) {
+                try {
+                    currentApp.unmount();
+                } catch (e) {
+                    console.error('Error unmounting:', e);
+                }
+            }
+
+            // Clear container
+            const container = document.getElementById('widgetContainer');
+            container.innerHTML = '';
+
+            // Get form values
+            const apiUrl = document.getElementById('apiUrl').value.replace(/\/$/, '');
+            const albumId = document.getElementById('albumId').value;
+            const layout = document.getElementById('layout').value;
+            const theme = document.getElementById('theme').value;
+            const spacing = parseInt(document.getElementById('spacing').value);
+            const maxPhotos = parseInt(document.getElementById('maxPhotos').value);
+
+            // Create embed element
+            const embedDiv = document.createElement('div');
+            embedDiv.setAttribute('data-lychee-embed', '');
+            embedDiv.setAttribute('data-api-url', apiUrl);
+            embedDiv.setAttribute('data-album-id', albumId);
+            embedDiv.setAttribute('data-layout', layout);
+            embedDiv.setAttribute('data-theme', theme);
+            embedDiv.setAttribute('data-spacing', spacing);
+            embedDiv.setAttribute('data-max-photos', maxPhotos);
+            embedDiv.setAttribute('data-target-row-height', '200');
+            embedDiv.setAttribute('data-target-column-width', '200');
+
+            container.appendChild(embedDiv);
+
+            // Initialize widget
+            try {
+                currentApp = window.LycheeEmbed.createLycheeEmbed(embedDiv, {
+                    apiUrl: apiUrl,
+                    albumId: albumId,
+                    layout: layout,
+                    theme: theme,
+                    spacing: spacing,
+                    maxPhotos: maxPhotos,
+                    targetRowHeight: 200,
+                    targetColumnWidth: 200,
+                    showTitle: true,
+                    showDescription: true,
+                    showCaptions: true,
+                    showExif: true,
+                });
+
+                console.log('Widget loaded successfully');
+            } catch (error) {
+                document.getElementById('error').textContent = 'Error loading widget: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+</html>
