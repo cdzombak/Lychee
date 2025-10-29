@@ -10,6 +10,7 @@ return [
 	'login' => 'Войти',
 	'frame' => 'Рамка',
 	'map' => 'Карта',
+	'embed_stream' => 'Встроить Поток Фотографий',
 	'admin' => 'Админ',
 	'clockwork' => 'Приложение Clockwork',
 	'logs' => 'Показать логи',

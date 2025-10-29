@@ -10,6 +10,7 @@ return [
 	'login' => 'Logg inn',
 	'frame' => 'Ramme',
 	'map' => 'Kart',
+	'embed_stream' => 'Bygg Inn Bildestrøm',
 	'admin' => 'Administrator',
 	'clockwork' => 'Clockwork-appen',
 	'logs' => 'Vis logger',
