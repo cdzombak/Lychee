@@ -6,7 +6,6 @@ import { LeftMenuStateStore } from "@/stores/LeftMenuState";
 import { LycheeStateStore } from "@/stores/LycheeState";
 import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { storeToRefs } from "pinia";
-import { hrtime } from "process";
 import { computed, ref } from "vue";
 import { RouteLocationNormalizedLoadedGeneric } from "vue-router";
 
@@ -115,12 +114,6 @@ export function useLeftMenu(
 					togglableStore.embed_code_mode = "stream";
 					togglableStore.is_embed_code_visible = true;
 				},
-			},
-			{
-				label: "gallery.favourites",
-				icon: "pi pi-heart",
-				access: (favourites.photos?.length ?? 0) > 0,
-				route: "/gallery/favourites",
 			},
 			{
 				label: "Shop Photo Prints",
