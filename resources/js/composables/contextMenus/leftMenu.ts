@@ -106,6 +106,12 @@ export function useLeftMenu(
 				route: "/map",
 			},
 			{
+				label: "gallery.favourites",
+				icon: "pi pi-heart",
+				access: (favourites.photos?.length ?? 0) > 0,
+				route: "/gallery/favourites",
+			},
+			{
 				label: "left-menu.embed_stream",
 				icon: "pi pi-code",
 				access: user.value?.id !== null,
@@ -114,54 +120,6 @@ export function useLeftMenu(
 					togglableStore.embed_code_mode = "stream";
 					togglableStore.is_embed_code_visible = true;
 				},
-			},
-			{
-				label: "Shop Photo Prints",
-				icon: "pi pi-shopping-cart",
-				url: "https://photography.dzombak.com",
-				access: true,
-			},
-			{
-				label: "dzombak.com",
-				access: true,
-				items: [
-					{
-						label: "Home",
-						icon: "pi pi-home",
-						url: "https://dzombak.com",
-						access: true,
-					},
-					{
-						label: "Blog",
-						icon: "pi pi-pen-to-square",
-						url: "https://dzombak.com/blog",
-						access: true,
-					},
-					{
-						label: "Contact",
-						icon: "pi pi-at",
-						url: "https://dzombak.com/contact",
-						access: true,
-					},
-					{
-						label: "/etc",
-						icon: "pi pi-folder-open",
-						url: "https://dzombak.com/etc",
-						access: true,
-					},
-					{
-						label: "Feeds",
-						icon: "pi pi-comments",
-						url: "https://www.dzombak.com/feeds/",
-						access: true,
-					},
-					{
-						label: "Support",
-						icon: "pi pi-thumbs-up",
-						url: "https://www.dzombak.com/support-me/",
-						access: true,
-					},
-				],
 			},
 			{
 				label: "left-menu.admin",
