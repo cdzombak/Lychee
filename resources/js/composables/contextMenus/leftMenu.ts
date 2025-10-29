@@ -4,6 +4,7 @@ import { UserStore } from "@/stores/UserState";
 import { FavouriteStore } from "@/stores/FavouriteState";
 import { LeftMenuStateStore } from "@/stores/LeftMenuState";
 import { LycheeStateStore } from "@/stores/LycheeState";
+import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { storeToRefs } from "pinia";
 import { hrtime } from "process";
 import { computed, ref } from "vue";
@@ -110,9 +111,6 @@ export function useLeftMenu(
 				icon: "pi pi-code",
 				access: user.value?.id !== null,
 				command: () => {
-					// Import and use the toggleEmbedCode function with stream mode
-					// We'll need to access the modal store here
-					const { useTogglablesStateStore } = require("@/stores/ModalsState");
 					const togglableStore = useTogglablesStateStore();
 					togglableStore.embed_code_mode = "stream";
 					togglableStore.is_embed_code_visible = true;
