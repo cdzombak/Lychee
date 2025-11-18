@@ -23,23 +23,14 @@ use Spatie\TypeScriptTransformer\Attributes\TypeScript;
 #[TypeScript()]
 class EmbedAlbumResource extends Data
 {
-	/** @var array<string, mixed> */
-	public array $album;
+	public EmbedAlbumInfo $album;
 	/** @var Collection<int, EmbedPhotoResource> */
 	#[LiteralTypeScriptType('App.Http.Resources.Embed.EmbedPhotoResource[]')]
 	public Collection $photos;
 
 	public function __construct(Album $album)
 	{
-		$this->album = [
-			'id' => $album->id,
-			'title' => $album->title,
-			'description' => $album->description,
-			'photo_count' => $album->photos_count ?? $album->photos->count(),
-			'copyright' => $album->copyright,
-			'license' => $album->license?->localization(),
-		];
-
+		$this->album = EmbedAlbumInfo::fromModel($album);
 		$this->photos = $album->photos->map(fn ($photo) => EmbedPhotoResource::fromModel($photo));
 	}
 

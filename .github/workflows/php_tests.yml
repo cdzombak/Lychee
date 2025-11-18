@@ -31,6 +31,7 @@ jobs:
           - Feature_v2
           - Install
           - Webshop
+          - ImageProcessing
         exclude:
         # Some skips to reduce the number of runs
           - php-version: 8.4
@@ -39,6 +40,8 @@ jobs:
             test-suite: Feature_v2
           - php-version: 8.4
             test-suite: Webshop
+          - php-version: 8.4
+            test-suite: ImageProcessing
     # Service containers to run with `container-job`
     services:
       # Label used to access the service container
@@ -67,7 +70,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Set Up Imagick, FFmpeg & Exiftools
         run: |
