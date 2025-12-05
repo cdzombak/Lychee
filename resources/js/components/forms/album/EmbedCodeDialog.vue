@@ -140,9 +140,9 @@ import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { storeToRefs } from "pinia";
 import { useToast } from "primevue/usetoast";
 import { useAlbumStore } from "@/stores/AlbumState";
+import Constants from "@/services/constants";
 import { trans } from "laravel-vue-i18n";
 import { sprintf } from "sprintf-js";
-import Constants from "@/services/constants";
 
 // Type declaration for the embed widget global
 declare global {
