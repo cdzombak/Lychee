@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Models\Extensions;
@@ -14,6 +14,7 @@ use App\Exceptions\Internal\InvalidOrderDirectionException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection as BaseCollection;
 
 /**
  * @template TModelClass of \Illuminate\Database\Eloquent\Model
@@ -66,7 +67,7 @@ class SortingDecorator
 	 * The mixed case with some pre-sorting on the SQL layer and final sorting
 	 * on the software layer is more complicated.
 	 *
-	 * @var array<int,array{column:string,direction:string}>
+	 * @var array<int,array{column:string,direction:string,type:ColumnSortingType,prefix:string}>
 	 */
 	protected array $order_by = [];
 
@@ -99,8 +100,10 @@ class SortingDecorator
 	public function orderBy(ColumnSortingType $column, OrderSortingType $direction): SortingDecorator
 	{
 		$this->order_by[] = [
-			'column' => $column->value,
+			'column' => $column->toColumn(),
 			'direction' => $direction->value,
+			'type' => $column,
+			'prefix' => '',
 		];
 
 		if (in_array($column, self::POSTPONE_COLUMNS, true)) {
@@ -124,8 +127,10 @@ class SortingDecorator
 	public function orderPhotosBy(ColumnSortingType $column, OrderSortingType $direction): SortingDecorator
 	{
 		$this->order_by[] = [
-			'column' => 'photos.' . $column->value,
+			'column' => 'photos.' . $column->toColumn(),
 			'direction' => $direction->value,
+			'type' => $column,
+			'prefix' => 'photos.',
 		];
 
 		if (in_array($column, self::POSTPONE_COLUMNS, true)) {
@@ -133,6 +138,74 @@ class SortingDecorator
 		}
 
 		return $this;
+	}
+
+	/**
+	 * Apply SQL-level sorting for criteria after the pivot index.
+	 *
+	 * @return void
+	 *
+	 * @throws InvalidOrderDirectionException
+	 */
+	private function applySqlSorting(): void
+	{
+		try {
+			for ($i = $this->pivot_idx + 1; $i < count($this->order_by); $i++) {
+				$column = $this->order_by[$i]['column'];
+				$column_sorting_name = str_replace('_strict', '', $column);
+				$column_type = $this->order_by[$i]['type'];
+				$prefix = $this->order_by[$i]['prefix'];
+				$direction = $this->order_by[$i]['direction'];
+
+				// Check if this column requires raw SQL ordering (e.g., COALESCE for rating)
+				if ($column_type->requiresRawOrdering()) {
+					$raw_expression = $column_type->getRawOrderExpression($prefix);
+					$this->base_builder->orderByRaw($raw_expression . ' ' . $direction);
+				} else {
+					$this->base_builder->orderBy($column_sorting_name, $direction);
+				}
+			}
+			// @codeCoverageIgnoreStart
+		} catch (\InvalidArgumentException) {
+			// Sic! In theory, `\InvalidArgumentException` should be thrown
+			// if the *type* of argument differs from the expected type
+			// (e.g. a method gets pass an integer, but requires a string).
+			// If the *value* is invalid, the method should throw a
+			// `\InvalidDomainException`.
+			// But Eloquent throws `\InvalidArgumentException` if the
+			// direction does neither equal "asc" nor "desc".
+			throw new InvalidOrderDirectionException();
+		}
+		// @codeCoverageIgnoreEnd
+	}
+
+	/**
+	 * Apply PHP-level sorting for criteria up to and including the pivot index.
+	 *
+	 * @param BaseCollection<int,TModelClass> $items
+	 *
+	 * @return BaseCollection<int,TModelClass>
+	 */
+	private function applyPhpSorting(BaseCollection $items): BaseCollection
+	{
+		// Sort as much as we can on the SQL layer, i.e. everything with a
+		// lower significance than the least significant criterion which
+		// requires natural sorting.
+		for ($i = $this->pivot_idx; $i >= 0; $i--) {
+			$column = $this->order_by[$i]['column'];
+			$column_sorting_name = str_replace('photos.', '', $column);
+			$column_sorting_name = str_replace('_strict', '', $column_sorting_name);
+			$column_sorting_type = ColumnSortingType::tryFrom($column_sorting_name) ?? ColumnSortingType::CREATED_AT;
+
+			$options = in_array($column_sorting_type, self::POSTPONE_COLUMNS, true) ? SORT_NATURAL | SORT_FLAG_CASE : SORT_REGULAR;
+			$items = $items->sortBy(
+				$column_sorting_name,
+				$options,
+				$this->order_by[$i]['direction'] === OrderSortingType::DESC->value
+			)->values();
+		}
+
+		return $items;
 	}
 
 	/**
@@ -149,43 +222,13 @@ class SortingDecorator
 		// Sort as much as we can on the SQL layer, i.e. everything with a
 		// lower significance than the least significant criterion which
 		// requires natural sorting.
-		try {
-			for ($i = $this->pivot_idx + 1; $i < count($this->order_by); $i++) {
-				$this->base_builder->orderBy($this->order_by[$i]['column'], $this->order_by[$i]['direction']);
-			}
-			// @codeCoverageIgnoreStart
-		} catch (\InvalidArgumentException) {
-			// Sic! In theory, `\InvalidArgumentException` should be thrown
-			// if the *type* of argument differs from the expected type
-			// (e.g. a method gets pass an integer, but requires a string).
-			// If the *value* is invalid, the method should throw a
-			// `\InvalidDomainException`.
-			// But Eloquent throws `\InvalidArgumentException` if the
-			// direction does neither equal "asc" nor "desc".
-			throw new InvalidOrderDirectionException();
-		}
-		// @codeCoverageIgnoreEnd
+		$this->applySqlSorting();
 
 		/** @var Collection<int,TModelClass> $result */
 		$result = $this->base_builder->get($columns);
 
 		// Sort with PHP for the remaining criteria in reverse order.
-		for ($i = $this->pivot_idx; $i >= 0; $i--) {
-			$column = $this->order_by[$i]['column'];
-
-			// This conversion is necessary
-			$column_sorting_name = str_replace('photos.', '', $column);
-			$column_sorting_type = ColumnSortingType::tryFrom($column_sorting_name) ?? ColumnSortingType::CREATED_AT;
-
-			$options = in_array($column_sorting_type, self::POSTPONE_COLUMNS, true) ? SORT_NATURAL | SORT_FLAG_CASE : SORT_REGULAR;
-			$result = $result->sortBy(
-				$column_sorting_name,
-				$options,
-				$this->order_by[$i]['direction'] === OrderSortingType::DESC->value
-			)->values();
-		}
-
-		return $result;
+		return $this->applyPhpSorting($result);
 	}
 
 	/**
@@ -205,43 +248,12 @@ class SortingDecorator
 		// Sort as much as we can on the SQL layer, i.e. everything with a
 		// lower significance than the least significant criterion which
 		// requires natural sorting.
-		try {
-			for ($i = $this->pivot_idx + 1; $i < count($this->order_by); $i++) {
-				$this->base_builder->orderBy($this->order_by[$i]['column'], $this->order_by[$i]['direction']);
-			}
-			// @codeCoverageIgnoreStart
-		} catch (\InvalidArgumentException) {
-			// Sic! In theory, `\InvalidArgumentException` should be thrown
-			// if the *type* of argument differs from the expected type
-			// (e.g. a method gets pass an integer, but requires a string).
-			// If the *value* is invalid, the method should throw a
-			// `\InvalidDomainException`.
-			// But Eloquent throws `\InvalidArgumentException` if the
-			// direction does neither equal "asc" nor "desc".
-			throw new InvalidOrderDirectionException();
-		}
-		// @codeCoverageIgnoreEnd
+		$this->applySqlSorting();
 
 		/** @var \Illuminate\Pagination\LengthAwarePaginator<int,TModelClass> $result */
 		$result = $this->base_builder->paginate($per_page, $columns, $page_name, $page);
 
-		$items = collect($result->items());
-
-		// Sort with PHP for the remaining criteria in reverse order.
-		for ($i = $this->pivot_idx; $i >= 0; $i--) {
-			$column = $this->order_by[$i]['column'];
-
-			// This conversion is necessary
-			$column_sorting_name = str_replace('photos.', '', $column);
-			$column_sorting_type = ColumnSortingType::tryFrom($column_sorting_name) ?? ColumnSortingType::CREATED_AT;
-
-			$options = in_array($column_sorting_type, self::POSTPONE_COLUMNS, true) ? SORT_NATURAL | SORT_FLAG_CASE : SORT_REGULAR;
-			$items = $items->sortBy(
-				$column_sorting_name,
-				$options,
-				$this->order_by[$i]['direction'] === OrderSortingType::DESC->value
-			)->values();
-		}
+		$items = $this->applyPhpSorting(collect($result->items()));
 
 		return new LengthAwarePaginator($items, $result->total(), $result->perPage(), $result->currentPage(), $result->getOptions());
 	}

@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Rules;
@@ -17,8 +17,8 @@ use LycheeVerify\Contract\VerifyInterface;
 final class StringRequireSupportRule implements ValidationRule
 {
 	public function __construct(
-		protected mixed $expected,
-		protected VerifyInterface $verify)
+		private mixed $expected,
+		private VerifyInterface $verify)
 	{
 		$this->verify = $verify;
 		$this->expected = $expected === '' ? null : $expected;

@@ -3,12 +3,13 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Models;
 
 use App\Constants\AccessPermissionConstants as APC;
+use App\Enum\UserSharedAlbumsVisibility;
 use App\Exceptions\ModelDBException;
 use App\Exceptions\UnauthenticatedException;
 use App\Models\Builders\UserBuilder;
@@ -40,7 +41,9 @@ use function Safe\mb_convert_encoding;
  * @property Carbon                                                $created_at
  * @property Carbon                                                $updated_at
  * @property string                                                $username
+ * @property string|null                                           $display_name
  * @property string|null                                           $password
+ * @property bool                                                  $is_ldap
  * @property string|null                                           $email
  * @property bool                                                  $may_administrate
  * @property bool                                                  $may_upload
@@ -50,6 +53,7 @@ use function Safe\mb_convert_encoding;
  * @property string|null                                           $note
  * @property string|null                                           $token
  * @property string|null                                           $remember_token
+ * @property UserSharedAlbumsVisibility                            $shared_albums_visibility
  * @property Collection<int,BaseAlbumImpl>                         $albums
  * @property Collection<int,OauthCredential>                       $oauthCredentials
  * @property DatabaseNotificationCollection|DatabaseNotification[] $notifications
@@ -101,21 +105,24 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
 	 */
 	protected $fillable = [
 		'username',
+		'display_name',
 		'password',
 		'email',
 	];
 
 	/**
-	 * @var array<string, string>
+	 * @var array<string, string|class-string>
 	 */
 	protected $casts = [
 		'id' => 'integer',
 		'created_at' => 'datetime',
 		'updated_at' => 'datetime',
+		'is_ldap' => 'boolean',
 		'may_administrate' => 'boolean',
 		'may_upload' => 'boolean',
 		'may_edit_own_settings' => 'boolean',
 		'quota_kb' => 'integer',
+		'shared_albums_visibility' => UserSharedAlbumsVisibility::class,
 	];
 
 	protected $hidden = [];
@@ -192,7 +199,7 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
 	public function getNameAttribute(): string
 	{
 		// If strings starts by '$2y$', it is very likely that it's a blowfish hash.
-		return substr($this->username, 0, 4) === '$2y$' ? 'Admin' : $this->username;
+		return substr($this->username, 0, 4) === '$2y$' ? 'Admin' : $this->display_name ?? $this->username;
 	}
 
 	/**

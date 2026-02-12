@@ -1,4 +1,5 @@
 <template>
+	<BuyMeDialog />
 	<div class="h-svh overflow-y-hidden flex flex-col">
 		<!-- Trick to avoid the scroll bar to appear on the right when switching to full screen -->
 		<AlbumHeader
@@ -45,42 +46,54 @@
 					:albums="albumsStore.albums"
 					:config="albumPanelConfig"
 					:is-alone="photosStore.photos.length === 0"
-					:idx-shift="0"
 					:selected-albums="selectedAlbumsIds"
 					:is-timeline="albumStore.config.is_album_timeline_enabled"
-					@clicked="albumClick"
-					@contexted="albumMenuOpen"
+					@clicked="albumSelect"
+					@contexted="contextMenuAlbumOpen"
 				/>
-				<div v-if="photosStore.photos.length > 0 && albumStore.hasPagination" class="flex justify-center w-full -mb-[100%]">
-					<Paginator
-						v-model:first="firstValue"
-						:rows="albumStore.per_page"
-						:total-records="albumStore.total"
-						:always-show="false"
-						:pt:pcRowPerPageDropdown:class="'hidden'"
-					/>
-				</div>
+				<!-- Pagination for albums -->
+				<Pagination
+					v-if="albumsStore.albums.length > 0 && albumStore.hasAlbumsPagination"
+					:mode="lycheeStore.albums_pagination_mode"
+					:loading="albumStore.albums_loading"
+					:has-more="albumStore.hasMoreAlbums"
+					:current-page="albumStore.albums_current_page"
+					:last-page="albumStore.albums_last_page"
+					:per-page="albumStore.albums_per_page"
+					:total="albumStore.albums_total"
+					:remaining="albumStore.albumsRemainingCount"
+					resource-type="albums"
+					@load-more="albumStore.loadMoreAlbums()"
+					@go-to-page="goToAlbumsPage"
+				/>
 				<PhotoThumbPanel
 					v-if="layoutStore.config && photosStore.photos.length > 0"
 					header="gallery.album.header_photos"
-					:photos="photosStore.photos"
-					:photos-timeline="photosStore.photosTimeline"
+					:photos="photosStore.filteredPhotos"
+					:photos-timeline="photosStore.filteredPhotosTimeline"
 					:selected-photos="selectedPhotosIds"
 					:is-timeline="albumStore.config.is_photo_timeline_enabled"
 					:with-control="true"
 					@clicked="photoClick"
 					@selected="photoSelect"
-					@contexted="photoMenuOpen"
+					@contexted="contextMenuPhotoOpen"
+					@toggle-buy-me="toggleBuyMe"
 				/>
-				<div v-if="photosStore.photos.length > 0 && albumStore.hasPagination" class="flex justify-center w-full">
-					<Paginator
-						v-model:first="firstValue"
-						:rows="albumStore.per_page"
-						:total-records="albumStore.total"
-						:always-show="false"
-						:pt:pcRowPerPageDropdown:class="'hidden'"
-					/>
-				</div>
+				<!-- Pagination for photos -->
+				<Pagination
+					v-if="photosStore.photos.length > 0 && albumStore.hasPhotosPagination"
+					:mode="lycheeStore.photos_pagination_mode"
+					:loading="albumStore.photos_loading"
+					:has-more="albumStore.hasMorePhotos"
+					:current-page="albumStore.photos_current_page"
+					:last-page="albumStore.photos_last_page"
+					:per-page="albumStore.photos_per_page"
+					:total="albumStore.photos_total"
+					:remaining="albumStore.photosRemainingCount"
+					resource-type="photos"
+					@load-more="albumStore.loadMorePhotos()"
+					@go-to-page="goToPhotosPage"
+				/>
 				<ScrollTop v-if="!props.isPhotoOpen" target="parent" />
 				<GalleryFooter v-once />
 			</div>
@@ -128,27 +141,34 @@ import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { usePhotoRoute } from "@/composables/photo/photoRoute";
 import { useRouter } from "vue-router";
 import SelectDrag from "@/components/forms/album/SelectDrag.vue";
-import Paginator from "primevue/paginator";
+import { useOrderManagementStore } from "@/stores/OrderManagement";
+import { useBuyMeActions } from "@/composables/album/buyMeActions";
 import { useAlbumStore } from "@/stores/AlbumState";
 import { usePhotosStore } from "@/stores/PhotosState";
 import { useAlbumsStore } from "@/stores/AlbumsState";
 import { useUserStore } from "@/stores/UserState";
 import { useLayoutStore } from "@/stores/LayoutState";
+import { useCatalogStore } from "@/stores/CatalogState";
+import BuyMeDialog from "@/components/forms/gallery-dialogs/BuyMeDialog.vue";
+import { useToast } from "primevue/usetoast";
+import Pagination from "@/components/pagination/Pagination.vue";
 
 const router = useRouter();
+const toast = useToast();
 
 const props = defineProps<{
 	isPhotoOpen: boolean;
-	first: number | undefined;
 }>();
 
 const userStore = useUserStore();
 const albumStore = useAlbumStore();
 const photosStore = usePhotosStore();
+const catalogStore = useCatalogStore();
 const albumsStore = useAlbumsStore();
 const layoutStore = useLayoutStore();
 const togglableStore = useTogglablesStateStore();
 const lycheeStore = useLycheeStateStore();
+const orderManagement = useOrderManagementStore();
 
 const emits = defineEmits<{
 	refresh: [];
@@ -157,11 +177,12 @@ const emits = defineEmits<{
 	scrollToTop: [];
 	openSearch: [];
 	goBack: [];
-	"update:first": [value: number];
 }>();
 
 const { is_se_enabled } = storeToRefs(lycheeStore);
-const noData = computed(() => albumsStore.albums.length === 0 && photosStore.photos.length === 0);
+const noData = computed(() => {
+	return albumsStore.albums.length === 0 && photosStore.photos.length === 0;
+});
 
 const {
 	is_share_album_visible,
@@ -176,24 +197,23 @@ const {
 	toggleUpload,
 } = useGalleryModals(togglableStore);
 
-const {
-	selectedPhotosIdx,
-	selectedAlbumsIdx,
-	selectedPhoto,
-	selectedAlbum,
-	selectedPhotos,
-	selectedAlbums,
-	selectedPhotosIds,
-	selectedAlbumsIds,
-	photoSelect,
-	albumClick,
-	unselect,
-} = useSelection(photosStore, albumsStore, togglableStore);
+const { toggleBuyMe } = useBuyMeActions(albumStore, photosStore, orderManagement, catalogStore, toast);
+
+const { selectedPhoto, selectedAlbum, selectedPhotos, selectedAlbums, selectedPhotosIds, selectedAlbumsIds, photoSelect, albumSelect, unselect } =
+	useSelection(photosStore, albumsStore, togglableStore);
 
 const { photoRoute, getParentId } = usePhotoRoute(router);
 
-function photoClick(idx: number, _e: MouseEvent) {
-	router.push(photoRoute(photosStore.photos[idx].id));
+function photoClick(photoId: string, _e: MouseEvent) {
+	router.push(photoRoute(photoId));
+}
+
+function goToPhotosPage(page: number) {
+	albumStore.loadPhotos(page, false);
+}
+
+function goToAlbumsPage(page: number) {
+	albumStore.loadAlbums(page, false);
 }
 
 const areStatisticsOpen = ref(false);
@@ -202,14 +222,6 @@ function toggleStatistics() {
 		areStatisticsOpen.value = !areStatisticsOpen.value;
 	}
 }
-
-const firstValue = computed({
-	get: () => props.first,
-	set: (val: number) => {
-		albumStore.current_page = val;
-		emits("update:first", val);
-	},
-});
 
 const albumPanelConfig = computed<AlbumThumbConfig>(() => ({
 	album_thumb_css_aspect_ratio: albumStore.config?.album_thumb_css_aspect_ratio ?? "aspect-square",
@@ -222,25 +234,54 @@ const albumPanelConfig = computed<AlbumThumbConfig>(() => ({
 const photoCallbacks = {
 	star: () => {
 		PhotoService.star(selectedPhotosIds.value, true);
+		// Update the photos in the store immediately to reflect the change
+		selectedPhotosIds.value.forEach((photoId) => {
+			const photo = photosStore.photos.find((p) => p.id === photoId);
+			if (photo) {
+				photo.is_starred = true;
+			}
+		});
 		AlbumService.clearCache(albumStore.album?.id);
-		emits("refresh");
 	},
 	unstar: () => {
 		PhotoService.star(selectedPhotosIds.value, false);
+		// Update the photos in the store immediately to reflect the change
+		selectedPhotosIds.value.forEach((photoId) => {
+			const photo = photosStore.photos.find((p) => p.id === photoId);
+			if (photo) {
+				photo.is_starred = false;
+			}
+		});
 		AlbumService.clearCache(albumStore.album?.id);
-		emits("refresh");
 	},
 	setAsCover: () => {
 		if (albumStore.album === undefined) return;
 		PhotoService.setAsCover(selectedPhoto.value!.id, albumStore.album.id);
+		// Update the album's cover_id immediately to reflect the change (toggle behavior)
+		if (albumStore.modelAlbum !== undefined) {
+			albumStore.modelAlbum.cover_id = albumStore.modelAlbum.cover_id === selectedPhoto.value!.id ? null : selectedPhoto.value!.id;
+		}
 		AlbumService.clearCache(albumStore.album.id);
-		emits("refresh");
 	},
 	setAsHeader: () => {
 		if (albumStore.album === undefined) return;
 		PhotoService.setAsHeader(selectedPhoto.value!.id, albumStore.album.id, false);
+		// Update the album's header_id immediately to reflect the change (toggle behavior)
+		const isToggleOff = albumStore.modelAlbum?.header_id === selectedPhoto.value!.id;
+		if (albumStore.modelAlbum !== undefined) {
+			albumStore.modelAlbum.header_id = isToggleOff ? null : selectedPhoto.value!.id;
+		}
+		// Update the header image URL in the album's preFormattedData
+		if (albumStore.album.preFormattedData) {
+			if (isToggleOff) {
+				albumStore.album.preFormattedData.url = null;
+			} else {
+				// Use medium or small variant for the header image
+				const headerUrl = selectedPhoto.value!.size_variants.medium?.url ?? selectedPhoto.value!.size_variants.small?.url ?? null;
+				albumStore.album.preFormattedData.url = headerUrl;
+			}
+		}
 		AlbumService.clearCache(albumStore.album.id);
-		emits("refresh");
 	},
 	toggleTag: toggleTag,
 	toggleRename: toggleRename,
@@ -271,6 +312,11 @@ const albumCallbacks = {
 		if (albumStore.album === undefined) return;
 		if (selectedAlbum.value?.thumb?.id === undefined) return;
 		PhotoService.setAsCover(selectedAlbum.value!.thumb?.id, albumStore.album.id);
+		// Update the album's cover_id immediately to reflect the change (toggle behavior)
+		if (albumStore.modelAlbum !== undefined) {
+			albumStore.modelAlbum.cover_id =
+				albumStore.modelAlbum.cover_id === selectedAlbum.value!.thumb?.id ? null : selectedAlbum.value!.thumb?.id;
+		}
 		AlbumService.clearCache(albumStore.album.id);
 		emits("refresh");
 	},
@@ -287,16 +333,21 @@ const albumCallbacks = {
 const computedAlbum = computed(() => albumStore.album);
 const computedConfig = computed(() => albumStore.config);
 
-const { menu, Menu, photoMenuOpen, albumMenuOpen } = useContextMenu(
+const {
+	menu,
+	Menu,
+	photoMenuOpen: contextMenuPhotoOpen,
+	albumMenuOpen: contextMenuAlbumOpen,
+} = useContextMenu(
 	{
 		config: computedConfig,
 		album: computedAlbum,
 		selectedPhoto: selectedPhoto,
 		selectedPhotos: selectedPhotos,
-		selectedPhotosIdx: selectedPhotosIdx,
+		selectedPhotosIds: selectedPhotosIds,
 		selectedAlbum: selectedAlbum,
 		selectedAlbums: selectedAlbums,
-		selectedAlbumIdx: selectedAlbumsIdx,
+		selectedAlbumsIds: selectedAlbumsIds,
 	},
 	photoCallbacks,
 	albumCallbacks,

@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Controllers\Gallery;
@@ -13,10 +13,13 @@ use App\Exceptions\PhotoCollectionEmptyException;
 use App\Http\Requests\Frame\FrameRequest;
 use App\Http\Resources\Frame\FrameData;
 use App\Http\Resources\Models\PhotoResource;
-use App\Models\Configs;
 use App\Models\Photo;
+use App\Policies\AlbumPolicy;
+use App\Policies\PhotoPolicy;
 use App\Policies\PhotoQueryPolicy;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class FrameController extends Controller
 {
@@ -33,7 +36,7 @@ class FrameController extends Controller
 	 */
 	public function get(FrameRequest $request): FrameData
 	{
-		$timeout = Configs::getValueAsInt('mod_frame_refresh');
+		$timeout = $request->configs()->getValueAsInt('mod_frame_refresh');
 		$photo = $this->loadPhoto($request->album(), 5);
 
 		if ($photo === null) {
@@ -63,7 +66,11 @@ class FrameController extends Controller
 	{
 		$photo = $this->loadPhoto($request->album(), 5);
 
-		return new PhotoResource($photo, $request->album());
+		return new PhotoResource(
+			photo: $photo,
+			album_id: $request->album()?->get_id(),
+			should_downgrade_size_variants: !Gate::check(PhotoPolicy::CAN_ACCESS_FULL_PHOTO, [Photo::class, $photo]),
+		);
 	}
 
 	/**
@@ -85,13 +92,18 @@ class FrameController extends Controller
 
 		// default query
 		if ($album === null) {
+			$user = Auth::user();
+			$unlocked_album_ids = AlbumPolicy::getUnlockedAlbumIDs();
+
 			$query = $this->photo_query_policy->applySearchabilityFilter(
-				query: Photo::query()->with(['albums', 'size_variants', 'palette', 'tags']),
+				query: Photo::query()->with(['albums', 'size_variants', 'palette', 'tags', 'rating']),
+				user: $user,
+				unlocked_album_ids: $unlocked_album_ids,
 				origin: null,
-				include_nsfw: !Configs::getValueAsBool('hide_nsfw_in_frame')
+				include_nsfw: !request()->configs()->getValueAsBool('hide_nsfw_in_frame')
 			);
 		} else {
-			$query = $album->photos()->with(['albums', 'size_variants', 'palette', 'tags']);
+			$query = $album->photos()->with(['albums', 'size_variants', 'palette', 'tags', 'rating']);
 		}
 
 		/** @var ?Photo $photo */

@@ -3,12 +3,13 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace Database\Factories;
 
 use App\Enum\UserGroupRole;
+use App\Enum\UserSharedAlbumsVisibility;
 use App\Models\User;
 use App\Models\UserGroup;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -24,7 +25,7 @@ class UserFactory extends Factory
 	/**
 	 * The name of the factory's corresponding model.
 	 *
-	 * @var string
+	 * @var class-string<User>
 	 */
 	protected $model = User::class;
 
@@ -42,8 +43,10 @@ class UserFactory extends Factory
 			'may_upload' => false,
 			'email' => $this->faker->unique()->email(),
 			'token' => null,
+			'is_ldap' => false,
 			'remember_token' => null,
 			'may_edit_own_settings' => true,
+			'shared_albums_visibility' => UserSharedAlbumsVisibility::DEFAULT->value,
 		];
 	}
 

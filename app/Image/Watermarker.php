@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Image;
@@ -15,58 +15,99 @@ use App\Enum\SizeVariantType;
 use App\Exceptions\Internal\LycheeLogicException;
 use App\Exceptions\MediaFileOperationException;
 use App\Image\Handlers\ImagickHandler;
-use App\Models\Configs;
 use App\Models\SizeVariant;
+use App\Repositories\ConfigManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
 class Watermarker
 {
-	private SizeVariant $size_variant_watermark;
+	private string $watermark_photo_id = '';
+	private ?SizeVariant $size_variant_watermark = null;
 	private WatermarkGroupedWithRandomSuffixNamingStrategy $naming_strategy;
-	public bool $can_watermark = false;
-
-	private CoordinateCalculator $calculator;
 
 	/**
 	 * Create a watermarker.
 	 */
 	public function __construct()
 	{
-		$this->calculator = new CoordinateCalculator();
+		$this->naming_strategy = new WatermarkGroupedWithRandomSuffixNamingStrategy();
 
-		$is_enabled = Configs::getValueAsBool('watermark_enabled');
-		$is_imagick_enabled = Configs::getValueAsBool('imagick');
+		if (!$this->is_watermark_enabled()) {
+			return;
+		}
+
+		if (!$this->check_watermark_image()) {
+			return;
+		}
+	}
+
+	/**
+	 * Check if configuration is set to allow watermark.
+	 *
+	 * @return bool
+	 */
+	private function is_watermark_enabled(): bool
+	{
+		$config_manager = resolve(ConfigManager::class);
+		$is_enabled = $config_manager->getValueAsBool('watermark_enabled');
+		$is_imagick_enabled = $config_manager->getValueAsBool('imagick');
 		$is_imagick_loaded = extension_loaded('imagick');
 
 		if (!$is_enabled || !$is_imagick_enabled || !$is_imagick_loaded) {
 			// If watermarking is not enabled or Imagick is not available, we cannot watermark
 			// Exit now.
-			return;
+			return false;
 		}
 
-		$watermark_photo_id = Configs::getValueAsString('watermark_photo_id');
-		if ($watermark_photo_id === '') {
+		$this->watermark_photo_id = $config_manager->getValueAsString('watermark_photo_id');
+		if ($this->watermark_photo_id === '') {
 			// Watermark photo ID is not set, we cannot watermark
 			Log::error('Watermark is enabled but photo id is not set.');
 
-			return;
+			return false;
 		}
 
+		return true;
+	}
+
+	/**
+	 * Check and load the watermark image.
+	 *
+	 * @return bool true if watermark image is loaded, false if it is not usable
+	 */
+	private function check_watermark_image(): bool
+	{
+		if ($this->size_variant_watermark !== null && $this->size_variant_watermark->photo_id === $this->watermark_photo_id) {
+			return true;
+		}
+
+		// If the id is different or the image is null, we fetch the image.
 		$watermark = SizeVariant::query()
-			->where('photo_id', '=', $watermark_photo_id)
+			->where('photo_id', '=', $this->watermark_photo_id)
 			->where('type', '=', SizeVariantType::ORIGINAL->value)
 			->first();
+
 		if ($watermark === null) {
 			// If no watermark is found, we cannot watermark
-			Log::error('Watermark original size_variant not found for id:' . $watermark_photo_id);
+			Log::error('Watermark original size_variant not found for id:' . $this->watermark_photo_id);
 
-			return;
+			return false;
 		}
 
-		$this->can_watermark = true;
 		$this->size_variant_watermark = $watermark;
-		$this->naming_strategy = new WatermarkGroupedWithRandomSuffixNamingStrategy();
+
+		return true;
+	}
+
+	/**
+	 * Check if we can watermark images.
+	 *
+	 * @return bool true if watermarking is possible
+	 */
+	public function can_watermark(): bool
+	{
+		return $this->is_watermark_enabled() && $this->check_watermark_image();
 	}
 
 	/**
@@ -80,7 +121,7 @@ class Watermarker
 	 *
 	 * @throws LycheeLogicException If trying to get a watermark path for a placeholder
 	 */
-	public static function get_path(SizeVariant $size_variant): string
+	public function get_path(SizeVariant $size_variant): string
 	{
 		// Guard against placeholders which cannot be watermarked
 		if ($size_variant->type === SizeVariantType::PLACEHOLDER) {
@@ -92,13 +133,15 @@ class Watermarker
 			return $size_variant->short_path;
 		}
 
+		$config_manager = resolve(ConfigManager::class);
+
 		// Apply watermark for public users if enabled
-		if (Configs::getValueAsBool('watermark_public') && Auth::guest()) {
+		if ($config_manager->getValueAsBool('watermark_public') && Auth::guest()) {
 			return $size_variant->short_path_watermarked;
 		}
 
 		// Apply watermark for authenticated users if enabled
-		if (Configs::getValueAsBool('watermark_logged_in_users_enabled') && Auth::check()) {
+		if ($config_manager->getValueAsBool('watermark_logged_in_users_enabled') && Auth::check()) {
 			return $size_variant->short_path_watermarked;
 		}
 
@@ -114,10 +157,11 @@ class Watermarker
 	 *
 	 * @return bool True if watermarked path could be used, false otherwise
 	 */
-	private static function should_use_watermarked_path(SizeVariant $size_variant): bool
+	private function should_use_watermarked_path(SizeVariant $size_variant): bool
 	{
+		$config_manager = resolve(ConfigManager::class);
 		// Watermarking must be enabled globally
-		if (!Configs::getValueAsBool('watermark_enabled')) {
+		if (!$config_manager->getValueAsBool('watermark_enabled')) {
 			return false;
 		}
 
@@ -127,7 +171,7 @@ class Watermarker
 		}
 
 		// Special case for original size variants
-		if ($size_variant->type === SizeVariantType::ORIGINAL && !Configs::getValueAsBool('watermark_original')) {
+		if ($size_variant->type === SizeVariantType::ORIGINAL && !$config_manager->getValueAsBool('watermark_original')) {
 			return false;
 		}
 
@@ -139,37 +183,43 @@ class Watermarker
 	 */
 	public function do(SizeVariant $size_variant): void
 	{
-		if (!$this->can_watermark) {
+		if (!$this->is_watermark_enabled()) {
 			return;
 		}
 
+		if (!$this->check_watermark_image()) {
+			return;
+		}
+
+		$config_manager = resolve(ConfigManager::class);
 		if ($size_variant->type === SizeVariantType::PLACEHOLDER ||
-			($size_variant->type === SizeVariantType::ORIGINAL && !Configs::getValueAsBool('watermark_original'))) {
+			($size_variant->type === SizeVariantType::ORIGINAL && !$config_manager->getValueAsBool('watermark_original'))) {
 			return;
 		}
 
 		try {
-			$size_variant_handler = new ImagickHandler();
+			$size_variant_handler = app(ImagickHandler::class);
 			$size_variant_handler->load($size_variant->getFile());
 
-			$watermark_handler = new ImagickHandler();
+			$watermark_handler = app(ImagickHandler::class);
 			$watermark_handler->load($this->size_variant_watermark->getFile());
 
 			/** @var ImageDimension $sv_dimentions */
 			$sv_dimentions = $size_variant_handler->getDimensions();
 
+			$calculator = new CoordinateCalculator();
 			// resize the watermark
-			$scaled_dimentions = $this->calculator->apply_scaling($sv_dimentions);
+			$scaled_dimentions = $calculator->apply_scaling($sv_dimentions);
 			$watermark_handler = $watermark_handler->cloneAndScale($scaled_dimentions);
 			$watermark_dimentions = $watermark_handler->getDimensions();
 
-			$watermark_handler = $watermark_handler->cloneAndChangeOpacity($this->calculator->get_opacity());
+			$watermark_handler = $watermark_handler->cloneAndChangeOpacity($calculator->get_opacity());
 
 			// calculate the position
-			$position = $this->calculator->get_coordinates($sv_dimentions, $watermark_dimentions);
+			$position = $calculator->get_coordinates($sv_dimentions, $watermark_dimentions);
 
 			// apply shift
-			$position = $this->calculator->apply_shift($sv_dimentions, $position);
+			$position = $calculator->apply_shift($sv_dimentions, $position);
 
 			$size_variant_handler = $size_variant_handler->cloneAndCompose($watermark_handler, $position->width, $position->height);
 			$this->naming_strategy->setFromSizeVariant($size_variant);

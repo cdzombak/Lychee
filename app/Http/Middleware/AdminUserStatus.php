@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Middleware;
@@ -53,15 +53,14 @@ class AdminUserStatus
 		if ($required_status === self::SET) {
 			if ($this->has_admin_user->assert()) {
 				return $next($request);
-			} else {
-				throw new AdminUserRequiredException();
 			}
+			throw new AdminUserRequiredException();
 		} elseif ($required_status === self::UNSET) {
 			if ($this->has_admin_user->assert()) {
 				throw new AdminUserAlreadySetException();
-			} else {
-				return $next($request);
 			}
+
+			return $next($request);
 		} else {
 			throw new LycheeInvalidArgumentException('$requiredStatus must either be "' . self::SET . '" or "' . self::UNSET . '"');
 		}

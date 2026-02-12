@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Relations;
@@ -16,10 +16,12 @@ use App\Exceptions\Internal\InvalidOrderDirectionException;
 use App\Models\Album;
 use App\Models\Extensions\SortingDecorator;
 use App\Models\Photo;
+use App\Policies\AlbumPolicy;
 use App\Policies\PhotoQueryPolicy;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\InvalidCastException;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @extends BelongsToMany<Photo,Album>
@@ -81,7 +83,9 @@ class HasManyChildPhotos extends BelongsToMany
 
 		if (static::$constraints) {
 			$this->addWhereConstraints();
-			$this->photo_query_policy->applyVisibilityFilter($this->getRelationQuery());
+			$user = Auth::user();
+			$unlocked_album_ids = AlbumPolicy::getUnlockedAlbumIDs();
+			$this->photo_query_policy->applyVisibilityFilter($this->getRelationQuery(), $user, $unlocked_album_ids);
 		}
 	}
 
@@ -93,7 +97,9 @@ class HasManyChildPhotos extends BelongsToMany
 	public function addEagerConstraints(array $models)
 	{
 		parent::addEagerConstraints($models);
-		$this->photo_query_policy->applyVisibilityFilter($this->getRelationQuery());
+		$user = Auth::user();
+		$unlocked_album_ids = AlbumPolicy::getUnlockedAlbumIDs();
+		$this->photo_query_policy->applyVisibilityFilter($this->getRelationQuery(), $user, $unlocked_album_ids);
 	}
 
 	/**
@@ -150,7 +156,7 @@ class HasManyChildPhotos extends BelongsToMany
 				$sorting = $model->getEffectivePhotoSorting();
 				$children_of_model = $children_of_model
 					->sortBy(
-						$sorting->column->value,
+						$sorting->column->toColumn(),
 						in_array($sorting->column, SortingDecorator::POSTPONE_COLUMNS, true) ? SORT_NATURAL | SORT_FLAG_CASE : SORT_REGULAR,
 						$sorting->order === OrderSortingType::DESC
 					)
@@ -160,29 +166,6 @@ class HasManyChildPhotos extends BelongsToMany
 					$relation, $children_of_model
 				);
 			}
-
-			// if (isset($dictionary[$key])) {
-
-			// // if (isset($dictionary[$key = $this->getDictionaryKey($model->getAttribute($this->localKey))])) {
-			// 	/** @var Collection<int,Photo> $children_of_model */
-			// 	$children_of_model = $this->getRelationValue($dictionary, $key, 'many');
-			// 	$sorting = $model->getEffectivePhotoSorting();
-			// 	$children_of_model = $children_of_model
-			// 		->sortBy(
-			// 			$sorting->column->value,
-			// 			in_array($sorting->column, SortingDecorator::POSTPONE_COLUMNS, true) ? SORT_NATURAL | SORT_FLAG_CASE : SORT_REGULAR,
-			// 			$sorting->order === OrderSortingType::DESC
-			// 		)
-			// 		->values();
-			// 	$model->setRelation($relation, $children_of_model);
-			// 	// This is the newly added code which sets this method apart
-			// 	// from the original method and additionally sets the
-			// 	// reverse link
-
-			// 	// foreach ($children_of_model as $child_model) {
-			// 	// 	$child_model->setRelation($this->foreign_method_name, $model);
-			// 	// }
-			// }
 		}
 
 		return $models;

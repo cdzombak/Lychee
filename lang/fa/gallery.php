@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'آلبوم‌های سنجاق‌شده',
     'albums' => 'آلبوم‌ها',
     'root' => 'آلبوم‌ها',
+    'tabs' => [
+        'my_albums' => 'My Albums',
+        'shared_with_me' => 'Shared with Me',
+    ],
     'favourites' => 'علاقه‌مندی‌ها',
     'original' => 'اصلی',
     'medium' => 'متوسط',
@@ -43,6 +46,15 @@ return [
         'public' => 'عمومی',
         'on_this_day' => 'در این روز',
         'untagged' => 'Untagged',
+        'unrated' => 'Unrated',
+        'one_star' => '1 Star',
+        'two_stars' => '2 Stars',
+        'three_stars' => '3+ Stars',
+        'four_stars' => '4+ Stars',
+        'five_stars' => '5 Stars',
+        'best_pictures' => 'Best Pictures',
+        'my_rated_pictures' => 'My Rated Pictures',
+        'my_best_pictures' => 'My Best Pictures',
     ],
     'layout' => [
         'squares' => 'تصویر کوچک مربعی',
@@ -50,6 +62,10 @@ return [
         'masonry' => 'با نسبت، آجری',
         'grid' => 'با نسبت، شبکه‌ای',
         'filmstrip' => 'نوار فیلم',
+    ],
+    'filter' => [
+        'by_rating' => 'Filter by star rating',
+        'n_stars_or_higher' => 'Filter by :n stars or higher',
     ],
     'overlay' => [
         'none' => 'هیچ‌کدام',
@@ -67,6 +83,15 @@ return [
         'day' => 'روز',
         'hour' => 'ساعت',
     ],
+    'pagination' => [
+        'infinite_scroll' => 'Infinite scroll',
+        'load_more_button' => 'Load more button',
+        'page_navigation' => 'Page navigation',
+        'loading' => 'Loading...',
+        'load_more' => 'Load More',
+        'load_more_photos' => 'Load More (%s photos remaining)',
+        'load_more_albums' => 'Load More (%s albums remaining)',
+    ],
     'album' => [
         'header_albums' => 'آلبوم‌ها',
         'header_photos' => 'عکس‌ها',
@@ -77,6 +102,7 @@ return [
             'share' => 'اشتراک‌گذاری آلبوم',
             'embed' => 'Embed Album',
             'move' => 'انتقال آلبوم',
+            'shop' => 'Shop Management',
             'danger' => 'منطقه خطر',
         ],
         'hero' => [
@@ -181,6 +207,19 @@ return [
             'set_taken_at' => 'تنظیم تاریخ ثبت',
             'set_taken_at_info' => 'در صورت تنظیم، یک ستاره %s نمایش داده می‌شود تا نشان دهد این تاریخ، تاریخ اصلی EXIF نیست.<br>برای بازنشانی به تاریخ اصلی، تیک را بردارید و ذخیره کنید.',
         ],
+        'rating' => [
+            'header' => 'Rating',
+            'rating' => 'rating',
+            'ratings' => 'ratings',
+            'your_rating' => 'Your rating',
+            'saving' => 'Saving rating...',
+            'removed' => 'Rating removed',
+            'saved' => 'Rating saved',
+            'error' => 'Failed to save rating',
+            'error_unauthorized' => 'You must be logged in to rate photos',
+            'error_forbidden' => 'You do not have permission to rate this photo',
+            'error_not_found' => 'Photo not found',
+        ],
     ],
     'nsfw' => [
         'header' => 'محتوای حساس',
@@ -224,6 +263,8 @@ return [
         'photo_select_2' => 'تاریخ ثبت',
         'photo_select_3' => 'عنوان',
         'photo_select_4' => 'توضیحات',
+        'photo_select_3_strict' => 'Title (Lexico)',
+        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'ستاره',
         'photo_select_7' => 'فرمت عکس',
         'ascending' => 'صعودی',
@@ -231,6 +272,8 @@ return [
         'album_select_1' => 'زمان ایجاد',
         'album_select_2' => 'عنوان',
         'album_select_3' => 'توضیحات',
+        'album_select_2_strict' => 'Title (Lexico)',
+        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'جدیدترین تاریخ ثبت',
         'album_select_6' => 'قدیمی‌ ترین تاریخ ثبت',
     ],

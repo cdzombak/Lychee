@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Enum;
@@ -24,9 +24,14 @@ enum ColumnSortingPhotoType: string
 	case TITLE = 'title';
 	case DESCRIPTION = 'description';
 
+	// We sort those at the database level.
+	case TITLE_STRICT = 'title_strict';
+	case DESCRIPTION_STRICT = 'description_strict';
+
 	case TAKEN_AT = 'taken_at';
 	case IS_STARRED = 'is_starred';
 	case TYPE = 'type';
+	case RATING_AVG = 'rating_avg';
 
 	/**
 	 * Convert into Column Sorting type.
@@ -36,5 +41,17 @@ enum ColumnSortingPhotoType: string
 	public function toColumnSortingType(): ColumnSortingType
 	{
 		return ColumnSortingType::from($this->value);
+	}
+
+	/**
+	 * Convert into actual column name.
+	 */
+	public function toColumn(): string
+	{
+		return match ($this) {
+			self::TITLE_STRICT => 'title',
+			self::DESCRIPTION_STRICT => 'description',
+			default => $this->value,
+		};
 	}
 }

@@ -71,6 +71,7 @@ return [
         'enter_license' => 'کلید لایسنس خود را در زیر وارد کنید:',
         'license_key' => 'کلید لایسنس',
         'invalid_license' => 'کلید لایسنس نامعتبر.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'ثبت‌نام',
     ],
     'share_album' => [
@@ -156,6 +157,11 @@ return [
         'info' => 'عنوانی برای آلبوم جدید وارد کنید:',
         'title' => 'عنوان',
         'create' => 'ایجاد آلبوم',
+        'visibility_private' => 'This album will be private (visible only to you)',
+        'visibility_public' => 'This album will be public (visible to everyone)',
+        'visibility_public_hidden' => 'This album will be public but hidden from listings',
+        'visibility_inherit' => 'This album will inherit visibility from its parent',
+        'visibility_inherit_no_parent' => 'This album will be private (no parent to inherit from)',
     ],
     'new_tag_album' => [
         'menu' => 'ایجاد آلبوم برچسب',
@@ -165,8 +171,7 @@ return [
         'create' => 'ایجاد آلبوم برچسب',
     ],
     'delete_album' => [
-        'confirmation' => 'آیا مطمئن هستید که می‌خواهید آلبوم “%s” و تمام تصاویر موجود در آن را حذف کنید؟',
-        'confirmation_multiple' => 'آیا مطمئن هستید که می‌خواهید همه %d آلبوم انتخاب شده و تمام تصاویر موجود در آنها را حذف کنید؟',
+        'confirmation' => 'آیا مطمئن هستید که می‌خواهید آلبوم “%s” و تمام تصاویر موجود در آن را حذف کنید؟',        'confirmation_tag' => 'آیا مطمئن هستید که می‌خواهید آلبوم "%s" را حذف کنید؟',        'confirmation_multiple' => 'آیا مطمئن هستید که می‌خواهید همه %d آلبوم انتخاب شده و تمام تصاویر موجود در آنها را حذف کنید؟',
         'warning' => 'این عمل قابل بازگشت نیست!',
         'delete' => 'حذف آلبوم و عکس‌ها',
     ],

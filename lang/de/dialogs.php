@@ -30,7 +30,7 @@ return [
     'keybindings' => [
         'header' => 'Tastaturkürzel',
         'don_t_show_again' => 'Diesen Dialog nicht nochmal anzeigen',
-        'hide_header_button' => 'Hilfe nicht im Header anzeigen',
+        'hide_header_button' => 'Hilfe in der Kopfzeile nicht anzeigen',
         'side_wide' => 'Website übergreifende Tastaturkürzel',
         'back_cancel' => 'Zurück/Abbrechen',
         'confirm' => 'Bestätigen',
@@ -71,6 +71,7 @@ return [
         'enter_license' => 'Den Lizenzschlüssel eingeben:',
         'license_key' => 'Lizenzschlüssel',
         'invalid_license' => 'Ungültiger Lizenzschlüssel.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'Registrieren',
     ],
     'share_album' => [
@@ -156,6 +157,11 @@ return [
         'info' => 'Einen Titel für das neue Album angeben:',
         'title' => 'Titel',
         'create' => 'Album erstellen',
+        'visibility_private' => 'Dieses Album wird privat sein (nur für Sie sichtbar)',
+        'visibility_public' => 'Dieses Album wird öffentlich sein (für alle sichtbar)',
+        'visibility_public_hidden' => 'Dieses Album wird öffentlich, aber verborgen sein',
+        'visibility_inherit' => 'Dieses Album erbt die Sichtbarkeit vom übergeordneten Album',
+        'visibility_inherit_no_parent' => 'Dieses Album wird privat sein (kein übergeordnetes Album vorhanden)',
     ],
     'new_tag_album' => [
         'menu' => 'Tag Album erstellen',
@@ -166,6 +172,7 @@ return [
     ],
     'delete_album' => [
         'confirmation' => 'Sicher, dass das Album "%s" und alle darin enthaltenen Fotos gelöscht werden soll?',
+        'confirmation_tag' => 'Sicher, dass das Album "%s" gelöscht werden soll?',
         'confirmation_multiple' => 'Sicher, dass alle %d ausgewählten Alben und alle darin enthaltenen Fotos gelöscht werden sollen?',
         'warning' => 'Diese Aktion kann nicht rückgängig gemacht werden!',
         'delete' => 'Album und Fotos löschen',

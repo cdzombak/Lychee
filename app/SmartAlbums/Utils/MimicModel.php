@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\SmartAlbums\Utils;
@@ -49,9 +49,8 @@ trait MimicModel
 		} elseif (property_exists($this, $studly_key)) {
 			/** @phpstan-ignore-next-line PhpStan does not like variadic calls */
 			return $this->{$studly_key};
-		} else {
-			throw new LycheeInvalidArgumentException('neither property nor getter method exist for [' . $getter . '/' . $key . '/' . $studly_key . ']');
 		}
+		throw new LycheeInvalidArgumentException('neither property nor getter method exist for [' . $getter . '/' . $key . '/' . $studly_key . ']');
 	}
 
 	/**

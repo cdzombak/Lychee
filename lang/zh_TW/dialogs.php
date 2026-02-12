@@ -71,6 +71,7 @@ return [
         'enter_license' => '在下方輸入您的授權鑰匙：',
         'license_key' => '授權鑰匙',
         'invalid_license' => '無效的授權鑰匙。',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => '註冊',
     ],
     'share_album' => [
@@ -156,7 +157,11 @@ return [
         'info' => '輸入新的相簿標題：',
         'title' => '標題',
         'create' => '建立相簿',
-    ],
+        'visibility_private' => '此相簿將被設為私密（只有你可見）',
+        'visibility_public' => '此相簿將被設為公開（所有人可見）',
+        'visibility_public_hidden' => '此相簿將被設為公開但隱藏於列表中',
+        'visibility_inherit' => '此相簿將繼承父相簿的可見性',
+        'visibility_inherit_no_parent' => '此相簿將被設為私密（沒有父相簿）',    ],
     'new_tag_album' => [
         'menu' => '建立相簿標籤',
         'info' => '輸入新的相簿標籤名稱：',
@@ -166,6 +171,7 @@ return [
     ],
     'delete_album' => [
         'confirmation' => '您確定要刪除相簿%s及其中所包含的相片嗎？',
+        'confirmation_tag' => '您確定要刪除相簿%s嗎？',
         'confirmation_multiple' => '您確定要刪除所有 %d 已選相簿及其中所包含的照片嗎？',
         'warning' => '此操作無法復原！',
         'delete' => '刪除相簿及相片',

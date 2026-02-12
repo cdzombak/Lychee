@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -29,20 +29,19 @@ class EventsFiredTest extends BaseApiWithDataTest
 		parent::setUp();
 		Configs::set('metrics_enabled', true);
 		Configs::set('metrics_logged_in_users_enabed', true);
-		Configs::invalidateCache();
 	}
 
 	public function tearDown(): void
 	{
 		Configs::set('metrics_logged_in_users_enabed', false);
 		Configs::set('metrics_enabled', false);
-		Configs::invalidateCache();
+
 		parent::tearDown();
 	}
 
 	public function testVisitSharedAlbum(): void
 	{
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album4->id]);
+		$response = $this->getJsonWithData('Album::head', ['album_id' => $this->album4->id]);
 		$this->assertOk($response);
 		$this->assertEquals(1, Statistics::where('album_id', $this->album4->id)->firstOrFail()->visit_count);
 
@@ -70,7 +69,7 @@ class EventsFiredTest extends BaseApiWithDataTest
 	public function testLoggedInUser(): void
 	{
 		$this->actingAs($this->userMayUpload1);
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->getJsonWithData('Album::head', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$this->assertEquals(1, Statistics::where('album_id', $this->album1->id)->firstOrFail()->visit_count);
 
@@ -82,7 +81,7 @@ class EventsFiredTest extends BaseApiWithDataTest
 	public function testAdminuser(): void
 	{
 		$this->actingAs($this->admin);
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->getJsonWithData('Album::head', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$this->assertEquals(0, Statistics::where('album_id', $this->album1->id)->firstOrFail()->visit_count);
 

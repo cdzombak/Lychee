@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Actions\InstallUpdate;
@@ -55,9 +55,10 @@ class CheckUpdate
 			// @codeCoverageIgnoreStart
 			if (!$this->github_functions->isUpToDate()) {
 				return UpdateStatus::NOT_UP_TO_DATE;
-			} else {
-				return UpdateStatus::UP_TO_DATE;
 			}
+
+			return UpdateStatus::UP_TO_DATE;
+
 			// @codeCoverageIgnoreEnd
 			// @codeCoverageIgnoreStart
 		} catch (\Exception $e) {

@@ -7,12 +7,12 @@
 			v-if="isTimeline === false"
 			:photos="props.photos"
 			:selected-photos="props.selectedPhotos"
-			:iter="0"
 			:group-idx="0"
 			:is-timeline="false"
-			@clicked="propagateClicked"
-			@selected="propagateSelected"
-			@contexted="propagateMenuOpen"
+			@clicked="(id, e) => emits('clicked', id, e)"
+			@selected="(id, e) => emits('selected', id, e)"
+			@contexted="(id, e) => emits('contexted', id, e)"
+			@toggle-buy-me="(id) => emits('toggleBuyMe', id)"
 		/>
 		<template v-else>
 			<Timeline
@@ -35,12 +35,12 @@
 						<PhotoThumbPanelList
 							:photos="slotProps.item.data"
 							:selected-photos="props.selectedPhotos"
-							:iter="slotProps.item.iter"
 							:group-idx="slotProps.index"
 							:is-timeline="true"
-							@contexted="propagateMenuOpen"
-							@selected="propagateSelected"
-							@clicked="propagateClicked"
+							@contexted="(id, e) => emits('contexted', id, e)"
+							@selected="(id, e) => emits('selected', id, e)"
+							@clicked="(id, e) => emits('clicked', id, e)"
+							@toggle-buy-me="(id) => emits('toggleBuyMe', id)"
 						/>
 					</div>
 				</template>
@@ -59,12 +59,12 @@
 						<PhotoThumbPanelList
 							:photos="photoTimeline.data"
 							:selected-photos="props.selectedPhotos"
-							:iter="photoTimeline.iter"
 							:group-idx="idx"
 							:is-timeline="true"
-							@contexted="propagateMenuOpen"
-							@selected="propagateSelected"
-							@clicked="propagateClicked"
+							@contexted="(id, e) => emits('contexted', id, e)"
+							@selected="(id, e) => emits('selected', id, e)"
+							@clicked="(id, e) => emits('clicked', id, e)"
+							@toggle-buy-me="(id) => emits('toggleBuyMe', id)"
 						/>
 					</div>
 				</template>
@@ -107,22 +107,11 @@ const isLeftBorderVisible = computed(() => is_timeline_left_border_visible.value
 
 // bubble up.
 const emits = defineEmits<{
-	clicked: [idx: number, event: MouseEvent];
-	selected: [idx: number, event: MouseEvent];
-	contexted: [idx: number, event: MouseEvent];
+	clicked: [id: string, event: MouseEvent];
+	selected: [id: string, event: MouseEvent];
+	contexted: [id: string, event: MouseEvent];
+	toggleBuyMe: [id: string];
 }>();
-
-const propagateSelected = (idx: number, e: MouseEvent) => {
-	emits("selected", idx, e);
-};
-
-const propagateClicked = (idx: number, e: MouseEvent) => {
-	emits("clicked", idx, e);
-};
-
-const propagateMenuOpen = (idx: number, e: MouseEvent) => {
-	emits("contexted", idx, e);
-};
 
 function onIntersectionObserver([entry]: IntersectionObserverEntry[]) {
 	if (entry.isIntersecting) {

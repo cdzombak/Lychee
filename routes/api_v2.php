@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Controllers;
@@ -43,6 +43,9 @@ Route::get('/Albums', [Gallery\AlbumsController::class, 'get'])->middleware(['lo
  * ALBUM.
  */
 Route::get('/Album', [Gallery\AlbumController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
+Route::get('/Album::head', [Gallery\AlbumHeadController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
+Route::get('/Album::albums', [Gallery\AlbumChildrenController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
+Route::get('/Album::photos', [Gallery\AlbumPhotosController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
 Route::get('/Album::getTargetListAlbums', [Gallery\AlbumController::class, 'getTargetListAlbums'])->middleware(['login_required:album', 'cache_control']);
 Route::post('/Album::unlock', [Gallery\AlbumController::class, 'unlock']);
 Route::post('/Album', [Gallery\AlbumController::class, 'createAlbum']);
@@ -139,6 +142,7 @@ Route::patch('/Photo::tags', [Gallery\PhotoController::class, 'tags']);
 Route::post('/Photo::move', [Gallery\PhotoController::class, 'move']);
 Route::post('/Photo::copy', [Gallery\PhotoController::class, 'copy']);
 Route::post('/Photo::star', [Gallery\PhotoController::class, 'star']);
+Route::post('/Photo::setRating', [Gallery\PhotoController::class, 'rate']);
 Route::post('/Photo::rotate', [Gallery\PhotoController::class, 'rotate']);
 Route::post('/Photo::watermark', [Gallery\PhotoController::class, 'watermark'])->middleware('support:se');
 Route::delete('/Photo', [Gallery\PhotoController::class, 'delete']);
@@ -167,6 +171,7 @@ Route::get('/Auth::config', [AuthController::class, 'getConfig']);
  * USER.
  */
 Route::post('/Profile::update', [ProfileController::class, 'update']);
+Route::post('/Profile::updateSharedAlbumsVisibility', [ProfileController::class, 'updateSharedAlbumsVisibility']);
 Route::post('/Profile::resetToken', [ProfileController::class, 'resetToken']);
 Route::post('/Profile::unsetToken', [ProfileController::class, 'unsetToken']);
 Route::put('/Profile', [ProfileController::class, 'register'])->name('register-api');
@@ -279,6 +284,12 @@ Route::get('/Maintenance::oldOrders', [Admin\Maintenance\FlushOldOrders::class, 
 Route::post('/Maintenance::oldOrders', [Admin\Maintenance\FlushOldOrders::class, 'do']);
 Route::get('/Maintenance::fulfillOrders', [Admin\Maintenance\FulfillOrders::class, 'check']);
 Route::post('/Maintenance::fulfillOrders', [Admin\Maintenance\FulfillOrders::class, 'do']);
+Route::get('/Maintenance::fulfillPrecompute', [Admin\Maintenance\FulfillPreCompute::class, 'check']);
+Route::post('/Maintenance::fulfillPrecompute', [Admin\Maintenance\FulfillPreCompute::class, 'do']);
+Route::get('/Maintenance::flushQueue', [Admin\Maintenance\FlushQueue::class, 'check']);
+Route::post('/Maintenance::flushQueue', [Admin\Maintenance\FlushQueue::class, 'do']);
+Route::get('/Maintenance::backfillAlbumSizes', [Admin\Maintenance\BackfillAlbumSizes::class, 'check']);
+Route::post('/Maintenance::backfillAlbumSizes', [Admin\Maintenance\BackfillAlbumSizes::class, 'do']);
 
 /**
  * STATISTICS.

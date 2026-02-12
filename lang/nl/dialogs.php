@@ -71,6 +71,7 @@ return [
         'enter_license' => 'Voer uw licentiesleutel hieronder in:',
         'license_key' => 'Licentiesleutel',
         'invalid_license' => 'Ongeldige licentiesleutel.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'Registreren',
     ],
     'share_album' => [
@@ -156,7 +157,11 @@ return [
         'info' => 'Voer een titel in voor het nieuwe album:',
         'title' => 'titel',
         'create' => 'Album Aanmaken',
-    ],
+        'visibility_private' => 'Dit album is privé (alleen zichtbaar voor jou)',
+        'visibility_public' => 'Dit album is openbaar (zichtbaar voor iedereen)',
+        'visibility_public_hidden' => 'Dit album is openbaar maar verborgen in lijsten',
+        'visibility_inherit' => 'Dit album erft de zichtbaarheid van het hoofdalbum',
+        'visibility_inherit_no_parent' => 'Dit album is privé (geen hoofdalbum)',    ],
     'new_tag_album' => [
         'menu' => 'Tag Album Aanmaken',
         'info' => 'Voer een titel in voor het nieuwe tag album:',
@@ -165,8 +170,7 @@ return [
         'create' => 'Tag Album Aanmaken',
     ],
     'delete_album' => [
-        'confirmation' => 'Weet u zeker dat u het album “%s” en al de foto’s die het bevat wilt verwijderen?',
-        'confirmation_multiple' => 'Weet u zeker dat u alle %d geselecteerde albums en al de foto’s die ze bevatten wilt verwijderen?',
+        'confirmation' => 'Weet u zeker dat u het album “%s” en al de foto’s die het bevat wilt verwijderen?',        'confirmation_tag' => 'Weet u zeker dat u het album "%s" wilt verwijderen?',        'confirmation_multiple' => 'Weet u zeker dat u alle %d geselecteerde albums en al de foto’s die ze bevatten wilt verwijderen?',
         'warning' => 'Deze actie kan niet ongedaan worden gemaakt!',
         'delete' => 'Album en Foto’s Verwijderen',
     ],

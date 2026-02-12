@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Models;
@@ -22,7 +22,6 @@ use App\Exceptions\Internal\ZeroModuloException;
 use App\Exceptions\MediaFileOperationException;
 use App\Exceptions\ModelDBException;
 use App\Facades\Helpers;
-use App\Image\Files\BaseMediaFile;
 use App\Models\Builders\PhotoBuilder;
 use App\Models\Extensions\HasBidirectionalRelationships;
 use App\Models\Extensions\HasRandomIDAndLegacyTimeBasedID;
@@ -31,6 +30,8 @@ use App\Models\Extensions\ThrowsConsistentExceptions;
 use App\Models\Extensions\ToArrayThrowsNotImplemented;
 use App\Models\Extensions\UTCBasedTimes;
 use App\Relations\HasManySizeVariants;
+use App\Repositories\ConfigManager;
+use App\Services\Image\FileExtensionService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -39,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use function Safe\preg_match;
@@ -69,6 +71,7 @@ use function Safe\preg_match;
  * @property Carbon|null           $initial_taken_at
  * @property string|null           $initial_taken_at_orig_tz
  * @property bool                  $is_starred
+ * @property string|null           $rating_avg
  * @property string|null           $live_photo_short_path
  * @property string|null           $live_photo_url
  * @property string                $checksum
@@ -166,6 +169,7 @@ class Photo extends Model implements HasUTCBasedTimes
 		'longitude' => 'float',
 		'altitude' => 'float',
 		'img_direction' => 'float',
+		'rating_avg' => 'decimal:4',
 	];
 
 	/**
@@ -227,6 +231,31 @@ class Photo extends Model implements HasUTCBasedTimes
 	public function purchasable(): HasMany
 	{
 		return $this->hasMany(Purchasable::class, 'photo_id', 'id');
+	}
+
+	/**
+	 * Get all ratings for this photo.
+	 *
+	 * @return HasMany<PhotoRating,$this>
+	 *
+	 * @codeCoverageIgnore Just a simple relationship - Not used yet.
+	 */
+	public function ratings(): HasMany
+	{
+		return $this->hasMany(PhotoRating::class, 'photo_id', 'id');
+	}
+
+	/**
+	 * Get all ratings for this photo.
+	 *
+	 * @return HasOne<PhotoRating,$this>
+	 */
+	public function rating(): HasOne
+	{
+		/** @phpstan-ignore return.type (because of when() method used in the return statement) */
+		return $this->hasOne(PhotoRating::class)
+			->when(Auth::check(), fn ($query) => $query->where('user_id', '=', Auth::id()))
+			->when(!Auth::check(), fn ($query) => $query->whereNull('user_id'));
 	}
 
 	/**
@@ -329,8 +358,9 @@ class Photo extends Model implements HasUTCBasedTimes
 	 */
 	protected function getLicenseAttribute(?string $license): LicenseType
 	{
+		$config_manager = app(ConfigManager::class);
 		if ($license === null) {
-			return Configs::getValueAsEnum('default_license', LicenseType::class);
+			return $config_manager->getValueAsEnum('default_license', LicenseType::class);
 		}
 
 		if (LicenseType::tryFrom($license) !== null && LicenseType::tryFrom($license) !== LicenseType::NONE) {
@@ -341,7 +371,7 @@ class Photo extends Model implements HasUTCBasedTimes
 		// 	return $this->album->license;
 		// }
 
-		return Configs::getValueAsEnum('default_license', LicenseType::class);
+		return $config_manager->getValueAsEnum('default_license', LicenseType::class);
 	}
 
 	/**
@@ -426,7 +456,9 @@ class Photo extends Model implements HasUTCBasedTimes
 			// @codeCoverageIgnoreEnd
 		}
 
-		return BaseMediaFile::isSupportedImageMimeType($this->type);
+		$file_extension_service = resolve(FileExtensionService::class);
+
+		return $file_extension_service->isSupportedImageMimeType($this->type);
 	}
 
 	/**
@@ -442,7 +474,9 @@ class Photo extends Model implements HasUTCBasedTimes
 			// @codeCoverageIgnoreEnd
 		}
 
-		return BaseMediaFile::isSupportedVideoMimeType($this->type);
+		$file_extension_service = resolve(FileExtensionService::class);
+
+		return $file_extension_service->isSupportedVideoMimeType($this->type);
 	}
 
 	/**
@@ -469,8 +503,7 @@ class Photo extends Model implements HasUTCBasedTimes
 		// Delete all the links to the photo.
 		DB::table(PA::PHOTO_ALBUM)->where('photo_id', $this->id)->delete();
 		// Clean up the files.
-		$file_deleter = (new Delete())->do([$this->id], SmartAlbumType::UNSORTED->value);
+		(new Delete())->do([$this->id], SmartAlbumType::UNSORTED->value);
 		$this->exists = false;
-		$file_deleter->do();
 	}
 }

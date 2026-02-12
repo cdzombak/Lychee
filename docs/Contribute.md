@@ -4,7 +4,13 @@ Thank you for your interest in contributing to Lychee! This guide will help you 
 
 ## Getting Started
 
-Before you start contributing, we recommend reading our [Architecture guide](backend/README.md) to understand how Lychee is structured internally. This will help you navigate the codebase more effectively.
+Before you start contributing, we recommend reviewing our documentation structure:
+- [Overview](specs/0-overview/README.md) - High-level introduction to Lychee
+- [Core Concepts](specs/1-concepts/README.md) - Domain model and fundamental concepts
+- [Reference Documentation](specs/3-reference/) - Coding conventions, frontend architecture
+- [Architecture Documentation](specs/4-architecture/) - Knowledge map and feature specs
+
+This will help you navigate the codebase more effectively.
 
 1. Fork the repository on GitHub
 2. Clone your fork locally
@@ -18,7 +24,7 @@ Before you start contributing, we recommend reading our [Architecture guide](bac
 
 ### Prerequisites
 
-- PHP 8.3 or higher
+- PHP 8.4 or higher
 - php extensions:
   - `php-curl`
   - `php-mbstring`
@@ -108,7 +114,7 @@ We follow strict coding standards for PHP development:
 - **Do not use `await` async calls** in Vue3, use `.then()` instead
 - **Do not use arrow functions** for function declarations: use `function functionName() {}` instead of `const function = () => {}`
 
-Read more here: [Our Vue3 Guide](frontend/Vue3.md)
+Read more here: [Frontend Architecture](specs/3-reference/frontend-architecture.md)
 
 ## Testing and Quality Assurance
 
@@ -171,6 +177,68 @@ git push origin feature/your-feature-name
    - References to any related issues
    - Screenshots (if applicable for UI changes)
 
+## Using AI/Claude for Contributions
+
+AI-assisted development is permitted and welcomed. However, contributions using AI tools must follow our **Specification-Driven Development (SDD)** workflow:
+
+### Guidelines
+
+1. **Read [AGENTS.md](../AGENTS.md) first** — This file contains the instructions that guide AI agents working on this codebase. It defines the workflow, guardrails, and expectations for AI-assisted development.
+
+2. **Follow Spec-Driven Development** — AI-generated code must be anchored in explicit specifications:
+   - Start by creating or updating the feature specification at `docs/specs/4-architecture/features/<NNN>-<feature-name>/spec.md`
+   - Generate a feature plan (`plan.md`) and tasks checklist (`tasks.md`)
+   - Write tests before implementation (test-first cadence)
+   - Use the templates in `docs/specs/templates/` for consistency
+
+3. **Understand before generating** — AI tools should explore and understand the existing codebase before proposing changes. Use the documentation structure in `docs/specs/` to build context.
+
+4. **Quality gates still apply** — All AI-generated code must pass the same quality checks as human-written code:
+   - PHPStan static analysis
+   - Full test suite
+   - Code formatting (php-cs-fixer, Prettier)
+   - TypeScript type checking
+
+5. **Review and understand all output** — Contributors are responsible for understanding and validating any AI-generated code before submitting. Do not submit code you don't understand.
+
+6. **Document open questions** — When AI encounters ambiguity, log questions in `docs/specs/4-architecture/open-questions.md` and wait for clarification before proceeding.
+
+### Recommended AI Models
+
+We recommend using **Claude Sonnet or Claude Opus** for AI-assisted contributions. Avoid free-tier models from GitHub Copilot as they tend to hallucinate heavily and struggle to follow structured task files.
+
+When using **Claude Code**, reference `@AGENTS.md` as the first step in your conversation to guide the agent through the SDD workflow.
+
+### Two-PR Workflow (Recommended)
+
+For SDD contributions, we recommend splitting your work into **two pull requests**:
+
+1. **Specification PR** — Submit the spec, plan, and tasks files first. This allows maintainers to review the proposed approach before implementation begins.
+2. **Implementation PR** — Once the specification is approved, submit the implementation that builds from the approved spec.
+
+This workflow ensures that:
+- The specification can be reviewed and refined before any code is written
+- Time and resources are not wasted on implementations that don't align with project goals
+- The spec serves as a clear contract for what the implementation should deliver
+
+### Small Fixes Exception
+
+The full SDD workflow is not required for trivial changes such as:
+- Typo fixes
+- Single-line bug fixes with obvious solutions
+- Minor documentation corrections
+- Simple configuration changes
+
+For these cases, a direct PR without specifications is acceptable. Use your judgment — if the change requires design decisions or affects multiple files, use SDD.
+
+### Why SDD with AI?
+
+Specification-Driven Development ensures that AI-assisted contributions:
+- Are traceable back to explicit requirements
+- Follow established architectural patterns
+- Maintain test coverage organically
+- Don't introduce undocumented behavior or "magic" code
+
 ## Pull Request Guidelines
 
 - Keep your changes focused and atomic
@@ -193,7 +261,7 @@ If you are asked with further question to clarify, please make sure to reply wit
 If you need help or have questions:
 
 - Check the [existing documentation](https://lycheeorg.dev/docs/)
-- Read the [Architecture guide](backend/README.md) to understand how Lychee is structured internally
+- Review the [documentation structure](specs/) to understand how Lychee is organized
 - Check the already existing [discussions](https://github.com/LycheeOrg/Lychee/discussions) (closed and open).
 - Check the already existing [issues](https://github.com/LycheeOrg/Lychee/issues?q=sort%3Aupdated-desc+is%3Aissue+is%3Aopen) and [pull requests](https://github.com/LycheeOrg/Lychee/pulls?q=sort%3Aupdated-desc+is%3Apr+is%3Aopen).
 - Create a new discussion if necessary or join our [discord](https://discord.gg/JMPvuRQcTf) and post into the #help channel.
@@ -202,4 +270,4 @@ Thank you for contributing to Lychee! 🌸
 
 ---
 
-*Last updated: August 14, 2025*
+*Last updated: January 21, 2026*

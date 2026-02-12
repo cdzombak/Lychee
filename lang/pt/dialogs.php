@@ -71,6 +71,7 @@ return [
         'enter_license' => 'Enter your license key below:',
         'license_key' => 'License key',
         'invalid_license' => 'Invalid license key.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'Register',
     ],
     'share_album' => [
@@ -152,10 +153,15 @@ return [
         'moved_details' => 'Album(s) moved to %s',
     ],
     'new_album' => [
-        'menu' => 'Create Album',
-        'info' => 'Enter a title for the new album:',
-        'title' => 'title',
-        'create' => 'Create Album',
+        'menu' => 'Criar Álbum',
+        'info' => 'Digite um título para o novo álbum:',
+        'title' => 'título',
+        'create' => 'Criar Álbum',
+        'visibility_private' => 'Este álbum será privado (visível apenas para você)',
+        'visibility_public' => 'Este álbum será público (visível para todos)',
+        'visibility_public_hidden' => 'Este álbum será público mas oculto de listas',
+        'visibility_inherit' => 'Este álbum herdará a visibilidade do álbum pai',
+        'visibility_inherit_no_parent' => 'Este álbum será privado (nenhum álbum pai)',
     ],
     'new_tag_album' => [
         'menu' => 'Create Tag Album',
@@ -165,8 +171,7 @@ return [
         'create' => 'Create Tag Album',
     ],
     'delete_album' => [
-        'confirmation' => 'Are you sure you want to delete the album “%s” and all of the photos it contains?',
-        'confirmation_multiple' => 'Are you sure you want to delete all %d selected albums and all of the photos they contain?',
+        'confirmation' => 'Are you sure you want to delete the album “%s” and all of the photos it contains?',        'confirmation_tag' => 'Are you sure you want to delete the album "%s"?',        'confirmation_multiple' => 'Are you sure you want to delete all %d selected albums and all of the photos they contain?',
         'warning' => 'This action can not be undone!',
         'delete' => 'Delete Album and Photos',
     ],

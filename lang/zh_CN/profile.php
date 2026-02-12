@@ -20,6 +20,7 @@ return [
         'change' => '修改登录信息',
         'api_token' => 'API 令牌...',
         'missing_fields' => '缺少必填项',
+        'ldap_managed' => '用户登录信息由 LDAP 管理。',
     ],
     'register' => [
         'username_exists' => '用户名已存在。',
@@ -56,5 +57,24 @@ return [
         'credential_updated' => '凭据已更新！',
         'credential_registred' => '注册成功！',
         '5_chars' => '至少需要 5 个字符。',
+    ],
+    'preferences' => [
+        'header' => 'Preferences',
+        'save' => 'Save Preference',
+        'reset' => 'Reset',
+        'change_saved' => 'Preference saved!',
+    ],
+    'shared_albums' => [
+        'instruction' => 'Choose how shared albums (albums from other users) appear in your gallery:',
+        'mode_default' => 'Use Server Default',
+        'mode_default_desc' => 'Inherit the server\'s default visibility mode.',
+        'mode_show' => 'Show Inline',
+        'mode_show_desc' => 'Shared albums appear below your own albums.',
+        'mode_separate' => 'Separate Tabs',
+        'mode_separate_desc' => 'View albums in separate "My Albums" and "Shared with Me" tabs.',
+        'mode_separate_shared_only' => 'Shared Only',
+        'mode_separate_shared_only_desc' => 'Separate tabs showing only directly shared albums (excludes public albums).',
+        'mode_hide' => 'Hide',
+        'mode_hide_desc' => 'Don\'t show any shared albums.',
     ],
 ];

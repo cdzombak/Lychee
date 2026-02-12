@@ -3,13 +3,16 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Resources\Embed;
 
+use App\Contracts\Models\AbstractAlbum;
 use App\Models\Album;
+use App\Policies\AlbumPolicy;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Data;
 use Spatie\TypeScriptTransformer\Attributes\LiteralTypeScriptType;
 use Spatie\TypeScriptTransformer\Attributes\TypeScript;
@@ -31,7 +34,11 @@ class EmbedAlbumResource extends Data
 	public function __construct(Album $album)
 	{
 		$this->album = EmbedAlbumInfo::fromModel($album);
-		$this->photos = $album->photos->map(fn ($photo) => EmbedPhotoResource::fromModel($photo));
+		$this->photos = $album->photos->map(
+			fn ($photo) => EmbedPhotoResource::fromModel(
+				photo: $photo,
+				should_downgrade: !Gate::check(AlbumPolicy::CAN_ACCESS_FULL_PHOTO, [AbstractAlbum::class, $album]),
+			));
 	}
 
 	/**

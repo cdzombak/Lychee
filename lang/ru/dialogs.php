@@ -71,6 +71,7 @@ return [
         'enter_license' => 'Введите ваш лицензионный ключ ниже:',
         'license_key' => 'Лицензионный ключ',
         'invalid_license' => 'Неверный лицензионный ключ.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'Зарегистрировать',
     ],
     'share_album' => [
@@ -156,7 +157,11 @@ return [
         'info' => 'Введите название для нового альбома:',
         'title' => 'название',
         'create' => 'Создать альбом',
-    ],
+        'visibility_private' => 'Этот альбом будет приватным (видно только вам)',
+        'visibility_public' => 'Этот альбом будет общедоступным (видно всем)',
+        'visibility_public_hidden' => 'Этот альбом будет общедоступным, но скрыт из списков',
+        'visibility_inherit' => 'Этот альбом унаследует видимость от родительского альбома',
+        'visibility_inherit_no_parent' => 'Этот альбом будет приватным (нет родительского альбома)',    ],
     'new_tag_album' => [
         'menu' => 'Создать альбом с тегами',
         'info' => 'Введите название для нового альбома с тегами:',
@@ -165,8 +170,7 @@ return [
         'create' => 'Создать альбом с тегами',
     ],
     'delete_album' => [
-        'confirmation' => 'Вы уверены, что хотите удалить альбом “%s” и все фотографии, которые он содержит?',
-        'confirmation_multiple' => 'Вы уверены, что хотите удалить все %d выбранных альбомов и все фотографии в них?',
+        'confirmation' => 'Вы уверены, что хотите удалить альбом “%s” и все фотографии, которые он содержит?',        'confirmation_tag' => 'Вы уверены, что хотите удалить альбом "%s"?',        'confirmation_multiple' => 'Вы уверены, что хотите удалить все %d выбранных альбомов и все фотографии в них?',
         'warning' => 'Это действие нельзя отменить!',
         'delete' => 'Удалить альбом и фотографии',
     ],

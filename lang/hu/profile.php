@@ -20,6 +20,7 @@ return [
         'change' => 'Change Login',
         'api_token' => 'API Token ...',
         'missing_fields' => 'Missing fields',
+        'ldap_managed' => 'A felhasználói bejelentkezési adatokat az LDAP kezeli.',
     ],
     'token' => [
         'unavailable' => 'You have already viewed this token.',
@@ -56,5 +57,24 @@ return [
         'signup' => 'Sign Up',
         'error' => 'An error occurred while registering your account.',
         'success' => 'Your account has been successfully created.',
+    ],
+    'preferences' => [
+        'header' => 'Preferences',
+        'save' => 'Save Preference',
+        'reset' => 'Reset',
+        'change_saved' => 'Preference saved!',
+    ],
+    'shared_albums' => [
+        'instruction' => 'Choose how shared albums (albums from other users) appear in your gallery:',
+        'mode_default' => 'Use Server Default',
+        'mode_default_desc' => 'Inherit the server\'s default visibility mode.',
+        'mode_show' => 'Show Inline',
+        'mode_show_desc' => 'Shared albums appear below your own albums.',
+        'mode_separate' => 'Separate Tabs',
+        'mode_separate_desc' => 'View albums in separate "My Albums" and "Shared with Me" tabs.',
+        'mode_separate_shared_only' => 'Shared Only',
+        'mode_separate_shared_only_desc' => 'Separate tabs showing only directly shared albums (excludes public albums).',
+        'mode_hide' => 'Hide',
+        'mode_hide_desc' => 'Don\'t show any shared albums.',
     ],
 ];

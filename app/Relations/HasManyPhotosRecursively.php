@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Relations;
@@ -16,6 +16,7 @@ use App\Models\Extensions\SortingDecorator;
 use App\Policies\AlbumPolicy;
 use App\Policies\AlbumQueryPolicy;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -83,9 +84,14 @@ class HasManyPhotosRecursively extends BaseHasManyPhotos
 			throw new NotImplementedException('eagerly fetching all photos of an album is not implemented for multiple albums');
 		}
 
+		$user = Auth::user();
+		$unlocked_album_ids = AlbumPolicy::getUnlockedAlbumIDs();
+
 		$this->photo_query_policy
 			->applySearchabilityFilter(
 				query: $this->getRelationQuery(),
+				user: $user,
+				unlocked_album_ids: $unlocked_album_ids,
 				origin: $albums[0],
 				include_nsfw: true
 			);
@@ -100,9 +106,9 @@ class HasManyPhotosRecursively extends BaseHasManyPhotos
 		$album = $this->parent;
 		if ($album === null || !Gate::check(AlbumPolicy::CAN_ACCESS, $album)) {
 			return $this->related->newCollection();
-		} else {
-			return parent::getResults();
 		}
+
+		return parent::getResults();
 	}
 
 	/**
@@ -132,7 +138,7 @@ class HasManyPhotosRecursively extends BaseHasManyPhotos
 		} else {
 			$sorting = $album->getEffectivePhotoSorting();
 			$photos = $photos->sortBy(
-				$sorting->column->value,
+				$sorting->column->toColumn(),
 				in_array($sorting->column, SortingDecorator::POSTPONE_COLUMNS, true) ? SORT_NATURAL | SORT_FLAG_CASE : SORT_REGULAR,
 				$sorting->order === OrderSortingType::DESC
 			)->values();

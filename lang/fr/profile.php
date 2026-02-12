@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -20,6 +19,7 @@ return [
         'change' => 'Modifier l’identifiant',
         'api_token' => 'Jeton API …',
         'missing_fields' => 'Champs manquants',
+        'ldap_managed' => 'Les informations de connexion de l’utilisateur sont gérées par LDAP.',
     ],
     'register' => [
         'username_exists' => 'Le nom d’utilisateur existe déjà.',
@@ -56,5 +56,24 @@ return [
         'credential_updated' => 'Identifiant mis à jour !',
         'credential_registred' => 'Enregistrement réussi !',
         '5_chars' => 'Au moins 5 caractères.',
+    ],
+    'preferences' => [
+        'header' => 'Préférences',
+        'save' => 'Enregistrer les préférences',
+        'reset' => 'Réinitialiser',
+        'change_saved' => 'Préférences enregistrées !',
+    ],
+    'shared_albums' => [
+        'instruction' => 'Choose how shared albums (albums from other users) appear in your gallery:',
+        'mode_default' => 'Use Server Default',
+        'mode_default_desc' => 'Inherit the server\'s default visibility mode.',
+        'mode_show' => 'Show Inline',
+        'mode_show_desc' => 'Shared albums appear below your own albums.',
+        'mode_separate' => 'Separate Tabs',
+        'mode_separate_desc' => 'View albums in separate "My Albums" and "Shared with Me" tabs.',
+        'mode_separate_shared_only' => 'Shared Only',
+        'mode_separate_shared_only_desc' => 'Separate tabs showing only directly shared albums (excludes public albums).',
+        'mode_hide' => 'Masquer',
+        'mode_hide_desc' => 'Don\'t show any shared albums.',
     ],
 ];

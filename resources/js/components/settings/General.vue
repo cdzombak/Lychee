@@ -7,7 +7,7 @@
 				:config="dark_mode_enabled"
 				@filled="saveDarkMode"
 			/>
-			<SelectLang v-if="lang !== undefined" :label="$t('settings.system.language')" :config="lang" @filled="save" />
+			<SelectLang v-if="lang !== undefined" :label="$t('settings.system.language')" :config="lang" @filled="saveLang" />
 			<div class="flex flex-wrap justify-between">
 				<label for="pp_dialog_nsfw_visible" class="text-muted-color-emphasis">{{ $t("settings.system.nsfw_album_visibility") }}</label>
 				<ToggleSwitch id="pp_dialog_nsfw_visible" v-model="nsfwVisible" class="text-sm" @update:model-value="updateNSFW" />
@@ -22,10 +22,13 @@
 			/>
 		</div>
 	</Fieldset>
-	<Fieldset v-if="!is_se_enabled && !is_se_info_hidden">
+	<Fieldset legend="Lychee SE" v-if="!is_se_enabled && (!is_se_info_hidden || is_se_expired)">
 		<template #legend>
+			<!-- This is not working at the moment, something is broken in PrimeVue. -->
+			<!-- :legend="$t('settings.lychee_se.header')" -->
 			<div class="font-bold" v-html="$t('settings.lychee_se.header')" />
 		</template>
+		<p v-if="is_se_expired" class="inline-block mb-8 text-danger-600" v-html="$t('dialogs.register.expired_license')" />
 		<p class="mb-2" v-html="$t('settings.lychee_se.call4action')" />
 		<div v-if="!is_se_enabled" class="mb-8 flex items-start">
 			<div class="w-3/4">
@@ -214,6 +217,18 @@
 				:config="location_show_public"
 				@filled="save"
 			/>
+			<BoolField
+				v-if="gps_coordinate_display !== undefined"
+				:label="$t('settings.geolocation.gps_coordinate_display')"
+				:config="gps_coordinate_display"
+				@filled="save"
+			/>
+			<BoolField
+				v-if="gps_coordinate_display_public !== undefined"
+				:label="$t('settings.geolocation.gps_coordinate_display_public')"
+				:config="gps_coordinate_display_public"
+				@filled="save"
+			/>
 		</div>
 	</Fieldset>
 </template>
@@ -247,6 +262,7 @@ import InputText from "@/components/forms/basic/InputText.vue";
 import MaintenanceService from "@/services/maintenance-service";
 import { onMounted, watch } from "vue";
 import Fieldset from "@/components/forms/basic/Fieldset.vue";
+import { loadLanguageAsync } from "laravel-vue-i18n";
 
 const toast = useToast();
 
@@ -280,6 +296,8 @@ const map_include_subalbums = ref<App.Http.Resources.Models.ConfigResource | und
 const location_decoding = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 const location_show = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 const location_show_public = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
+const gps_coordinate_display = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
+const gps_coordinate_display_public = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 
 const disable_se_call_for_actions = ref<boolean | undefined>(undefined);
 const enable_se_preview = ref<boolean | undefined>(undefined);
@@ -291,7 +309,7 @@ const isValidRegistrationForm = computed(() => {
 
 // Map stuff
 const lycheeStore = useLycheeStateStore();
-const { is_se_preview_enabled, is_se_enabled, is_se_info_hidden } = storeToRefs(lycheeStore);
+const { is_se_preview_enabled, is_se_enabled, is_se_info_hidden, is_se_expired } = storeToRefs(lycheeStore);
 
 function save(configKey: string, value: string) {
 	SettingsService.setConfigs({
@@ -305,6 +323,20 @@ function save(configKey: string, value: string) {
 		toast.add({ severity: "success", summary: trans("settings.toasts.change_saved"), detail: trans("settings.toasts.details"), life: 3000 });
 		emits("refresh");
 	});
+}
+
+function saveLang(configKey: string, value: string) {
+	save(configKey, value);
+
+	loadLanguageAsync(value)
+		.then(() => {
+			// Keep SPA + RTL state in sync
+			document.documentElement.lang = value;
+			document.documentElement.dir = ["ar", "fa"].includes(value) ? "rtl" : "ltr";
+		})
+		.catch((err) => {
+			console.log(`Could not load language file for ${value}`, err);
+		});
 }
 
 function load(configs: App.Http.Resources.Models.ConfigCategoryResource[]) {
@@ -335,6 +367,8 @@ function load(configs: App.Http.Resources.Models.ConfigCategoryResource[]) {
 	location_decoding.value = configurations.find((config) => config.key === "location_decoding");
 	location_show.value = configurations.find((config) => config.key === "location_show");
 	location_show_public.value = configurations.find((config) => config.key === "location_show_public");
+	gps_coordinate_display.value = configurations.find((config) => config.key === "gps_coordinate_display");
+	gps_coordinate_display_public.value = configurations.find((config) => config.key === "gps_coordinate_display_public");
 
 	disable_se_call_for_actions.value = configurations.find((config) => config.key === "disable_se_call_for_actions")?.value === "1";
 	enable_se_preview.value = configurations.find((config) => config.key === "enable_se_preview")?.value === "1";
@@ -372,6 +406,7 @@ function register() {
 		.then((response) => {
 			if (response.data.success) {
 				is_se_enabled.value = true;
+				is_se_expired.value = false;
 				is_se_preview_enabled.value = false;
 				is_se_info_hidden.value = false;
 				toast.add({

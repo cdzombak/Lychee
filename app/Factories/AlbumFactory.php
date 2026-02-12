@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Factories;
@@ -15,10 +15,20 @@ use App\Models\Album;
 use App\Models\BaseAlbumImpl;
 use App\Models\Extensions\BaseAlbum;
 use App\Models\TagAlbum;
+use App\Repositories\ConfigManager;
 use App\SmartAlbums\BaseSmartAlbum;
+use App\SmartAlbums\BestPicturesAlbum;
+use App\SmartAlbums\FiveStarsAlbum;
+use App\SmartAlbums\FourStarsAlbum;
+use App\SmartAlbums\MyBestPicturesAlbum;
+use App\SmartAlbums\MyRatedPicturesAlbum;
+use App\SmartAlbums\OneStarAlbum;
 use App\SmartAlbums\OnThisDayAlbum;
 use App\SmartAlbums\RecentAlbum;
 use App\SmartAlbums\StarredAlbum;
+use App\SmartAlbums\ThreeStarsAlbum;
+use App\SmartAlbums\TwoStarsAlbum;
+use App\SmartAlbums\UnratedAlbum;
 use App\SmartAlbums\UnsortedAlbum;
 use App\SmartAlbums\UntaggedAlbum;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -32,7 +42,21 @@ class AlbumFactory
 		SmartAlbumType::RECENT->value => RecentAlbum::class,
 		SmartAlbumType::ON_THIS_DAY->value => OnThisDayAlbum::class,
 		SmartAlbumType::UNTAGGED->value => UntaggedAlbum::class,
+		SmartAlbumType::UNRATED->value => UnratedAlbum::class,
+		SmartAlbumType::ONE_STAR->value => OneStarAlbum::class,
+		SmartAlbumType::TWO_STARS->value => TwoStarsAlbum::class,
+		SmartAlbumType::THREE_STARS->value => ThreeStarsAlbum::class,
+		SmartAlbumType::FOUR_STARS->value => FourStarsAlbum::class,
+		SmartAlbumType::FIVE_STARS->value => FiveStarsAlbum::class,
+		SmartAlbumType::BEST_PICTURES->value => BestPicturesAlbum::class,
+		SmartAlbumType::MY_RATED_PICTURES->value => MyRatedPicturesAlbum::class,
+		SmartAlbumType::MY_BEST_PICTURES->value => MyBestPicturesAlbum::class,
 	];
+
+	public function __construct(
+		protected readonly ConfigManager $config_manager,
+	) {
+	}
 
 	/**
 	 * Returns an existing instance of an album with the given ID or fails
@@ -94,12 +118,12 @@ class AlbumFactory
 	 */
 	public function findBaseAlbumOrFail(string $album_id, bool $with_relations = true): BaseAlbum
 	{
-		$album_query = Album::query();
-		$tag_album_query = TagAlbum::query();
+		$album_query = Album::query()->with(['access_permissions']);
+		$tag_album_query = TagAlbum::query()->with(['access_permissions']);
 
 		if ($with_relations) {
-			$album_query->with(['access_permissions', 'photos', 'children', 'children.owner', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags']);
-			$tag_album_query->with(['tags', 'photos', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags']);
+			$album_query->with(['photos', 'children', 'children.owner', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags', 'photos.rating']);
+			$tag_album_query->with(['tags', 'photos', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags', 'photos.rating']);
 		}
 
 		$ret = $album_query->find($album_id) ?? $tag_album_query->find($album_id);
@@ -167,11 +191,11 @@ class AlbumFactory
 		$album_query = Album::query();
 
 		if ($with_relations) {
-			$tag_album_query->with(['tags', 'photos', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags']);
-			$album_query->with(['photos', 'children', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags']);
+			$tag_album_query->with(['tags', 'photos', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags', 'photos.rating']);
+			$album_query->with(['photos', 'children', 'photos.size_variants', 'photos.statistics', 'photos.palette', 'photos.tags', 'photos.rating']);
 		}
 
-		/** @var ($albums_only is true ? array<int,Album> : array<int,TagAlbum>) */
+		/** @var ($albums_only is true ? array<int,Album> : array<int,TagAlbum>)&array */
 		$tag_albums = $albums_only ? [] : $tag_album_query->findMany($album_ids)->all(); /** @phpstan-ignore varTag.type */
 
 		/** @var array<int,Album> $albums */
@@ -200,7 +224,7 @@ class AlbumFactory
 	{
 		$smart_albums = new Collection();
 		collect(SmartAlbumType::cases())
-			->filter(fn (SmartAlbumType $s) => $s->is_enabled())
+			->filter(fn (SmartAlbumType $s) => $s->is_enabled($this->config_manager))
 			->each(fn (SmartAlbumType $s) => $smart_albums->put($s->value, $this->createSmartAlbum($s, $with_relations)));
 
 		return $smart_albums;
@@ -217,7 +241,7 @@ class AlbumFactory
 	 */
 	public function createSmartAlbum(SmartAlbumType $smart_album_id, bool $with_relations = true): BaseSmartAlbum
 	{
-		$smart_album = call_user_func(self::BUILTIN_SMARTS_CLASS[$smart_album_id->value] . '::getInstance');
+		$smart_album = call_user_func(self::BUILTIN_SMARTS_CLASS[$smart_album_id->value] . '::getInstance', $this->config_manager);
 		if ($with_relations) {
 			// Just try to get the photos.
 			// This loads the relation from DB and caches it.

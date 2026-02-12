@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -51,9 +51,9 @@ class PhotoDeleteTest extends BaseApiWithDataTest
 		]);
 		$this->assertForbidden($response);
 
-		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
-		$response->assertJsonCount(2, 'resource.photos');
+		$response->assertJsonCount(2, 'photos');
 
 		$response = $this->actingAs($this->userMayUpload1)->deleteJson('Photo', [
 			'photo_ids' => [$this->photo1->id],
@@ -61,8 +61,8 @@ class PhotoDeleteTest extends BaseApiWithDataTest
 		]);
 		$this->assertNoContent($response);
 
-		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
-		$response->assertJsonCount(1, 'resource.photos');
+		$response->assertJsonCount(1, 'photos');
 	}
 }

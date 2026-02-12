@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -68,10 +68,9 @@ class GenerateThumbsTest extends BaseApiWithDataTest
 			->assertExitCode(0);
 
 		// Get updated photo and check if placeholder was encoded
-		$this->clearCachedSmartAlbums();
-		$response = $this->getJsonWithData('Album', ['album_id' => 'unsorted']);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => 'unsorted']);
 		$this->assertOk($response);
-		$photo2 = $response->json('resource.photos.0');
+		$photo2 = $response->json('photos.0');
 		self::assertNotNull($photo2['size_variants']['small']);
 		self::assertEquals($photo1['size_variants']['small']['width'], $photo2['size_variants']['small']['width']);
 		self::assertEquals($photo1['size_variants']['small']['height'], $photo2['size_variants']['small']['height']);

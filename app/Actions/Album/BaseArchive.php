@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Actions\Album;
@@ -16,15 +16,16 @@ use App\Exceptions\Internal\LycheeLogicException;
 use App\Image\Files\BaseMediaFile;
 use App\Image\Files\FlysystemFile;
 use App\Models\Album;
-use App\Models\Configs;
 use App\Models\Photo;
 use App\Models\TagAlbum;
 use App\Policies\AlbumPolicy;
 use App\Policies\PhotoPolicy;
+use App\Repositories\ConfigManager;
 use App\SmartAlbums\BaseSmartAlbum;
 use Composer\InstalledVersions;
 use Composer\Semver\VersionParser;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Safe\Exceptions\InfoException;
@@ -86,7 +87,8 @@ abstract class BaseArchive
 		// for this specific case we must allow lazy loading.
 		Model::shouldBeStrict(false);
 
-		$this->deflate_level = Configs::getValueAsInt('zip_deflate_level');
+		$config_manager = app(ConfigManager::class);
+		$this->deflate_level = $config_manager->getValueAsInt('zip_deflate_level');
 
 		$response_generator = function () use ($albums): void {
 			$zip = $this->createZip();
@@ -143,7 +145,7 @@ abstract class BaseArchive
 	 */
 	private static function createZipTitle(Collection $albums): string
 	{
-		return $albums->containsOneItem() ?
+		return $albums->hasSole() ?
 			self::createValidTitle($albums->first()->get_title()) :
 			'Albums';
 	}
@@ -228,6 +230,67 @@ abstract class BaseArchive
 		// TODO: Ensure that the size variant `original` for each photo is eagerly loaded as it is needed below. This must be solved in close coordination with `ArchiveAlbumRequest`.
 		$photos = $album->get_photos();
 
+		// For smart albums, get_photos() returns a paginator. We need to iterate through all pages.
+		if ($photos instanceof LengthAwarePaginator) {
+			$this->compressPhotosFromPaginator($photos, $album, $full_name_of_directory, $used_file_names, $zip);
+		} else {
+			$this->compressPhotosFromCollection($photos, $album, $full_name_of_directory, $used_file_names, $zip);
+		}
+
+		// Recursively compress sub-albums
+		if ($album instanceof Album) {
+			$sub_dirs = [];
+			// TODO: For higher efficiency, ensure that the photos of each child album together with the original size variant are eagerly loaded.
+			$sub_albums = $album->children;
+			foreach ($sub_albums as $sub_album) {
+				try {
+					$this->compressAlbum($sub_album, $sub_dirs, $full_name_of_directory, $zip);
+					// @codeCoverageIgnoreStart
+				} catch (\Throwable $e) {
+					Handler::reportSafely($e);
+				}
+				// @codeCoverageIgnoreEnd
+			}
+		}
+	}
+
+	/**
+	 * Compresses photos from a paginator by iterating through all pages.
+	 *
+	 * @param LengthAwarePaginator<int,Photo> $paginator
+	 * @param AbstractAlbum                   $album
+	 * @param string                          $full_name_of_directory
+	 * @param array<string>                   $used_file_names
+	 * @param ZipStream                       $zip
+	 */
+	private function compressPhotosFromPaginator(LengthAwarePaginator $paginator, AbstractAlbum $album, string $full_name_of_directory, array &$used_file_names, ZipStream $zip): void
+	{
+		$current_page = 1;
+		$last_page = $paginator->lastPage();
+
+		// Process first page (already loaded)
+		$this->compressPhotosFromCollection($paginator->getCollection(), $album, $full_name_of_directory, $used_file_names, $zip);
+
+		// Process remaining pages
+		while ($current_page < $last_page) {
+			$current_page++;
+			/** @var LengthAwarePaginator<int,Photo> $next_page */
+			$next_page = $album->photos()->paginate($paginator->perPage(), ['*'], 'page', $current_page);
+			$this->compressPhotosFromCollection($next_page->getCollection(), $album, $full_name_of_directory, $used_file_names, $zip);
+		}
+	}
+
+	/**
+	 * Compresses photos from a collection.
+	 *
+	 * @param Collection<int,Photo>|iterable<Photo> $photos
+	 * @param AbstractAlbum                         $album
+	 * @param string                                $full_name_of_directory
+	 * @param array<string>                         $used_file_names
+	 * @param ZipStream                             $zip
+	 */
+	private function compressPhotosFromCollection(Collection|iterable $photos, AbstractAlbum $album, string $full_name_of_directory, array &$used_file_names, ZipStream $zip): void
+	{
 		/** @var Photo $photo */
 		foreach ($photos as $photo) {
 			try {
@@ -263,22 +326,6 @@ abstract class BaseArchive
 				Handler::reportSafely($e);
 			}
 			// @codeCoverageIgnoreEnd
-		}
-
-		// Recursively compress sub-albums
-		if ($album instanceof Album) {
-			$sub_dirs = [];
-			// TODO: For higher efficiency, ensure that the photos of each child album together with the original size variant are eagerly loaded.
-			$sub_albums = $album->children;
-			foreach ($sub_albums as $sub_album) {
-				try {
-					$this->compressAlbum($sub_album, $sub_dirs, $full_name_of_directory, $zip);
-					// @codeCoverageIgnoreStart
-				} catch (\Throwable $e) {
-					Handler::reportSafely($e);
-				}
-				// @codeCoverageIgnoreEnd
-			}
 		}
 	}
 

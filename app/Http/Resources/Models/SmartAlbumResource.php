@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Resources\Models;
@@ -15,7 +15,7 @@ use App\Http\Resources\Models\Utils\TimelineData;
 use App\Http\Resources\Rights\AlbumRightsResource;
 use App\Http\Resources\Traits\HasHeaderUrl;
 use App\Http\Resources\Traits\HasPrepPhotoCollection;
-use App\Models\Configs;
+use App\Repositories\ConfigManager;
 use App\SmartAlbums\BaseSmartAlbum;
 use Illuminate\Support\Collection;
 use Spatie\LaravelData\Data;
@@ -49,23 +49,26 @@ class SmartAlbumResource extends Data
 		$this->id = $smart_album->get_id();
 		$this->title = $smart_album->get_title();
 
-		/** @disregard P1006 */
-		$photos = $smart_album->relationLoaded('photos') ? $smart_album->getPhotos() : null;
+		// Always use get_photos() to ensure sorting override in child classes is applied
+		$photos = $smart_album->get_photos();
 
-		if ($photos !== null) {
-			$this->photos = $this->toPhotoResources(collect($photos->items()), $smart_album);
-			$this->current_page = $photos->currentPage();
-			$this->last_page = $photos->lastPage();
-			$this->per_page = $photos->perPage();
-			$this->total = $photos->total();
+		$config_manager = resolve(ConfigManager::class);
+		$this->photos = $this->toPhotoResources(
+			photos: collect($photos->items()),
+			album_id: $smart_album->get_id(),
+			should_downgrade: !$config_manager->getValueAsBool('grants_full_photo_access'),
+		);
+		$this->current_page = $photos->currentPage();
+		$this->last_page = $photos->lastPage();
+		$this->per_page = $photos->perPage();
+		$this->total = $photos->total();
 
-			// Prep collection with first and last link + which id is next.
-			$this->prepPhotosCollection();
+		// Prep collection with first and last link + which id is next.
+		$this->prepPhotosCollection();
 
-			// setup timeline data
-			$photo_granularity = Configs::getValueAsEnum('timeline_photos_granularity', TimelinePhotoGranularity::class);
-			$this->photos = TimelineData::setTimeLineDataForPhotos($this->photos, $photo_granularity);
-		}
+		// setup timeline data
+		$photo_granularity = request()->configs()->getValueAsEnum('timeline_photos_granularity', TimelinePhotoGranularity::class);
+		$this->photos = TimelineData::setTimeLineDataForPhotos($this->photos, $photo_granularity);
 
 		$this->thumb = ThumbResource::fromModel($smart_album->get_thumb());
 		$this->policy = AlbumProtectionPolicy::ofSmartAlbum($smart_album);

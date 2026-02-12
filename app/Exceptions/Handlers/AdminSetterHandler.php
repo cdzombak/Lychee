@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Exceptions\Handlers;
@@ -66,9 +66,9 @@ class AdminSetterHandler implements HttpExceptionHandler
 				}
 
 				return $redirect_response;
-			} else {
-				return $default_response;
 			}
+
+			return $default_response;
 		} catch (\Throwable) {
 			return $default_response;
 		}

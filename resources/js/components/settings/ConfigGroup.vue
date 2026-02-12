@@ -123,6 +123,30 @@
 						@filled="filled"
 						@reset="reset"
 					/>
+					<SelectOptionsField
+						v-else-if="config.key === 'photos_pagination_ui_mode'"
+						:config="config"
+						:options="paginationUiModeOptions"
+						:mapper="SelectBuilders.buildPaginationUiMode"
+						@filled="filled"
+						@reset="reset"
+					/>
+					<SelectOptionsField
+						v-else-if="config.key === 'albums_pagination_ui_mode'"
+						:config="config"
+						:options="paginationUiModeOptions"
+						:mapper="SelectBuilders.buildPaginationUiMode"
+						@filled="filled"
+						@reset="reset"
+					/>
+					<SelectOptionsField
+						v-else-if="config.type === 'currency'"
+						:config="config"
+						:options="currencyOptions"
+						:mapper="SelectBuilders.buildCurrencySelection"
+						@filled="filled"
+						@reset="reset"
+					/>
 					<SelectLang v-else-if="config.key === 'lang'" :config="config" @filled="filled" @reset="reset" />
 					<SelectField v-else-if="config.key === 'album_decoration'" :config="config" @filled="filled" @reset="reset" />
 					<SelectField v-else-if="config.key === 'album_decoration_orientation'" :config="config" @filled="filled" @reset="reset" />
@@ -158,6 +182,8 @@ import {
 	overlayOptions,
 	mapProvidersOptions,
 	toolsOptions,
+	currencyOptions,
+	paginationUiModeOptions,
 } from "@/config/constants";
 import StringField from "@/components/forms/settings/StringField.vue";
 import BoolField from "@/components/forms/settings/BoolField.vue";

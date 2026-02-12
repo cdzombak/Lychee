@@ -3,11 +3,13 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Actions\Shop;
 
+use App\Actions\Shop\Gateway\OrderCreatedResponse;
+use App\Actions\Shop\Gateway\PaypalGateway;
 use App\DTO\CheckoutDTO;
 use App\Enum\OmnipayProviderType;
 use App\Enum\PaymentStatusType;
@@ -18,6 +20,7 @@ use App\Services\MoneyService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Omnipay\Common\Exception\InvalidCreditCardException;
+use Omnipay\Common\GatewayInterface;
 use Omnipay\Common\Message\RedirectResponseInterface;
 use Omnipay\Common\Message\ResponseInterface;
 use Omnipay\Dummy\Message\Response as DummyResponse;
@@ -28,6 +31,8 @@ use Omnipay\Mollie\Message\Response\FetchTransactionResponse;
  */
 class CheckoutService
 {
+	private GatewayInterface $gateway;
+
 	/**
 	 * CheckoutService constructor.
 	 *
@@ -64,7 +69,7 @@ class CheckoutService
 
 		/** @var OmnipayProviderType $provider : we can narrow it because we can process the payment */
 		$provider = $order->provider;
-		$gateway = $this->omnipay_factory->create_gateway($provider);
+		$this->gateway = $this->omnipay_factory->create_gateway($provider);
 
 		// Prepare the purchase request parameters
 		$params = $this->preparePurchaseParameters($order, $return_url, $cancel_url, $additional_data);
@@ -75,7 +80,7 @@ class CheckoutService
 			$order->save();
 
 			// Create the purchase request
-			$request = $gateway->purchase($params);
+			$request = $this->gateway->purchase($params);
 
 			// Send the purchase request
 			/** @var ResponseInterface $response */
@@ -104,7 +109,7 @@ class CheckoutService
 					redirect_url: $redirect_url,
 				);
 			} elseif ($response->isSuccessful()) {
-				if ($response instanceof DummyResponse) {
+				if ($response instanceof DummyResponse || $response instanceof OrderCreatedResponse) {
 					// We need those metadata for later completion
 					$metadata = [];
 					$reference = $response->getTransactionReference();
@@ -120,16 +125,15 @@ class CheckoutService
 					is_success: true,
 					is_redirect: false,
 				);
-			} else {
-				// Payment failed
-				$order->status = PaymentStatusType::FAILED;
-				$order->save();
-
-				return new CheckoutDTO(
-					is_success: false,
-					message: $response->getMessage(),
-				);
 			}
+			// Payment failed
+			$order->status = PaymentStatusType::FAILED;
+			$order->save();
+
+			return new CheckoutDTO(
+				is_success: false,
+				message: $response->getMessage(),
+			);
 		} catch (\Exception|InvalidCreditCardException $e) {
 			Log::error('Error processing payment: ' . $e->getMessage(), [
 				'order_id' => $order->id,
@@ -186,9 +190,8 @@ class CheckoutService
 			$response = $gateway->completePurchase($metadata)->send();
 			if ($response->isSuccessful()) {
 				return $this->completePayment($order, $response);
-			} else {
-				Log::warning('Payment was not successful for order ' . $order->transaction_id);
 			}
+			Log::warning('Payment was not successful for order ' . $order->transaction_id);
 		} catch (\Exception $e) {
 			Log::error('Error handling payment return: ' . $e->getMessage(), [
 				'provider' => $provider,
@@ -213,6 +216,11 @@ class CheckoutService
 	 */
 	private function preparePurchaseParameters(Order $order, string $return_url, string $cancel_url, array $additional_data = []): array
 	{
+		// This is slightly different for Paypal
+		if ($this->gateway instanceof PaypalGateway) {
+			return $this->gateway->getOrderDetails($order);
+		}
+
 		$amount = $this->money_service->toDecimal($order->amount_cents);
 		$currency = $order->amount_cents->getCurrency()->getCode();
 

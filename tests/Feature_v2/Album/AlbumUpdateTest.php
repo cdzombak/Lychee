@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -138,13 +138,13 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 		]);
 		$this->assertOk($response);
 
-		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album', ['album_id' => $this->tagAlbum1->id]);
+		// Verify album head metadata
+		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album::head', ['album_id' => $this->tagAlbum1->id]);
 		$this->assertOk($response);
 		$response->assertJson([
 			'config' => [
 				'is_base_album' => true,
 				'is_model_album' => false,
-				'is_accessible' => true,
 				'is_password_protected' => false,
 				'is_search_accessible' => true,
 			],
@@ -152,10 +152,13 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 				'id' => $this->tagAlbum1->id,
 				'title' => 'title', // from modified above.
 				'show_tags' => ['tag1', 'tag2'],
-				'photos' => [],
 			],
 		]);
-		self::assertCount(0, $response->json('resource.photos'));
+
+		// Verify photos are empty (tags changed, so photo1 no longer matches)
+		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album::photos', ['album_id' => $this->tagAlbum1->id]);
+		$this->assertOk($response);
+		self::assertCount(0, $response->json('photos'));
 	}
 
 	public function testUpdateAlbumIsPinned(): void
@@ -451,25 +454,20 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 		$response = $this->getJson('Albums');
 		$this->assertOk($response);
 		self::assertCount(0, $response->json('smart_albums'));
-		$response->assertJson([
-			'albums' => [
-				[
-					'id' => $this->album1->id,
-					'title' => $this->album1->title,
-					'description' => null,
-					'thumb' => [
-						'id' => $this->photo1->id,
-					],
-					'is_nsfw' => true,
-					'is_pinned' => false,
-					'is_public' => true,
-					'is_link_required' => false,
-					'is_password_required' => false,
-					'is_tag_album' => false,
-					'has_subalbum' => true,
-				],
-			],
-		]);
+		$response->assertSee($this->album1->id);
+		$albums = $response->json('albums');
+		$idx = array_search($this->album1->id, array_column($albums, 'id'), true);
+		$response->assertJsonPath("albums.$idx.id", $this->album1->id);
+		$response->assertJsonPath("albums.$idx.title", $this->album1->title);
+		$response->assertJsonPath("albums.$idx.description", null);
+		$response->assertJsonPath("albums.$idx.thumb.id", $this->photo1->id);
+		$response->assertJsonPath("albums.$idx.is_nsfw", true);
+		$response->assertJsonPath("albums.$idx.is_pinned", false);
+		$response->assertJsonPath("albums.$idx.is_public", true);
+		$response->assertJsonPath("albums.$idx.is_link_required", false);
+		$response->assertJsonPath("albums.$idx.is_password_required", false);
+		$response->assertJsonPath("albums.$idx.is_tag_album", false);
+		$response->assertJsonPath("albums.$idx.has_subalbum", true);
 		// Set as hidden
 		$response = $this->actingAs($this->userMayUpload1)->postJson('Album::updateProtectionPolicy', [
 			'album_id' => $this->album1->id,
@@ -531,22 +529,19 @@ class AlbumUpdateTest extends BaseApiWithDataTest
 		$response = $this->getJson('Albums');
 		$this->assertOk($response);
 		self::assertCount(0, $response->json('smart_albums'));
-		$response->assertJson([
-			'albums' => [
-				[
-					'id' => $this->album1->id,
-					'title' => $this->album1->title,
-					'description' => null,
-					'thumb' => null,
-					'is_nsfw' => false,
-					'is_pinned' => false,
-					'is_public' => true,
-					'is_link_required' => false,
-					'is_password_required' => true,
-					'is_tag_album' => false,
-					'has_subalbum' => true,
-				],
-			],
-		]);
+		$response->assertSee($this->album1->id);
+		$albums = $response->json('albums');
+		$idx = array_search($this->album1->id, array_column($albums, 'id'), true);
+		$response->assertJsonPath("albums.$idx.id", $this->album1->id);
+		$response->assertJsonPath("albums.$idx.title", $this->album1->title);
+		$response->assertJsonPath("albums.$idx.description", null);
+		$response->assertJsonPath("albums.$idx.thumb.id", $this->photo1->id);
+		$response->assertJsonPath("albums.$idx.is_nsfw", false);
+		$response->assertJsonPath("albums.$idx.is_pinned", false);
+		$response->assertJsonPath("albums.$idx.is_public", true);
+		$response->assertJsonPath("albums.$idx.is_link_required", false);
+		$response->assertJsonPath("albums.$idx.is_password_required", true);
+		$response->assertJsonPath("albums.$idx.is_tag_album", false);
+		$response->assertJsonPath("albums.$idx.has_subalbum", true);
 	}
 }

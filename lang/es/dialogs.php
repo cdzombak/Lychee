@@ -71,6 +71,7 @@ return [
         'enter_license' => 'Ingrese su clave de licencia a continuación:',
         'license_key' => 'Clave de licencia',
         'invalid_license' => 'Clave de licencia no válida.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'Registro',
     ],
     'share_album' => [
@@ -156,7 +157,11 @@ return [
         'info' => 'Introduzca un título para el nuevo álbum:',
         'title' => 'título',
         'create' => 'Crear álbum',
-    ],
+        'visibility_private' => 'Este álbum será privado (visible solo para ti)',
+        'visibility_public' => 'Este álbum será público (visible para todos)',
+        'visibility_public_hidden' => 'Este álbum será público pero oculto en listas',
+        'visibility_inherit' => 'Este álbum heredará la visibilidad del álbum padre',
+        'visibility_inherit_no_parent' => 'Este álbum será privado (sin álbum padre)',    ],
     'new_tag_album' => [
         'menu' => 'Crear álbum de etiquetas',
         'info' => 'Introduzca un título para el nuevo álbum de etiquetas:',
@@ -165,8 +170,7 @@ return [
         'create' => 'Crear álbum de etiquetas',
     ],
     'delete_album' => [
-        'confirmation' => '¿Estás seguro de que deseas eliminar el álbum “%s” y todas las fotos que contiene?',
-        'confirmation_multiple' => '¿Estás seguro de que deseas eliminar los %d álbumes seleccionados y todas las fotos que contienen?',
+        'confirmation' => '¿Estás seguro de que deseas eliminar el álbum “%s” y todas las fotos que contiene?',        'confirmation_tag' => '¿Estás seguro de que deseas eliminar el álbum "%s"?',        'confirmation_multiple' => '¿Estás seguro de que deseas eliminar los %d álbumes seleccionados y todas las fotos que contienen?',
         'warning' => '¡Esta acción no se puede deshacer!',
         'delete' => 'Eliminar álbum y fotos',
     ],

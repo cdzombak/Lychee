@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Actions\Diagnostics\Pipes\Checks;
@@ -46,6 +46,7 @@ class SmallMediumExistsCheck implements DiagnosticPipe
 		$sv_helpers = new SizeVariantDimensionHelpers();
 
 		/** @var object{num_small:int,num_medium:int,num_small2x:int,num_medium2x:int,max_num_small:int,max_num_medium:int,max_num_small2x:int,max_num_medium2x:int} $result */
+		/** @phpstan-ignore varTag.type */
 		$result = DB::query()
 		->selectSub(
 			SizeVariant::query()
@@ -73,42 +74,50 @@ class SmallMediumExistsCheck implements DiagnosticPipe
 		)
 		->selectSub(
 			SizeVariant::query()
+			->join('photos', 'size_variants.photo_id', '=', 'photos.id')
+			->whereLike('photos.type', 'image/%')
 			->selectRaw('COUNT(*)')
 			->where(fn ($q) => $q
 				->when($sv_helpers->getMaxWidth(SizeVariantType::SMALL) !== 0, fn ($q1) => $q1->where('width', '>', $sv_helpers->getMaxWidth(SizeVariantType::SMALL)))
 				->when($sv_helpers->getMaxHeight(SizeVariantType::SMALL) !== 0, fn ($q2) => $q2->orWhere('height', '>', $sv_helpers->getMaxHeight(SizeVariantType::SMALL)))
 			)
-			->where('type', '=', SizeVariantType::ORIGINAL),
+			->where('size_variants.type', '=', SizeVariantType::ORIGINAL),
 			self::MAX_NUM_SMALL
 		)
 		->selectSub(
 			SizeVariant::query()
+			->join('photos', 'size_variants.photo_id', '=', 'photos.id')
+			->whereLike('photos.type', 'image/%')
 			->selectRaw('COUNT(*)')
 			->where(fn ($q) => $q
 				->when($sv_helpers->getMaxWidth(SizeVariantType::SMALL2X) !== 0, fn ($q1) => $q1->where('width', '>', $sv_helpers->getMaxWidth(SizeVariantType::SMALL2X)))
 				->when($sv_helpers->getMaxHeight(SizeVariantType::SMALL2X) !== 0, fn ($q2) => $q2->orWhere('height', '>', $sv_helpers->getMaxHeight(SizeVariantType::SMALL2X)))
 			)
-			->where('type', '=', SizeVariantType::ORIGINAL),
+			->where('size_variants.type', '=', SizeVariantType::ORIGINAL),
 			self::MAX_NUM_SMALL2X
 		)
 		->selectSub(
 			SizeVariant::query()
+			->join('photos', 'size_variants.photo_id', '=', 'photos.id')
+			->whereLike('photos.type', 'image/%')
 			->selectRaw('COUNT(*)')
 			->where(fn ($q) => $q
 				->when($sv_helpers->getMaxWidth(SizeVariantType::MEDIUM) !== 0, fn ($q1) => $q1->where('width', '>', $sv_helpers->getMaxWidth(SizeVariantType::MEDIUM)))
 				->when($sv_helpers->getMaxHeight(SizeVariantType::MEDIUM) !== 0, fn ($q2) => $q2->orWhere('height', '>', $sv_helpers->getMaxHeight(SizeVariantType::MEDIUM)))
 			)
-			->where('type', '=', SizeVariantType::ORIGINAL),
+			->where('size_variants.type', '=', SizeVariantType::ORIGINAL),
 			self::MAX_NUM_MEDIUM
 		)
 		->selectSub(
 			SizeVariant::query()
+			->join('photos', 'size_variants.photo_id', '=', 'photos.id')
+			->whereLike('photos.type', 'image/%')
 			->selectRaw('COUNT(*)')
 			->where(fn ($q) => $q
 				->when($sv_helpers->getMaxWidth(SizeVariantType::MEDIUM2X) !== 0, fn ($q1) => $q1->where('width', '>', $sv_helpers->getMaxWidth(SizeVariantType::MEDIUM2X)))
 				->when($sv_helpers->getMaxHeight(SizeVariantType::MEDIUM2X) !== 0, fn ($q2) => $q2->orWhere('height', '>', $sv_helpers->getMaxHeight(SizeVariantType::MEDIUM2X)))
 			)
-			->where('type', '=', SizeVariantType::ORIGINAL),
+			->where('size_variants.type', '=', SizeVariantType::ORIGINAL),
 			self::MAX_NUM_MEDIUM2X
 		)
 		->first();

@@ -3,13 +3,15 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Image\Files;
 
 use App\Exceptions\MediaFileOperationException;
 use App\Exceptions\MediaFileUnsupportedException;
+use App\Repositories\ConfigManager;
+use App\Services\Image\FileExtensionService;
 use Safe\Exceptions\PcreException;
 use function Safe\fclose;
 use function Safe\fopen;
@@ -33,15 +35,26 @@ class DownloadedFile extends TemporaryLocalFile
 	/**
 	 * @throws MediaFileOperationException
 	 */
-	public function __construct(string $url)
-	{
+	public function __construct(
+		string $url,
+	) {
 		try {
 			/** @var string $path because we provide directly PHP_URL_PATH */
 			$path = parse_url($url, PHP_URL_PATH);
 			$basename = pathinfo($path, PATHINFO_FILENAME);
 			$extension = '.' . pathinfo($path, PATHINFO_EXTENSION);
 
-			$download_stream = fopen($url, 'rb');
+			$config_manager = resolve(ConfigManager::class);
+			$opts = [
+				'http' => [
+					'follow_location' => !$config_manager->getValueAsBool('import_via_url_block_redirect'),
+					'max_redirects' => 3,
+					'timeout' => 10.0,
+				],
+			];
+
+			$context = stream_context_create($opts);
+			$download_stream = fopen($url, 'rb', context: $context);
 			$download_stream_data = stream_get_meta_data($download_stream);
 
 			/** @var string|null $original_mime_type */
@@ -67,7 +80,8 @@ class DownloadedFile extends TemporaryLocalFile
 			// In all other cases we try to guess the file type.
 			// File extension > Content-Type > Inferred MIME type
 
-			if ($extension !== '.' && self::isSupportedOrAcceptedFileExtension($extension)) {
+			$file_extension_service = resolve(FileExtensionService::class);
+			if ($extension !== '.' && $file_extension_service->isSupportedOrAcceptedFileExtension($extension)) {
 				parent::__construct($extension, $basename);
 				$this->originalMimeType = $original_mime_type;
 				$this->write($download_stream);
@@ -75,8 +89,8 @@ class DownloadedFile extends TemporaryLocalFile
 
 				return;
 			}
-			if ($original_mime_type !== null && self::isSupportedMimeType($original_mime_type)) {
-				$extension = self::getDefaultFileExtensionForMimeType($original_mime_type);
+			if ($original_mime_type !== null && $file_extension_service->isSupportedMimeType($original_mime_type)) {
+				$extension = $file_extension_service->getDefaultFileExtensionForMimeType($original_mime_type);
 				parent::__construct($extension, $basename);
 				$this->originalMimeType = $original_mime_type;
 				$this->write($download_stream);
@@ -92,8 +106,8 @@ class DownloadedFile extends TemporaryLocalFile
 			rewind($temp);
 			$original_mime_type = mime_content_type($temp);
 
-			if (self::isSupportedMimeType($original_mime_type)) {
-				$extension = self::getDefaultFileExtensionForMimeType($original_mime_type);
+			if ($file_extension_service->isSupportedMimeType($original_mime_type)) {
+				$extension = $file_extension_service->getDefaultFileExtensionForMimeType($original_mime_type);
 				parent::__construct($extension, $basename);
 				$this->originalMimeType = $original_mime_type;
 				rewind($temp);
@@ -129,8 +143,8 @@ class DownloadedFile extends TemporaryLocalFile
 		parent::getMimeType();
 		if ($this->cachedMimeType === 'application/octet-stream' && $fallback_to_client_mime_type) {
 			return $this->originalMimeType;
-		} else {
-			return $this->cachedMimeType;
 		}
+
+		return $this->cachedMimeType;
 	}
 }

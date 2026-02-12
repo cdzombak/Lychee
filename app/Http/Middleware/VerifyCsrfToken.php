@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Middleware;
@@ -26,6 +26,7 @@ class VerifyCsrfToken extends Middleware
 		'/api/Session::init',
 		'/api/v2/Zip',
 		'/api/v2/Shop/Checkout/Finalize/*',
+		'/api/v2/Photo::random',
 	];
 
 	/**

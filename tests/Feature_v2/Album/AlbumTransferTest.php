@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -50,7 +50,7 @@ class AlbumTransferTest extends BaseApiWithDataTest
 		$response = $this->actingAs($this->userLocked)->getJson('Albums');
 		$this->assertOk($response);
 		$response->assertSee($this->album1->id);
-		$response = $this->actingAs($this->userLocked)->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->actingAs($this->userLocked)->getJsonWithData('Album::head', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 	}
 }

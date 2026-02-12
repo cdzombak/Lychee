@@ -15,21 +15,43 @@ declare namespace App.DTO {
 declare namespace App.Enum {
 	export type AlbumDecorationOrientation = "row" | "row-reverse" | "column" | "column-reverse";
 	export type AlbumDecorationType = "none" | "layers" | "album" | "photo" | "all";
+	export type AlbumLayoutType = "list" | "grid";
 	export type AspectRatioCSSType = "aspect-5x4" | "aspect-4x5" | "aspect-3x2" | "aspect-square" | "aspect-2x3" | "aspect-video";
 	export type AspectRatioType = "5/4" | "3/2" | "1/1" | "2/3" | "4/5" | "16/9";
 	export type CacheTag = "gallery" | "auth" | "user" | "settings" | "statistics" | "users";
-	export type ColumnSortingAlbumType = "owner_id" | "created_at" | "title" | "description" | "min_taken_at" | "max_taken_at";
-	export type ColumnSortingPhotoType = "owner_id" | "created_at" | "title" | "description" | "taken_at" | "is_starred" | "type";
+	export type ColumnSortingAlbumType =
+		| "owner_id"
+		| "created_at"
+		| "title"
+		| "description"
+		| "title_strict"
+		| "description_strict"
+		| "min_taken_at"
+		| "max_taken_at";
+	export type ColumnSortingPhotoType =
+		| "owner_id"
+		| "created_at"
+		| "title"
+		| "description"
+		| "title_strict"
+		| "description_strict"
+		| "taken_at"
+		| "is_starred"
+		| "type"
+		| "rating_avg";
 	export type ColumnSortingType =
 		| "owner_id"
 		| "created_at"
 		| "title"
 		| "description"
+		| "title_strict"
+		| "description_strict"
 		| "min_taken_at"
 		| "max_taken_at"
 		| "taken_at"
 		| "is_starred"
-		| "type";
+		| "type"
+		| "rating_avg";
 	export type ConfigType =
 		| "int"
 		| "positive"
@@ -42,11 +64,12 @@ declare namespace App.Enum {
 		| "license"
 		| "map_provider"
 		| "currency";
+	export type ConvertableImageType = "heic" | "heif";
 	export type CountType = "taken_at" | "created_at";
 	export type CoverFitType = "cover" | "fit";
 	export type DateOrderingType = "older_younger" | "younger_older";
 	export type DbDriverType = "mysql" | "pgsql" | "sqlite";
-	export type DefaultAlbumProtectionType = 1 | 2 | 3 | 4;
+	export type DefaultAlbumProtectionType = "private" | "public" | "inherit" | "public_hidden";
 	export type DownloadVariantType = "LIVEPHOTOVIDEO" | "ORIGINAL" | "MEDIUM2X" | "MEDIUM" | "SMALL2X" | "SMALL" | "THUMB2X" | "THUMB";
 	export type FileStatus = "uploading" | "processing" | "ready" | "skipped" | "done" | "error";
 	export type FlowStrategy = "auto" | "opt-in";
@@ -103,8 +126,9 @@ declare namespace App.Enum {
 		| "microsoft"
 		| "nextcloud"
 		| "keycloak";
-	export type OmnipayProviderType = "Dummy" | "Mollie" | "PayPal_Express" | "PayPal_ExpressInContext" | "PayPal_Pro" | "PayPal_Rest" | "Stripe";
+	export type OmnipayProviderType = "Dummy" | "Mollie" | "PayPal" | "Stripe";
 	export type OrderSortingType = "ASC" | "DESC";
+	export type PaginationMode = "infinite_scroll" | "load_more_button" | "page_navigation";
 	export type PaymentStatusType = "pending" | "cancelled" | "failed" | "refunded" | "processing" | "offline" | "completed" | "closed";
 	export type PhotoLayoutType = "square" | "justified" | "masonry" | "grid";
 	export type PhotoThumbInfoType = "title" | "description";
@@ -112,20 +136,34 @@ declare namespace App.Enum {
 	export type PurchasableSizeVariantType = "medium" | "medium2x" | "original" | "full";
 	export type RenamerModeType = "first" | "all" | "regex" | "trim" | "strtolower" | "strtoupper" | "ucwords" | "ucfirst";
 	export type SeverityType = "emergency" | "alert" | "critical" | "error" | "warning" | "notice" | "info" | "debug";
+	export type SharedAlbumsVisibility = "show" | "separate" | "separate_shared_only" | "hide";
 	export type ShiftType = "relative" | "absolute";
 	export type ShiftX = "left" | "right";
 	export type ShiftY = "up" | "down";
 	export type SizeVariantType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7;
 	export type SmallLargeType = "small" | "large";
-	export type SmartAlbumType = "unsorted" | "starred" | "recent" | "on_this_day" | "untagged";
+	export type SmartAlbumType =
+		| "unsorted"
+		| "starred"
+		| "recent"
+		| "on_this_day"
+		| "untagged"
+		| "unrated"
+		| "one_star"
+		| "two_stars"
+		| "three_stars"
+		| "four_stars"
+		| "five_stars"
+		| "best_pictures";
 	export type StorageDiskType = "images" | "s3";
 	export type ThumbAlbumSubtitleType = "description" | "takedate" | "creation" | "oldstyle" | "num_photos" | "num_albums" | "num_photos_albums";
-	export type ThumbOverlayVisibilityType = "never" | "always" | "hover";
 	export type TimelineAlbumGranularity = "default" | "disabled" | "year" | "month" | "day";
 	export type TimelinePhotoGranularity = "default" | "disabled" | "year" | "month" | "day" | "hour";
 	export type UpdateStatus = 0 | 1 | 2 | 3;
 	export type UserGroupRole = "member" | "admin";
+	export type UserSharedAlbumsVisibility = "default" | "show" | "separate" | "separate_shared_only" | "hide";
 	export type VersionChannelType = "release" | "git" | "tag";
+	export type VisibilityType = "never" | "always" | "hover";
 	export type WatermarkPosition = "top-left" | "top" | "top-right" | "left" | "center" | "right" | "bottom-left" | "bottom" | "bottom-right";
 }
 declare namespace App.Http.Resources.Admin {
@@ -152,6 +190,20 @@ declare namespace App.Http.Resources.Admin {
 	};
 }
 declare namespace App.Http.Resources.Collections {
+	export type PaginatedAlbumsResource = {
+		data: App.Http.Resources.Models.ThumbAlbumResource[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
+	export type PaginatedPhotosResource = {
+		photos: App.Http.Resources.Models.PhotoResource[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
 	export type PositionDataResource = {
 		id: string | null;
 		title: string | null;
@@ -271,6 +323,8 @@ declare namespace App.Http.Resources.Embed {
 		id: string;
 		title: string | null;
 		description: string | null;
+		is_video: boolean;
+		duration: string | null;
 		size_variants: App.Http.Resources.Models.SizeVariantsResouce;
 		exif: { [key: string]: string | null };
 	};
@@ -329,7 +383,6 @@ declare namespace App.Http.Resources.GalleryConfigs {
 	export type AlbumConfig = {
 		is_base_album: boolean;
 		is_model_album: boolean;
-		is_accessible: boolean;
 		is_password_protected: boolean;
 		is_map_accessible: boolean;
 		is_mod_frame_enabled: boolean;
@@ -367,14 +420,16 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		is_details_links_enabled: boolean;
 		is_desktop_dock_full_transparency_enabled: boolean;
 		is_mobile_dock_full_transparency_enabled: boolean;
-		display_thumb_album_overlay: App.Enum.ThumbOverlayVisibilityType;
-		display_thumb_photo_overlay: App.Enum.ThumbOverlayVisibilityType;
+		is_photo_details_always_open: boolean;
+		display_thumb_album_overlay: App.Enum.VisibilityType;
+		display_thumb_photo_overlay: App.Enum.VisibilityType;
 		album_subtitle_type: App.Enum.ThumbAlbumSubtitleType;
 		album_decoration: App.Enum.AlbumDecorationType;
 		album_decoration_orientation: App.Enum.AlbumDecorationOrientation;
 		number_albums_per_row_mobile: 1 | 2 | 3;
 		photo_thumb_info: App.Enum.PhotoThumbInfoType;
 		is_photo_thumb_tags_enabled: boolean;
+		album_layout: App.Enum.AlbumLayoutType;
 		is_thumb_download_enabled: boolean;
 		is_thum2x_download_enabled: boolean;
 		is_small_download_enabled: boolean;
@@ -388,16 +443,30 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		title: string;
 		dropbox_api_key: string;
 		is_se_enabled: boolean;
+		is_pro_enabled: boolean;
 		is_se_preview_enabled: boolean;
 		is_se_info_hidden: boolean;
+		is_se_expired: boolean;
 		is_live_metrics_enabled: boolean;
 		is_basic_auth_enabled: boolean;
 		is_webauthn_enabled: boolean;
 		is_registration_enabled: boolean;
 		is_scroll_to_navigate_photos_enabled: boolean;
 		is_swipe_vertically_to_go_back_enabled: boolean;
+		is_rating_show_avg_in_details_enabled: boolean;
+		is_rating_show_avg_in_photo_view_enabled: boolean;
+		rating_photo_view_mode: App.Enum.VisibilityType;
+		is_rating_show_avg_in_album_view_enabled: boolean;
+		rating_album_view_mode: App.Enum.VisibilityType;
 		default_homepage: string;
 		is_timeline_page_enabled: boolean;
+		photos_pagination_mode: App.Enum.PaginationMode;
+		albums_pagination_mode: App.Enum.PaginationMode;
+		photos_per_page: number;
+		albums_per_page: number;
+		photos_infinite_scroll_threshold: number;
+		albums_infinite_scroll_threshold: number;
+		default_album_protection: App.Enum.DefaultAlbumProtectionType;
 	};
 	export type LandingPageResource = {
 		landing_page_enable: boolean;
@@ -435,6 +504,7 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		header_image_url: string;
 		is_header_bar_transparent: boolean;
 		is_header_bar_gradient: boolean;
+		shared_albums_visibility_mode: App.Enum.SharedAlbumsVisibility;
 	};
 	export type SettingsConfig = {
 		default_old_settings: boolean;
@@ -520,6 +590,55 @@ declare namespace App.Http.Resources.Models {
 		require_se: boolean;
 		order: number | null;
 	};
+	export type HeadAbstractAlbumResource = {
+		config: App.Http.Resources.GalleryConfigs.AlbumConfig;
+		resource:
+			| App.Http.Resources.Models.HeadAlbumResource
+			| App.Http.Resources.Models.HeadSmartAlbumResource
+			| App.Http.Resources.Models.HeadTagAlbumResource;
+	};
+	export type HeadAlbumResource = {
+		id: string;
+		title: string;
+		owner_name: string | null;
+		description: string | null;
+		copyright: string | null;
+		track_url: string | null;
+		license: string;
+		header_id: string | null;
+		parent_id: string | null;
+		has_albums: boolean;
+		num_children: number;
+		num_photos: number;
+		cover_id: string | null;
+		policy: App.Http.Resources.Models.Utils.AlbumProtectionPolicy;
+		rights: App.Http.Resources.Rights.AlbumRightsResource;
+		preFormattedData: App.Http.Resources.Models.Utils.PreFormattedAlbumData;
+		editable: App.Http.Resources.Editable.EditableBaseAlbumResource | null;
+		is_pinned: boolean;
+		statistics: App.Http.Resources.Models.AlbumStatisticsResource | null;
+	};
+	export type HeadSmartAlbumResource = {
+		id: string;
+		title: string;
+		policy: App.Http.Resources.Models.Utils.AlbumProtectionPolicy;
+		rights: App.Http.Resources.Rights.AlbumRightsResource;
+		preFormattedData: App.Http.Resources.Models.Utils.PreFormattedAlbumData;
+		statistics: null | null;
+	};
+	export type HeadTagAlbumResource = {
+		id: string;
+		title: string;
+		owner_name: string | null;
+		copyright: string | null;
+		is_tag_album: boolean;
+		show_tags: Array<string>;
+		policy: App.Http.Resources.Models.Utils.AlbumProtectionPolicy;
+		rights: App.Http.Resources.Rights.AlbumRightsResource;
+		preFormattedData: App.Http.Resources.Models.Utils.PreFormattedAlbumData;
+		editable: App.Http.Resources.Editable.EditableBaseAlbumResource | null;
+		statistics: App.Http.Resources.Models.AlbumStatisticsResource | null;
+	};
 	export type JobHistoryResource = {
 		username: string;
 		status: "ready" | "success" | "failure" | "started";
@@ -540,29 +659,23 @@ declare namespace App.Http.Resources.Models {
 		title: string;
 		url: string | null;
 	};
+	export type PhotoRatingResource = {
+		rating_user: number;
+		rating_count: number;
+		rating_avg: number;
+	};
 	export type PhotoResource = {
 		id: string;
 		album_id: string | null;
-		altitude: number | null;
-		aperture: string | null;
 		checksum: string;
 		created_at: string;
 		description: string;
-		focal: string | null;
 		is_starred: boolean;
-		iso: string | null;
-		latitude: number | null;
-		lens: string | null;
 		license: App.Enum.LicenseType;
 		live_photo_checksum: string | null;
 		live_photo_content_id: string | null;
 		live_photo_url: string | null;
-		location: string | null;
-		longitude: number | null;
-		make: string | null;
-		model: string | null;
 		original_checksum: string;
-		shutter: string | null;
 		size_variants: App.Http.Resources.Models.SizeVariantsResouce;
 		tags: Array<string>;
 		taken_at: string | null;
@@ -570,7 +683,6 @@ declare namespace App.Http.Resources.Models {
 		title: string;
 		type: string;
 		updated_at: string;
-		rights: App.Http.Resources.Rights.PhotoRightsResource;
 		next_photo_id: string | null;
 		previous_photo_id: string | null;
 		preformatted: App.Http.Resources.Models.Utils.PreformattedPhotoData;
@@ -578,12 +690,15 @@ declare namespace App.Http.Resources.Models {
 		timeline: App.Http.Resources.Models.Utils.TimelineData | null;
 		palette: App.Http.Resources.Models.ColourPaletteResource | null;
 		statistics: App.Http.Resources.Models.PhotoStatisticsResource | null;
+		rating: App.Http.Resources.Models.PhotoRatingResource | null;
 	};
 	export type PhotoStatisticsResource = {
 		visit_count: number;
 		download_count: number;
 		favourite_count: number;
 		shared_count: number;
+		rating_count: number;
+		rating_avg: number | null;
 	};
 	export type RenamerRuleResource = {
 		id: number;
@@ -709,6 +824,8 @@ declare namespace App.Http.Resources.Models {
 		has_token: boolean | null;
 		username: string | null;
 		email: string | null;
+		is_ldap: boolean;
+		shared_albums_visibility: App.Enum.UserSharedAlbumsVisibility;
 	};
 	export type WebAuthnResource = {
 		id: string;
@@ -749,6 +866,9 @@ declare namespace App.Http.Resources.Models.Utils {
 		has_exif: boolean;
 		has_location: boolean;
 		is_taken_at_modified: boolean;
+		latitude: number | null;
+		longitude: number | null;
+		altitude: number | null;
 	};
 	export type PreFormattedAlbumData = {
 		url: string | null;
@@ -766,10 +886,13 @@ declare namespace App.Http.Resources.Models.Utils {
 		created_at: string;
 		taken_at: string | null;
 		date_overlay: string;
+		make: string | null;
+		model: string | null;
 		shutter: string;
 		aperture: string;
 		iso: string;
 		lens: string;
+		focal: string | null;
 		duration: string;
 		fps: string;
 		filesize: string;
@@ -777,6 +900,7 @@ declare namespace App.Http.Resources.Models.Utils {
 		latitude: string | null;
 		longitude: string | null;
 		altitude: string | null;
+		location: string | null;
 		license: string;
 		description: string;
 	};
@@ -901,12 +1025,15 @@ declare namespace App.Http.Resources.Shop {
 		payment_providers: App.Enum.OmnipayProviderType[];
 		mollie_profile_id: string;
 		stripe_public_key: string;
+		paypal_client_id: string;
 		is_test_mode: boolean;
+		is_lycheeorg_disclaimer_enabled: boolean;
 	};
 	export type CheckoutResource = {
 		is_success: boolean;
 		is_redirect: boolean;
 		redirect_url: string | null;
+		complete_url: string | null;
 		message: string;
 		order: App.Http.Resources.Shop.OrderResource | null;
 	};
@@ -939,6 +1066,7 @@ declare namespace App.Http.Resources.Shop {
 		price: string;
 		size_variant_type: App.Enum.PurchasableSizeVariantType;
 		item_notes: string | null;
+		content_url: string | null;
 	};
 	export type OrderResource = {
 		id: number;
@@ -950,6 +1078,7 @@ declare namespace App.Http.Resources.Shop {
 		amount: string;
 		paid_at: string | null;
 		created_at: string | null;
+		updated_at: string | null;
 		comment: string | null;
 		items: App.Http.Resources.Shop.OrderItemResource[] | null;
 		can_process_payment: boolean;

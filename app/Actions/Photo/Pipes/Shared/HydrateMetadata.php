@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Actions\Photo\Pipes\Shared;
@@ -64,6 +64,12 @@ class HydrateMetadata implements SharedPipe
 		}
 		if ($state->photo->focal === null) {
 			$state->photo->focal = $state->exif_info->focal;
+		}
+		if ($state->photo->duration === null) {
+			$state->photo->duration = $state->exif_info->duration;
+		}
+		if ($state->photo->fps === null) {
+			$state->photo->fps = $state->exif_info->fps;
 		}
 		if ($state->photo->taken_at === null) {
 			$state->photo->taken_at = $state->exif_info->taken_at;

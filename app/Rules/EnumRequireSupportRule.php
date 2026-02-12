@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Rules;
@@ -26,9 +26,9 @@ final class EnumRequireSupportRule implements ValidationRule
 	 * @return void
 	 */
 	public function __construct(
-		protected mixed $type,
-		protected array $expected,
-		protected VerifyInterface $verify)
+		private mixed $type,
+		private array $expected,
+		private VerifyInterface $verify)
 	{
 	}
 
@@ -66,7 +66,7 @@ final class EnumRequireSupportRule implements ValidationRule
 	 *
 	 * @return bool
 	 */
-	protected function isDesirable($value)
+	private function isDesirable($value)
 	{
 		return in_array(needle: $value, haystack: $this->expected, strict: true);
 	}

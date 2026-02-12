@@ -101,6 +101,24 @@
 							<i class="pi pi-barcode" />
 						</a>
 
+						<!-- Album view toggle buttons -->
+						<Button
+							v-if="lycheeStore.album_view_mode === 'list' && albumsStore.albums.length > 0"
+							icon="pi pi-th-large"
+							class="border-none"
+							severity="secondary"
+							text
+							@click="toggleAlbumView('grid')"
+						/>
+						<Button
+							v-else-if="albumsStore.albums.length > 0"
+							icon="pi pi-list"
+							class="border-none"
+							severity="secondary"
+							text
+							@click="toggleAlbumView('list')"
+						/>
+
 						<template v-if="isTouchDevice() && userStore.isLoggedIn">
 							<a
 								v-if="albumsStore.hasHidden && are_nsfw_visible"
@@ -138,6 +156,7 @@ import { useLycheeStateStore } from "@/stores/LycheeState";
 import { isTouchDevice } from "@/utils/keybindings-utils";
 import { storeToRefs } from "pinia";
 import Card from "primevue/card";
+import Button from "primevue/button";
 import { computed } from "vue";
 import AlbumStatistics from "./AlbumStatistics.vue";
 import { useLeftMenuStateStore } from "@/stores/LeftMenuState";
@@ -157,7 +176,13 @@ const photosStore = usePhotosStore();
 
 const { is_se_enabled, is_se_preview_enabled, are_nsfw_visible, is_slideshow_enabled } = storeToRefs(lycheeStore);
 
-const hasCoordinates = computed(() => photosStore.photos.some((photo) => photo.latitude !== null && photo.longitude !== null));
+function toggleAlbumView(mode: "grid" | "list") {
+	lycheeStore.album_view_mode = mode;
+}
+
+const hasCoordinates = computed(() =>
+	photosStore.photos.some((photo) => photo.precomputed.latitude !== null && photo.precomputed.longitude !== null),
+);
 
 const isWatermarkerEnabled = computed(
 	() =>

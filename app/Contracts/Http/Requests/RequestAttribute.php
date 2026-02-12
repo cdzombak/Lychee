@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Contracts\Http\Requests;
@@ -64,6 +64,8 @@ class RequestAttribute
 	public const ALBUM_TIMELINE_ALBUM = 'album_timeline';
 	public const ALBUM_TIMELINE_PHOTO = 'photo_timeline';
 
+	public const PAGE_ATTRIBUTE = 'page';
+
 	public const PERMISSION_ID = 'perm_id';
 	public const IS_COMPACT_ATTRIBUTE = 'is_compact';
 	public const IS_NSFW_ATTRIBUTE = 'is_nsfw';
@@ -83,6 +85,7 @@ class RequestAttribute
 	public const FILE_ATTRIBUTE = 'file';
 	public const SHALL_OVERRIDE_ATTRIBUTE = 'shall_override';
 	public const IS_STARRED_ATTRIBUTE = 'is_starred';
+	public const RATING_ATTRIBUTE = 'rating';
 	public const DIRECTION_ATTRIBUTE = 'direction';
 
 	public const SINGLE_PATH_ATTRIBUTE = 'path';
@@ -93,6 +96,7 @@ class RequestAttribute
 	public const MAY_UPLOAD_ATTRIBUTE = 'may_upload';
 	public const MAY_EDIT_OWN_SETTINGS_ATTRIBUTE = 'may_edit_own_settings';
 	public const MAY_ADMINISTRATE = 'may_administrate';
+	public const SHARED_ALBUMS_VISIBILITY_ATTRIBUTE = 'shared_albums_visibility';
 
 	/**
 	 * Import from server attributes.

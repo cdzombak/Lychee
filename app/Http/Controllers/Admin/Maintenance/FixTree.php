@@ -3,14 +3,14 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Controllers\Admin\Maintenance;
 
-use App\Http\Controllers\Admin\Maintenance\Model\Album;
 use App\Http\Requests\Maintenance\MaintenanceRequest;
 use App\Http\Resources\Diagnostics\TreeState;
+use App\Jobs\CheckTreeState;
 use Illuminate\Routing\Controller;
 
 /**
@@ -26,7 +26,8 @@ class FixTree extends Controller
 	 */
 	public function check(MaintenanceRequest $request): TreeState
 	{
-		$stats = Album::query()->countErrors();
+		$check = new CheckTreeState();
+		$stats = $check->handle();
 
 		return new TreeState(
 			$stats['oddness'] ?? 0,

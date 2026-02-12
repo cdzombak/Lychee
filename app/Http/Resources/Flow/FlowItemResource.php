@@ -3,20 +3,21 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Resources\Flow;
 
+use App\Contracts\Models\AbstractAlbum;
 use App\Enum\DateOrderingType;
 use App\Http\Resources\Models\AlbumStatisticsResource;
 use App\Http\Resources\Models\PhotoResource;
 use App\Http\Resources\Models\SizeVariantsResouce;
 use App\Http\Resources\Traits\HasPrepPhotoCollection;
 use App\Models\Album;
-use App\Models\Configs;
 use App\Policies\AlbumPolicy;
 use GrahamCampbell\Markdown\Facades\Markdown;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -61,18 +62,22 @@ class FlowItemResource extends Data
 		$this->description = Markdown::convert(trim($album->description ?? ''))->getContent();
 
 		$this->setPhotos($album);
-		$this->cover = $album->cover !== null ? new SizeVariantsResouce($album->cover, $album) : null;
+		$should_downgrade = $album->cover !== null && !Gate::check(AlbumPolicy::CAN_ACCESS_FULL_PHOTO, [AbstractAlbum::class, $album]);
+		$this->cover = $album->cover !== null ? new SizeVariantsResouce($album->cover, $should_downgrade) : null;
 
 		// We use the short circuiting operator here to avoid checking is_recursive_nsfw if we hide them already.
-		$this->is_nsfw = Configs::getValueAsBool('hide_nsfw_in_flow') === false && $album->is_recursive_nsfw;
+		$this->is_nsfw = request()->configs()->getValueAsBool('hide_nsfw_in_flow') === false && $album->is_recursive_nsfw;
 
 		if ($this->photos !== null) {
 			// Prep collection with first and last link + which id is next.
 			$this->prepPhotosCollection();
 		}
 
-		$format_date = Configs::getValueAsString('date_format_flow_published');
+		$format_date = request()->configs()->getValueAsString('date_format_flow_published');
 		$published_created_at = $album->published_at ?? $album->created_at;
+		if (is_string($published_created_at)) {
+			$published_created_at = new Carbon($published_created_at);
+		}
 		$this->diff_published_created_at = $published_created_at->diffForHumans();
 		$this->published_created_at = $published_created_at->format($format_date);
 
@@ -81,8 +86,8 @@ class FlowItemResource extends Data
 
 		$this->setMinMax($album);
 
-		if (Configs::getValueAsBool('metrics_enabled') &&
-			Configs::getValueAsBool('flow_display_statistics') &&
+		if (request()->configs()->getValueAsBool('metrics_enabled') &&
+			request()->configs()->getValueAsBool('flow_display_statistics') &&
 			Gate::check(AlbumPolicy::CAN_READ_METRICS, [Album::class, $album])
 		) {
 			$this->statistics = AlbumStatisticsResource::fromModel($album->statistics);
@@ -99,18 +104,25 @@ class FlowItemResource extends Data
 	 */
 	private function setPhotos(Album $album): void
 	{
-		if (Configs::getValueAsBool('flow_include_photos_from_children') && ($album->photos === null || $album->photos->isEmpty())) {
+		if (request()->configs()->getValueAsBool('flow_include_photos_from_children') && ($album->photos === null || $album->photos->isEmpty())) {
 			// Really NOT recommended!
 			// @codeCoverageIgnoreStart
 			$album->load(['all_photos', 'all_photos.size_variants', 'all_photos.palette', 'all_photos.statistics']);
-			$this->photos = $this->toPhotoResources($album->all_photos, $album);
+			$this->photos = $this->toPhotoResources(
+				photos: $album->all_photos,
+				album_id: $album->id,
+				should_downgrade: !Gate::check(AlbumPolicy::CAN_ACCESS_FULL_PHOTO, [AbstractAlbum::class, $album]));
 
 			return;
 			// @codeCoverageIgnoreEnd
 		}
 
 		if ($album->photos !== null && !$album->photos->isEmpty()) {
-			$this->photos = $this->toPhotoResources($album->photos, $album);
+			$this->photos = $this->toPhotoResources(
+				photos: $album->photos,
+				album_id: $album->id,
+				should_downgrade: !Gate::check(AlbumPolicy::CAN_ACCESS_FULL_PHOTO, [AbstractAlbum::class, $album]),
+			);
 
 			return;
 		}
@@ -126,18 +138,18 @@ class FlowItemResource extends Data
 
 	private function setMinMax(Album $album): void
 	{
-		if (Configs::getValueAsBool('flow_min_max_enabled') === false) {
+		if (request()->configs()->getValueAsBool('flow_min_max_enabled') === false) {
 			return;
 		}
 
-		$min_max_date_format = Configs::getValueAsString('date_format_flow_min_max');
+		$min_max_date_format = request()->configs()->getValueAsString('date_format_flow_min_max');
 		$min_taken_at = $album->min_taken_at?->format($min_max_date_format);
 		$max_taken_at = $album->max_taken_at?->format($min_max_date_format);
 
 		$this->min_max_text = match (true) {
 			$min_taken_at === null || $max_taken_at === null => null,
 			$min_taken_at === $max_taken_at => $min_taken_at,
-			Configs::getValueAsEnum('flow_min_max_order', DateOrderingType::class) === DateOrderingType::YOUNGER_OLDER => $max_taken_at . ' - ' . $min_taken_at,
+			request()->configs()->getValueAsEnum('flow_min_max_order', DateOrderingType::class) === DateOrderingType::YOUNGER_OLDER => $max_taken_at . ' - ' . $min_taken_at,
 			default => $min_taken_at . ' - ' . $max_taken_at,
 		};
 	}

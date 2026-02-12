@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Controllers\Gallery;
@@ -11,12 +11,14 @@ namespace App\Http\Controllers\Gallery;
 use App\Actions\Import\FromUrl;
 use App\Actions\Photo\Delete;
 use App\Actions\Photo\MoveOrDuplicate;
+use App\Actions\Photo\Rating;
 use App\Actions\Photo\Rotate;
 use App\Constants\FileSystem;
 use App\Contracts\Models\AbstractAlbum;
 use App\Enum\FileStatus;
 use App\Enum\SizeVariantType;
 use App\Exceptions\ConfigurationException;
+use App\Exceptions\ConflictingPropertyException;
 use App\Http\Requests\Photo\CopyPhotosRequest;
 use App\Http\Requests\Photo\DeletePhotosRequest;
 use App\Http\Requests\Photo\EditPhotoRequest;
@@ -24,6 +26,7 @@ use App\Http\Requests\Photo\FromUrlRequest;
 use App\Http\Requests\Photo\MovePhotosRequest;
 use App\Http\Requests\Photo\RenamePhotoRequest;
 use App\Http\Requests\Photo\RotatePhotoRequest;
+use App\Http\Requests\Photo\SetPhotoRatingRequest;
 use App\Http\Requests\Photo\SetPhotosStarredRequest;
 use App\Http\Requests\Photo\SetPhotosTagsRequest;
 use App\Http\Requests\Photo\UploadPhotoRequest;
@@ -36,15 +39,17 @@ use App\Image\Files\UploadedFile;
 use App\Jobs\ExtractZip;
 use App\Jobs\ProcessImageJob;
 use App\Jobs\WatermarkerJob;
-use App\Models\Configs;
+use App\Models\Photo;
 use App\Models\SizeVariant;
 use App\Models\Tag;
+use App\Policies\PhotoPolicy;
+use App\Repositories\ConfigManager;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
-use LycheeVerify\Verify;
+use LycheeVerify\Contract\VerifyInterface;
 
 /**
  * Controller responsible for fetching Photo Data.
@@ -74,10 +79,18 @@ class PhotoController extends Controller
 		// Last chunk
 		$meta->stage = FileStatus::PROCESSING;
 
-		return $this->process($final, $request->album(), $request->file_last_modified_time(), $meta);
+		return $this->process(
+			$request->verify(),
+			$request->configs(),
+			$final,
+			$request->album(),
+			$request->file_last_modified_time(),
+			$meta);
 	}
 
 	private function process(
+		VerifyInterface $verify,
+		ConfigManager $config_manager,
 		NativeLocalFile $final,
 		?AbstractAlbum $album,
 		?int $file_last_modified_time,
@@ -95,8 +108,9 @@ class PhotoController extends Controller
 		// End of work-around
 
 		$is_zip = strtolower(pathinfo($meta->file_name, PATHINFO_EXTENSION)) === 'zip';
-		$is_se = resolve(Verify::class)->is_supporter();
-		if ($is_se && Configs::getValueAsBool('extract_zip_on_upload') && $is_zip) {
+		$is_se = $verify->is_supporter();
+
+		if ($is_se && $config_manager->getValueAsBool('extract_zip_on_upload') && $is_zip) {
 			ExtractZip::dispatch($processable_file, $album?->get_id(), $file_last_modified_time);
 			// We return DONE no matter what:
 			// - if we are in sync mode, this will be executed after the job
@@ -143,7 +157,11 @@ class PhotoController extends Controller
 
 		$photo->save();
 
-		return new PhotoResource($photo, $request->from_album());
+		return new PhotoResource(
+			photo: $photo,
+			album_id: $request->from_album()?->get_id(),
+			should_downgrade_size_variants: !Gate::check(PhotoPolicy::CAN_ACCESS_FULL_PHOTO, [Photo::class, $photo])
+		);
 	}
 
 	/**
@@ -155,6 +173,34 @@ class PhotoController extends Controller
 			$photo->is_starred = $request->isStarred();
 			$photo->save();
 		}
+	}
+
+	/**
+	 * Set the rating for a photo.
+	 *
+	 * @param SetPhotoRatingRequest $request
+	 * @param Rating                $rating
+	 *
+	 * @return PhotoResource
+	 *
+	 * @throws ConflictingPropertyException
+	 */
+	public function rate(SetPhotoRatingRequest $request, Rating $rating): PhotoResource
+	{
+		/** @var \App\Models\User $user */
+		$user = Auth::user();
+
+		$photo = $rating->do(
+			$request->photo(),
+			$user,
+			$request->rating()
+		);
+
+		return new PhotoResource(
+			photo: $photo,
+			album_id: null,
+			should_downgrade_size_variants: !Gate::check(PhotoPolicy::CAN_ACCESS_FULL_PHOTO, [Photo::class, $photo])
+		);
 	}
 
 	/**
@@ -174,8 +220,7 @@ class PhotoController extends Controller
 	 */
 	public function delete(DeletePhotosRequest $request, Delete $delete): void
 	{
-		$file_deleter = $delete->do($request->photoIds(), $request->from_id());
-		App::terminating(fn () => $file_deleter->do());
+		$delete->do($request->photoIds(), $request->from_id());
 	}
 
 	/**
@@ -183,14 +228,18 @@ class PhotoController extends Controller
 	 */
 	public function rotate(RotatePhotoRequest $request): PhotoResource
 	{
-		if (!Configs::getValueAsBool('editor_enabled')) {
+		if (!$request->configs()->getValueAsBool('editor_enabled')) {
 			throw new ConfigurationException('support for rotation disabled by configuration');
 		}
 
 		$rotate_strategy = new Rotate($request->photo(), $request->direction());
 		$photo = $rotate_strategy->do();
 
-		return new PhotoResource($photo, $request->from_album());
+		return new PhotoResource(
+			photo: $photo,
+			album_id: $request->from_album()?->get_id(),
+			should_downgrade_size_variants: !Gate::check(PhotoPolicy::CAN_ACCESS_FULL_PHOTO, [Photo::class, $photo])
+		);
 	}
 
 	/**
@@ -262,7 +311,7 @@ class PhotoController extends Controller
 
 	private function shouldWatermark(?SizeVariant $size_variant): bool
 	{
-		if ($size_variant->type === SizeVariantType::ORIGINAL && !Configs::getValueAsBool('watermark_original')) {
+		if ($size_variant->type === SizeVariantType::ORIGINAL && !request()->configs()->getValueAsBool('watermark_original')) {
 			return false;
 		}
 

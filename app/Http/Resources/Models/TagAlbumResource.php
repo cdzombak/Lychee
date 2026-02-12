@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Resources\Models;
@@ -16,7 +16,6 @@ use App\Http\Resources\Rights\AlbumRightsResource;
 use App\Http\Resources\Traits\HasHeaderUrl;
 use App\Http\Resources\Traits\HasPrepPhotoCollection;
 use App\Http\Resources\Traits\HasTimelineData;
-use App\Models\Configs;
 use App\Models\TagAlbum;
 use App\Policies\AlbumPolicy;
 use Illuminate\Support\Collection;
@@ -68,7 +67,11 @@ class TagAlbumResource extends Data
 		$this->copyright = $tag_album->copyright;
 
 		// children
-		$this->photos = $tag_album->relationLoaded('photos') ? $this->toPhotoResources($tag_album->photos, $tag_album) : null;
+		$this->photos = $tag_album->relationLoaded('photos') ? $this->toPhotoResources(
+			photos: $tag_album->photos,
+			album_id: $tag_album->id,
+			should_downgrade: Gate::check(AlbumPolicy::CAN_ACCESS_FULL_PHOTO, [TagAlbum::class, $tag_album]) === false,
+		) : null;
 		if ($this->photos !== null) {
 			// Prep collection with first and last link + which id is next.
 			$this->prepPhotosCollection();
@@ -91,7 +94,7 @@ class TagAlbumResource extends Data
 			$this->editable = EditableBaseAlbumResource::fromModel($tag_album);
 		}
 
-		if (Configs::getValueAsBool('metrics_enabled') && Gate::check(AlbumPolicy::CAN_READ_METRICS, [TagAlbum::class, $tag_album])) {
+		if (request()->configs()->getValueAsBool('metrics_enabled') && Gate::check(AlbumPolicy::CAN_READ_METRICS, [TagAlbum::class, $tag_album])) {
 			$this->statistics = AlbumStatisticsResource::fromModel($tag_album->statistics);
 		}
 	}

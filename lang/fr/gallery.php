@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'Albums épinglés',
     'albums' => 'Albums',
     'root' => 'Albums',
+    'tabs' => [
+        'my_albums' => 'Mes albums',
+        'shared_with_me' => 'Partagé avec moi',
+    ],
     'favourites' => 'Photo favorites',
     'original' => 'Original',
     'medium' => 'Moyen',
@@ -43,6 +46,15 @@ return [
         'public' => 'Publics',
         'on_this_day' => 'Ce jour-là',
         'untagged' => 'Sans étiquette',
+        'unrated' => 'Sans évaluation',
+        'one_star' => '1 étoile',
+        'two_stars' => '2 étoiles',
+        'three_stars' => '3+ étoiles',
+        'four_stars' => '4+ étoiles',
+        'five_stars' => '5 étoiles',
+        'best_pictures' => 'Best Pictures',
+        'my_rated_pictures' => 'My Rated Pictures',
+        'my_best_pictures' => 'My Best Pictures',
     ],
     'layout' => [
         'squares' => 'Vignettes carrées',
@@ -50,6 +62,10 @@ return [
         'masonry' => 'Masonry avec proportions',
         'grid' => 'Grille avec proportions',
         'filmstrip' => 'Pellicule',
+    ],
+    'filter' => [
+        'by_rating' => 'Filter by star rating',
+        'n_stars_or_higher' => 'Filter by :n stars or higher',
     ],
     'overlay' => [
         'none' => 'Aucun',
@@ -67,6 +83,15 @@ return [
         'day' => 'Jour',
         'hour' => 'Heure',
     ],
+    'pagination' => [
+        'infinite_scroll' => 'Defilement infini',
+        'load_more_button' => 'Load more button',
+        'page_navigation' => 'Page navigation',
+        'loading' => 'Chargement en cours...',
+        'load_more' => 'Charger plus',
+        'load_more_photos' => 'Charger plus (%s photos restantes)',
+        'load_more_albums' => 'Charger plus (%s albums restant)',
+    ],
     'album' => [
         'header_albums' => 'Albums',
         'header_photos' => 'Photos',
@@ -77,6 +102,7 @@ return [
             'share' => 'Partager l’album',
             'embed' => 'Embed Album',
             'move' => 'Déplacer l’album',
+            'shop' => 'Gestion de la boutique',
             'danger' => 'ZONE DANGEREUSE',
         ],
         'hero' => [
@@ -147,7 +173,7 @@ return [
             'format' => 'Format',
             'resolution' => 'Résolution',
             'duration' => 'Durée',
-            'fps' => 'Images/s',
+            'fps' => 'Taux de rafraîchissement',
             'tags' => 'Étiquettes',
             'camera' => 'Appareil photo',
             'captured' => 'Prise de vue',
@@ -180,6 +206,19 @@ return [
             'set_created_at' => 'Définir la date de téléversement',
             'set_taken_at' => 'Définir la date de prise de vue',
             'set_taken_at_info' => 'Une étoile %s sera affichée si cette date n’est pas la date EXIF d’origine.<br>Décochez la case et enregistrez pour revenir à la date d’origine.',
+        ],
+        'rating' => [
+            'header' => 'Évaluation',
+            'rating' => 'évaluation',
+            'ratings' => 'évaluations',
+            'your_rating' => 'Vos évaluations',
+            'saving' => 'Enregistrement de l\'évaluation...',
+            'removed' => 'Évaluation retirée',
+            'saved' => 'Évaluation enregistrée',
+            'error' => 'Échec de l\'enregistrement de l\'évaluation',
+            'error_unauthorized' => 'Connexion obligatoire pour évaluer les photos',
+            'error_forbidden' => 'Vous n\'avez pas la permission d\'évaluer cette photo',
+            'error_not_found' => 'Photo non trouvée',
         ],
     ],
     'nsfw' => [
@@ -222,15 +261,19 @@ return [
     'sort' => [
         'photo_select_1' => 'Date de téléversement',
         'photo_select_2' => 'Date de prise de vue',
-        'photo_select_3' => 'Titre',
-        'photo_select_4' => 'Description',
+        'photo_select_3' => 'Titre (Nat)',
+        'photo_select_4' => 'Description (Nat)',
+        'photo_select_3_strict' => 'Titre (Lexico)',
+        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'Favori',
         'photo_select_7' => 'Format de la photo',
         'ascending' => 'Croissant',
         'descending' => 'Décroissant',
         'album_select_1' => 'Date de création',
-        'album_select_2' => 'Titre',
-        'album_select_3' => 'Description',
+        'album_select_2' => 'Titre (Nat)',
+        'album_select_3' => 'Description (Nat)',
+        'album_select_2_strict' => 'Titre (Lexico)',
+        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'Date de prise la plus récente',
         'album_select_6' => 'Date de prise la plus ancienne',
     ],

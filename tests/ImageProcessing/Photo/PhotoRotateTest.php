@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -49,7 +49,6 @@ class PhotoRotateTest extends BaseApiWithDataTest
 		$this->assertForbidden($response);
 
 		Configs::set('editor_enabled', false);
-		Configs::invalidateCache();
 
 		$response = $this->actingAs($this->userMayUpload1)->postJson('Photo::rotate', [
 			'photo_id' => $this->photo1->id,
@@ -66,12 +65,10 @@ class PhotoRotateTest extends BaseApiWithDataTest
 		$this->setUpRequiresGD();
 
 		Configs::set('editor_enabled', true);
-		Configs::invalidateCache();
 
 		$this->rotate();
 
 		Configs::set('editor_enabled', false);
-		Configs::invalidateCache();
 
 		$this->tearDownRequiresImageHandler();
 	}
@@ -80,12 +77,11 @@ class PhotoRotateTest extends BaseApiWithDataTest
 	{
 		$this->setUpRequiresImagick();
 		Configs::set('editor_enabled', true);
-		Configs::invalidateCache();
 
 		$this->rotate();
 
 		Configs::set('editor_enabled', false);
-		Configs::invalidateCache();
+
 		$this->tearDownRequiresImageHandler();
 	}
 
@@ -113,9 +109,9 @@ class PhotoRotateTest extends BaseApiWithDataTest
 		]);
 		$this->assertOk($response);
 
-		$response = $this->actingAs($this->userMayUpload2)->getJsonWithData('Album', ['album_id' => $new_album_id]);
+		$response = $this->actingAs($this->userMayUpload2)->getJsonWithData('Album::photos', ['album_id' => $new_album_id]);
 		$this->assertOk($response);
-		$id1 = $response->json('resource.photos.0.id');
+		$id1 = $response->json('photos.0.id');
 
 		$response = $this->actingAs($this->userMayUpload2)->postJson('Photo::rotate', [
 			'photo_id' => $id1,

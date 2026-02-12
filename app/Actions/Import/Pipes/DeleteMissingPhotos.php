@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Actions\Import\Pipes;
@@ -166,8 +166,7 @@ class DeleteMissingPhotos implements ImportPipe
 
 		// Execute the deletion
 		$delete = new Delete();
-		$file_deleter = $delete->do($photos_to_delete->pluck('id')->all(), $node->album->id);
-		$file_deleter->do();
+		$delete->do($photos_to_delete->pluck('id')->all(), $node->album->id);
 
 		$this->report(ImportEventReport::createError('deleted_missing', $node->name, "Deleted $count missing photos"));
 	}

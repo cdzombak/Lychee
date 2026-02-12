@@ -10,7 +10,7 @@
 		<div
 			:class="{
 				'shrink-0 transition-all duration-200 ease-out': true,
-				'w-0 lg:w-3xs': !props.areAllSettingsEnabled,
+				'w-0 ltr:lg:w-3xs rtl:lg:w-3xs': !props.areAllSettingsEnabled,
 				'w-0': props.areAllSettingsEnabled,
 			}"
 		></div>
@@ -23,11 +23,12 @@
 					hidden: !props.areAllSettingsEnabled,
 				}"
 			>
-				<Button icon="pi pi-angle-double-left" class="border-none py-2" severity="primary" text />
+				<Button v-if="isLTR()" icon="pi pi-angle-double-left" class="border-none py-2" severity="primary" text />
+				<Button v-else icon="pi pi-angle-double-right" class="border-none py-2" severity="primary" text />
 			</router-link>
 			<div
 				:class="{
-					'ml-6 flex gap-2 items-center w-full': true,
+					'ltr:ml-6 rtl:mr-6 flex gap-2 items-center w-full': true,
 					'opacity-50': !props.hasExperts,
 					'opacity-100': props.hasExperts,
 				}"
@@ -52,22 +53,25 @@
 			<div
 				:class="{
 					'shrink-0 transition-all duration-200 ease-out': true,
-					'w-0 ltr:lg:w-3xs': !props.areAllSettingsEnabled,
-					'w-0 rtl:lg:w-3xs': props.areAllSettingsEnabled,
+					'w-0': !props.areAllSettingsEnabled,
+					'w-0 lg:w-3xs': props.areAllSettingsEnabled,
 				}"
 			></div>
 		</div>
 	</div>
 	<div v-else class="sticky z-30 w-full top-0 flex bg-white dark:bg-surface-800 h-auto lg:h-11">
-		<Message severity="warn" class="w-full">{{ $t("settings.all.change_detected") }}</Message>
-		<Button class="bg-danger-800 border-none text-white font-bold px-8 hover:bg-danger-700" @click="emits('save')">{{
-			$t("settings.all.save")
-		}}</Button>
+		<Message severity="warn" class="w-full ltr:rounded-r-none rtl:rounded-l-none">{{ $t("settings.all.change_detected") }}</Message>
+		<Button
+			class="bg-danger-800 border-none text-white font-bold px-8 hover:bg-danger-700 rtl:rounded-r-none ltr:rounded-l-none"
+			@click="emits('save')"
+			>{{ $t("settings.all.save") }}</Button
+		>
 	</div>
 </template>
 <script setup lang="ts">
 import SettingsService from "@/services/settings-service";
 import { useLycheeStateStore } from "@/stores/LycheeState";
+import { useLtRorRtL } from "@/utils/Helpers";
 import { storeToRefs } from "pinia";
 import Button from "primevue/button";
 import Message from "primevue/message";
@@ -80,6 +84,8 @@ const props = defineProps<{
 	isCollapsed: boolean;
 	areAllSettingsEnabled: boolean;
 }>();
+
+const { isLTR } = useLtRorRtL();
 
 const lycheeStore = useLycheeStateStore();
 const { is_old_style, is_expert_mode } = storeToRefs(lycheeStore);

@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Middleware;
@@ -55,15 +55,14 @@ class MigrationStatus
 		if ($required_status === self::COMPLETE) {
 			if ($this->is_migrated->assert()) {
 				return $next($request);
-			} else {
-				throw new MigrationRequiredException();
 			}
+			throw new MigrationRequiredException();
 		} elseif ($required_status === self::INCOMPLETE) {
 			if ($this->is_migrated->assert()) {
 				throw new MigrationAlreadyCompletedException();
-			} else {
-				return $next($request);
 			}
+
+			return $next($request);
 		} else {
 			throw new LycheeInvalidArgumentException('$requiredStatus must either be "' . self::COMPLETE . '" or "' . self::INCOMPLETE . '"');
 		}

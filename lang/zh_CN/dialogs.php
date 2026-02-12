@@ -71,6 +71,7 @@ return [
         'enter_license' => '请在下方输入您的许可证密钥：',
         'license_key' => '许可证密钥',
         'invalid_license' => '无效的许可证密钥。',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => '注册',
     ],
     'share_album' => [
@@ -156,6 +157,11 @@ return [
         'info' => '请输入新相册的标题：',
         'title' => '标题',
         'create' => '创建相册',
+        'visibility_private' => 'This album will be private (visible only to you)',
+        'visibility_public' => 'This album will be public (visible to everyone)',
+        'visibility_public_hidden' => 'This album will be public but hidden from listings',
+        'visibility_inherit' => 'This album will inherit visibility from its parent',
+        'visibility_inherit_no_parent' => 'This album will be private (no parent to inherit from)',
     ],
     'new_tag_album' => [
         'menu' => '创建标签相册',
@@ -166,6 +172,7 @@ return [
     ],
     'delete_album' => [
         'confirmation' => '您确定要删除相册"%s"及其包含的所有照片吗？',
+        'confirmation_tag' => '您确定要删除相册"%s"吗？',
         'confirmation_multiple' => '您确定要删除所有 %d 个选定的相册及其包含的所有照片吗？',
         'warning' => '此操作无法撤销！',
         'delete' => '删除相册和照片',

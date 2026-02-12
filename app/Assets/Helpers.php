@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Assets;
@@ -94,6 +94,10 @@ class Helpers
 	 */
 	public function getSymbolByQuantity(float $bytes): string
 	{
+		if ($bytes <= 0) {
+			return '0 B';
+		}
+
 		$symbols = [
 			'B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB',
 		];

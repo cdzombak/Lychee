@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -55,10 +55,9 @@ class TakeDateTest extends BaseApiWithDataTest
 		])
 			->assertSuccessful();
 
-		$this->clearCachedSmartAlbums();
-		$response = $this->getJsonWithData('Album', ['album_id' => 'unsorted']);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => 'unsorted']);
 		$this->assertOk($response);
-		$photo2 = $response->json('resource.photos.0');
+		$photo2 = $response->json('photos.0');
 
 		$file_time = \Safe\filemtime(public_path($this->dropUrlPrefix($photo2['size_variants']['original']['url'])));
 		$carbon = new Carbon($photo2['created_at']);

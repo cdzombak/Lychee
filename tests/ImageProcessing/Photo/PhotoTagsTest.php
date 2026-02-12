@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -50,16 +50,13 @@ class PhotoTagsTest extends BaseApiWithDataTest
 			'shall_override' => true,
 		]);
 		$this->assertNoContent($response);
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$response->assertJson([
-			'config' => [],
-			'resource' => [
-				'photos' => [
-					[
-						'id' => $this->photo1->id,
-						'tags' => ['tag1'],
-					],
+			'photos' => [
+				[
+					'id' => $this->photo1->id,
+					'tags' => ['tag1'],
 				],
 			],
 		]);
@@ -80,16 +77,13 @@ class PhotoTagsTest extends BaseApiWithDataTest
 			'shall_override' => false,
 		]);
 
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$response->assertJson([
-			'config' => [],
-			'resource' => [
-				'photos' => [
-					[
-						'id' => $this->photo1->id,
-						'tags' => ['tag1'],
-					],
+			'photos' => [
+				[
+					'id' => $this->photo1->id,
+					'tags' => ['tag1'],
 				],
 			],
 		]);
@@ -110,16 +104,13 @@ class PhotoTagsTest extends BaseApiWithDataTest
 			'shall_override' => false,
 		]);
 
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$response->assertJson([
-			'config' => [],
-			'resource' => [
-				'photos' => [
-					[
-						'id' => $this->photo1->id,
-						'tags' => ['tag1', 'tag2'],
-					],
+			'photos' => [
+				[
+					'id' => $this->photo1->id,
+					'tags' => ['tag1', 'tag2'],
 				],
 			],
 		]);
@@ -140,16 +131,13 @@ class PhotoTagsTest extends BaseApiWithDataTest
 			'shall_override' => false,
 		]);
 
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$response->assertJson([
-			'config' => [],
-			'resource' => [
-				'photos' => [
-					[
-						'id' => $this->photo1->id,
-						'tags' => ['tag1', 'tag2'],
-					],
+			'photos' => [
+				[
+					'id' => $this->photo1->id,
+					'tags' => ['tag1', 'tag2'],
 				],
 			],
 		]);
@@ -170,16 +158,13 @@ class PhotoTagsTest extends BaseApiWithDataTest
 			'shall_override' => true,
 		]);
 
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$response->assertJson([
-			'config' => [],
-			'resource' => [
-				'photos' => [
-					[
-						'id' => $this->photo1->id,
-						'tags' => ['tag3'],
-					],
+			'photos' => [
+				[
+					'id' => $this->photo1->id,
+					'tags' => ['tag3'],
 				],
 			],
 		]);

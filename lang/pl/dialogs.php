@@ -71,6 +71,7 @@ return [
         'enter_license' => 'Wprowadź swój klucz licencyjny poniżej:',
         'license_key' => 'Klucz licencyjny',
         'invalid_license' => 'Nieprawidłowy klucz licencyjny.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'Zarejestruj się',
     ],
     'share_album' => [
@@ -156,7 +157,11 @@ return [
         'info' => 'Wprowadź tytuł nowego albumu:',
         'title' => 'tytuł',
         'create' => 'Utwórz album',
-    ],
+        'visibility_private' => 'Ten album będzie prywatny (widoczny tylko dla Ciebie)',
+        'visibility_public' => 'Ten album będzie publiczny (widoczny dla wszystkich)',
+        'visibility_public_hidden' => 'Ten album będzie publiczny, ale ukryty z list',
+        'visibility_inherit' => 'Ten album odziedziczy widoczność od albumu nadrzednego',
+        'visibility_inherit_no_parent' => 'Ten album będzie prywatny (brak albumu nadrzednego)',    ],
     'new_tag_album' => [
         'menu' => 'Utwórz album ze znacznikami',
         'info' => 'Wprowadź tytuł nowego tagu albumu:',
@@ -166,6 +171,7 @@ return [
     ],
     'delete_album' => [
         'confirmation' => 'Czy na pewno chcesz usunąć album "%s" i wszystkie znajdujące się w nim zdjęcia?',
+        'confirmation_tag' => 'Czy na pewno chcesz usunąć album "%s"?',
         'confirmation_multiple' => 'Czy na pewno chcesz usunąć wszystkie %d wybrane albumy i wszystkie zawarte w nich zdjęcia?',
         'warning' => 'Tego działania nie można cofnąć!',
         'delete' => 'Usuwanie albumu i zdjęć',

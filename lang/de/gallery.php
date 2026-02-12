@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -8,9 +7,13 @@ return [
     */
     'title' => 'Galerie',
     'smart_albums' => 'Intelligente Alben',
-    'pinned_albums' => 'Angeheftete Alben',
+    'pinned_albums' => 'Vorgeschlagene Alben',
     'albums' => 'Alben',
     'root' => 'Alben',
+    'tabs' => [
+        'my_albums' => 'My Albums',
+        'shared_with_me' => 'Shared with Me',
+    ],
     'favourites' => 'Favoriten',
     'original' => 'Original',
     'medium' => 'Mittel',
@@ -43,6 +46,15 @@ return [
         'public' => 'Öffentlich',
         'on_this_day' => 'An diesem Tag',
         'untagged' => 'Untagged',
+        'unrated' => 'Unrated',
+        'one_star' => '1 Star',
+        'two_stars' => '2 Stars',
+        'three_stars' => '3+ Stars',
+        'four_stars' => '4+ Stars',
+        'five_stars' => '5 Stars',
+        'best_pictures' => 'Best Pictures',
+        'my_rated_pictures' => 'My Rated Pictures',
+        'my_best_pictures' => 'My Best Pictures',
     ],
     'layout' => [
         'squares' => 'Quadratische Miniaturansichten',
@@ -50,6 +62,10 @@ return [
         'masonry' => 'Mit Seitenverhältnis, masonry',
         'grid' => 'Mit Seitenverhältnis, Raster',
         'filmstrip' => 'Filmstreifen',
+    ],
+    'filter' => [
+        'by_rating' => 'Filter by star rating',
+        'n_stars_or_higher' => 'Filter by :n stars or higher',
     ],
     'overlay' => [
         'none' => 'Keine',
@@ -67,6 +83,15 @@ return [
         'day' => 'Tag',
         'hour' => 'Stunde',
     ],
+    'pagination' => [
+        'infinite_scroll' => 'Infinite scroll',
+        'load_more_button' => 'Load more button',
+        'page_navigation' => 'Page navigation',
+        'loading' => 'Loading...',
+        'load_more' => 'Load More',
+        'load_more_photos' => 'Load More (%s photos remaining)',
+        'load_more_albums' => 'Load More (%s albums remaining)',
+    ],
     'album' => [
         'header_albums' => 'Alben',
         'header_photos' => 'Fotos',
@@ -77,6 +102,7 @@ return [
             'share' => 'Album teilen',
             'embed' => 'Embed Album',
             'move' => 'Album verschieben',
+            'shop' => 'Shop Management',
             'danger' => 'GEFAHRENZONE',
         ],
         'hero' => [
@@ -181,6 +207,19 @@ return [
             'set_taken_at' => 'Aufnahmedatum festlegen',
             'set_taken_at_info' => 'Wenn diese Option aktiviert ist, wird ein Sternchen %s angezeigt, um darauf hinzuweisen, dass es sich bei diesem Datum nicht um das ursprüngliche EXIF-Datum handelt.<br>Deaktivieren des Kontrollkästchens und speichern stellt das ursprüngliche Datum wieder her.',
         ],
+        'rating' => [
+            'header' => 'Rating',
+            'rating' => 'rating',
+            'ratings' => 'ratings',
+            'your_rating' => 'Your rating',
+            'saving' => 'Saving rating...',
+            'removed' => 'Rating removed',
+            'saved' => 'Rating saved',
+            'error' => 'Failed to save rating',
+            'error_unauthorized' => 'You must be logged in to rate photos',
+            'error_forbidden' => 'You do not have permission to rate this photo',
+            'error_not_found' => 'Photo not found',
+        ],
     ],
     'nsfw' => [
         'header' => 'Sensibler Inhalt',
@@ -222,15 +261,19 @@ return [
     'sort' => [
         'photo_select_1' => 'Zeit des Hochladens',
         'photo_select_2' => 'Aufnahmedatum',
-        'photo_select_3' => 'Titel',
-        'photo_select_4' => 'Beschreibung',
+        'photo_select_3' => 'Titel (Nat)',
+        'photo_select_4' => 'Beschreibung (Nat)',
+        'photo_select_3_strict' => 'Title (Lexico)',
+        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'Favorit',
         'photo_select_7' => 'Fotoformat',
         'ascending' => 'Aufsteigend',
         'descending' => 'Absteigend',
         'album_select_1' => 'Zeitpunkt der Erstellung',
-        'album_select_2' => 'Titel',
-        'album_select_3' => 'Beschreibung',
+        'album_select_2' => 'Titel (Nat)',
+        'album_select_3' => 'Beschreibung (Nat)',
+        'album_select_2_strict' => 'Title (Lexico)',
+        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'Letztes Aufnahmedatum',
         'album_select_6' => 'Ältestes Aufnahmedatum',
     ],

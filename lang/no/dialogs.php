@@ -71,6 +71,7 @@ return [
         'enter_license' => 'Skriv inn lisensnøkkelen din nedenfor:',
         'license_key' => 'Lisensnøkkel',
         'invalid_license' => 'Ugyldig lisensnøkkel.',
+        'expired_license' => 'Your license key has expired. Empty the field or get a new one at <a href="https://keygen.lycheeorg.dev" class="text-primary-500 underline" target="_blank" rel="noopener noreferrer">keygen.lycheeorg.dev</a>.',
         'register' => 'Registrer',
     ],
     'share_album' => [
@@ -156,6 +157,11 @@ return [
         'info' => 'Enter a title for the new album:',
         'title' => 'title',
         'create' => 'Create Album',
+        'visibility_private' => 'This album will be private (visible only to you)',
+        'visibility_public' => 'This album will be public (visible to everyone)',
+        'visibility_public_hidden' => 'This album will be public but hidden from listings',
+        'visibility_inherit' => 'This album will inherit visibility from its parent',
+        'visibility_inherit_no_parent' => 'This album will be private (no parent to inherit from)',
     ],
     'new_tag_album' => [
         'menu' => 'Create Tag Album',
@@ -165,8 +171,7 @@ return [
         'create' => 'Create Tag Album',
     ],
     'delete_album' => [
-        'confirmation' => 'Are you sure you want to delete the album “%s” and all of the photos it contains?',
-        'confirmation_multiple' => 'Are you sure you want to delete all %d selected albums and all of the photos they contain?',
+        'confirmation' => 'Are you sure you want to delete the album “%s” and all of the photos it contains?',        'confirmation_tag' => 'Are you sure you want to delete the album "%s"?',        'confirmation_multiple' => 'Are you sure you want to delete all %d selected albums and all of the photos they contain?',
         'warning' => 'This action can not be undone!',
         'delete' => 'Delete Album and Photos',
     ],

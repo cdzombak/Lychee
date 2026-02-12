@@ -3,11 +3,12 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Resources\Models;
 
+use App\Contracts\Models\AbstractAlbum;
 use App\Enum\ColumnSortingType;
 use App\Http\Resources\Editable\EditableBaseAlbumResource;
 use App\Http\Resources\Models\Utils\AlbumProtectionPolicy;
@@ -18,7 +19,6 @@ use App\Http\Resources\Traits\HasHeaderUrl;
 use App\Http\Resources\Traits\HasPrepPhotoCollection;
 use App\Http\Resources\Traits\HasTimelineData;
 use App\Models\Album;
-use App\Models\Configs;
 use App\Policies\AlbumPolicy;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -80,13 +80,17 @@ class AlbumResource extends Data
 		$this->track_url = $album->track_url;
 		$this->license = $album->license->localization();
 		// TODO: Investigate later why this string is 24 characters long.
-		$this->header_id = trim($album->header_id);
+		$this->header_id = $album->header_id !== null ? trim($album->header_id) : null;
 
 		// children
 		$this->parent_id = $album->parent_id;
 		$this->has_albums = !$album->isLeaf();
 		$this->albums = $album->relationLoaded('children') ? ThumbAlbumResource::collect($album->children) : null;
-		$this->photos = $album->relationLoaded('photos') ? $this->toPhotoResources($album->photos, $album) : null;
+		$this->photos = $album->relationLoaded('photos') ? $this->toPhotoResources(
+			photos: $album->photos,
+			album_id: $album->id,
+			should_downgrade: !Gate::check(AlbumPolicy::CAN_ACCESS_FULL_PHOTO, [AbstractAlbum::class, $album]),
+		) : null;
 		if ($this->photos !== null) {
 			// Prep collection with first and last link + which id is next.
 			$this->prepPhotosCollection();
@@ -98,7 +102,7 @@ class AlbumResource extends Data
 
 		if ($this->albums->count() > 0) {
 			// setup timeline data
-			$sorting = $album->album_sorting?->column ?? Configs::getValueAsEnum('sorting_albums_col', ColumnSortingType::class);
+			$sorting = $album->album_sorting?->column ?? request()->configs()->getValueAsEnum('sorting_albums_col', ColumnSortingType::class);
 			$album_granularity = $this->getAlbumTimeline($album->album_timeline);
 			$this->albums = TimelineData::setTimeLineDataForAlbums($this->albums, $sorting, $album_granularity);
 		}
@@ -118,7 +122,7 @@ class AlbumResource extends Data
 			$this->editable = EditableBaseAlbumResource::fromModel($album);
 		}
 
-		if (Configs::getValueAsBool('metrics_enabled') && Gate::check(AlbumPolicy::CAN_READ_METRICS, [Album::class, $album])) {
+		if (request()->configs()->getValueAsBool('metrics_enabled') && Gate::check(AlbumPolicy::CAN_READ_METRICS, [Album::class, $album])) {
 			$this->statistics = AlbumStatisticsResource::fromModel($album->statistics);
 		}
 	}

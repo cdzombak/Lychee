@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'الألبومات المثبتة',
     'albums' => 'الألبومات',
     'root' => 'الألبومات',
+    'tabs' => [
+        'my_albums' => 'My Albums',
+        'shared_with_me' => 'Shared with Me',
+    ],
     'favourites' => 'المفضلة',
     'original' => 'الأصلي',
     'medium' => 'متوسط',
@@ -43,6 +46,15 @@ return [
         'public' => 'عام',
         'on_this_day' => 'في هذا اليوم',
         'untagged' => 'Untagged',
+        'unrated' => 'Unrated',
+        'one_star' => '1 Star',
+        'two_stars' => '2 Stars',
+        'three_stars' => '3+ Stars',
+        'four_stars' => '4+ Stars',
+        'five_stars' => '5 Stars',
+        'best_pictures' => 'Best Pictures',
+        'my_rated_pictures' => 'My Rated Pictures',
+        'my_best_pictures' => 'My Best Pictures',
     ],
     'layout' => [
         'squares' => 'مصغرات مربعة',
@@ -50,6 +62,10 @@ return [
         'masonry' => 'مع النسبة، متراص',
         'grid' => 'مع النسبة، شبكة',
         'filmstrip' => 'شريط فيلم',
+    ],
+    'filter' => [
+        'by_rating' => 'Filter by star rating',
+        'n_stars_or_higher' => 'Filter by :n stars or higher',
     ],
     'overlay' => [
         'none' => 'لا شيء',
@@ -67,6 +83,15 @@ return [
         'day' => 'يوم',
         'hour' => 'ساعة',
     ],
+    'pagination' => [
+        'infinite_scroll' => 'Infinite scroll',
+        'load_more_button' => 'Load more button',
+        'page_navigation' => 'Page navigation',
+        'loading' => 'Loading...',
+        'load_more' => 'Load More',
+        'load_more_photos' => 'Load More (%s photos remaining)',
+        'load_more_albums' => 'Load More (%s albums remaining)',
+    ],
     'album' => [
         'header_albums' => 'الألبومات',
         'header_photos' => 'الصور',
@@ -77,6 +102,7 @@ return [
             'share' => 'مشاركة الألبوم',
             'embed' => 'تضمين الألبوم',
             'move' => 'نقل الألبوم',
+            'shop' => 'Shop Management',
             'danger' => 'منطقة الخطر',
         ],
         'hero' => [
@@ -181,6 +207,19 @@ return [
             'set_taken_at' => 'تعيين تاريخ الالتقاط',
             'set_taken_at_info' => 'عند التعيين، سيتم عرض نجمة %s للإشارة إلى أن هذا التاريخ ليس تاريخ EXIF الأصلي.<br>قم بإلغاء تحديد خانة الاختيار هذه واحفظ لت reset إلى التاريخ الأصلي.',
         ],
+        'rating' => [
+            'header' => 'Rating',
+            'rating' => 'rating',
+            'ratings' => 'ratings',
+            'your_rating' => 'Your rating',
+            'saving' => 'Saving rating...',
+            'removed' => 'Rating removed',
+            'saved' => 'Rating saved',
+            'error' => 'Failed to save rating',
+            'error_unauthorized' => 'You must be logged in to rate photos',
+            'error_forbidden' => 'You do not have permission to rate this photo',
+            'error_not_found' => 'Photo not found',
+        ],
     ],
     'nsfw' => [
         'header' => 'محتوى حساس',
@@ -224,6 +263,8 @@ return [
         'photo_select_2' => 'تاريخ الالتقاط',
         'photo_select_3' => 'العنوان',
         'photo_select_4' => 'الوصف',
+        'photo_select_3_strict' => 'Title (Lexico)',
+        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'تمييز',
         'photo_select_7' => 'صيغة الصورة',
         'ascending' => 'تصاعدي',
@@ -231,6 +272,8 @@ return [
         'album_select_1' => 'وقت الإنشاء',
         'album_select_2' => 'العنوان',
         'album_select_3' => 'الوصف',
+        'album_select_2_strict' => 'Title (Lexico)',
+        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'أحدث تاريخ التقاط',
         'album_select_6' => 'أقدم تاريخ التقاط',
     ],

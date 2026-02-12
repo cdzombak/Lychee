@@ -69,7 +69,7 @@
 				}
 			"
 		/>
-		<PhotoEdit v-if="photoStore.photo.rights.can_edit" v-model:visible="is_photo_edit_open" />
+		<PhotoEdit v-if="albumStore.rights?.can_edit" v-model:visible="is_photo_edit_open" />
 		<MoveDialog v-model:visible="is_move_visible" @moved="refresh" />
 		<DeleteDialog v-model:visible="is_delete_visible" @deleted="refresh" />
 	</template>
@@ -206,7 +206,6 @@ const configForMenu = computed<App.Http.Resources.GalleryConfigs.AlbumConfig>(()
 	return {
 		is_base_album: false,
 		is_model_album: false,
-		is_accessible: true,
 		is_password_protected: false,
 		is_map_accessible: false,
 		is_mod_frame_enabled: false,
@@ -248,17 +247,11 @@ const {
 	toggleCopy,
 } = useGalleryModals(togglableStore);
 
-const {
-	selectedPhotosIdx,
-	selectedAlbumsIdx,
-	selectedPhoto,
-	selectedAlbum,
-	selectedPhotos,
-	selectedAlbums,
-	selectedPhotosIds,
-	selectedAlbumsIds,
-	unselect,
-} = useSelection(photosStore, albumsStore, togglableStore);
+const { selectedPhoto, selectedAlbum, selectedPhotos, selectedAlbums, selectedPhotosIds, selectedAlbumsIds, unselect } = useSelection(
+	photosStore,
+	albumsStore,
+	togglableStore,
+);
 
 const { toggleStar, rotatePhotoCCW, rotatePhotoCW, setAlbumHeader, rotateOverlay } = usePhotoActions(photoStore, albumId, toast, lycheeStore);
 
@@ -278,6 +271,10 @@ const photoCallbacks = {
 			return;
 		}
 		PhotoService.setAsCover(selectedPhoto.value!.id, albumId.value);
+		// Update the album's cover_id immediately to reflect the change (toggle behavior)
+		if (albumStore.modelAlbum !== undefined) {
+			albumStore.modelAlbum.cover_id = albumStore.modelAlbum.cover_id === selectedPhoto.value!.id ? null : selectedPhoto.value!.id;
+		}
 		AlbumService.clearCache(albumId.value);
 		// refresh();
 	},
@@ -286,6 +283,21 @@ const photoCallbacks = {
 			return;
 		}
 		PhotoService.setAsHeader(selectedPhoto.value!.id, albumId.value, false);
+		// Update the album's header_id immediately to reflect the change (toggle behavior)
+		const isToggleOff = albumStore.modelAlbum?.header_id === selectedPhoto.value!.id;
+		if (albumStore.modelAlbum !== undefined) {
+			albumStore.modelAlbum.header_id = isToggleOff ? null : selectedPhoto.value!.id;
+		}
+		// Update the header image URL in the album's preFormattedData
+		if (albumStore.album?.preFormattedData) {
+			if (isToggleOff) {
+				albumStore.album.preFormattedData.url = null;
+			} else {
+				// Use medium or small variant for the header image
+				const headerUrl = selectedPhoto.value!.size_variants.medium?.url ?? selectedPhoto.value!.size_variants.small?.url ?? null;
+				albumStore.album.preFormattedData.url = headerUrl;
+			}
+		}
 		AlbumService.clearCache(albumId.value);
 		// refresh();
 	},
@@ -313,10 +325,10 @@ const selectors = {
 	album: album,
 	selectedPhoto: selectedPhoto,
 	selectedPhotos: selectedPhotos,
-	selectedPhotosIdx: selectedPhotosIdx,
+	selectedPhotosIds: selectedPhotosIds,
 	selectedAlbum: selectedAlbum,
 	selectedAlbums: selectedAlbums,
-	selectedAlbumIdx: selectedAlbumsIdx,
+	selectedAlbumsIds: selectedAlbumsIds,
 };
 
 const albumPanelConfig = computed<AlbumThumbConfig>(() => ({
@@ -369,16 +381,12 @@ onKeyStroke("f", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && toggla
 onKeyStroke("Escape", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && is_slideshow_active.value && stop());
 
 // Priviledged Photo operations
-onKeyStroke("m", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && photoStore.photo?.rights.can_edit && toggleMove());
+onKeyStroke("m", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && albumStore.rights?.can_edit && toggleMove());
 onKeyStroke(
 	"e",
-	() =>
-		!shouldIgnoreKeystroke() &&
-		photoStore.isLoaded &&
-		photoStore.photo?.rights.can_edit &&
-		(is_photo_edit_open.value = !is_photo_edit_open.value),
+	() => !shouldIgnoreKeystroke() && photoStore.isLoaded && albumStore.rights?.can_edit && (is_photo_edit_open.value = !is_photo_edit_open.value),
 );
-onKeyStroke("s", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && photoStore.photo?.rights.can_edit && toggleStar());
+onKeyStroke("s", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && albumStore.rights?.can_edit && toggleStar());
 onKeyStroke(["Delete", "Backspace"], () => !shouldIgnoreKeystroke() && photoStore.isLoaded && albumStore.album?.rights.can_delete && toggleDelete());
 
 // on key stroke escape:

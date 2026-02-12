@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Http\Controllers\Gallery;
@@ -60,7 +60,6 @@ use App\Http\Resources\Models\TargetAlbumResource;
 use App\Http\Resources\Models\Utils\AlbumProtectionPolicy;
 use App\Jobs\WatermarkerJob;
 use App\Models\Album;
-use App\Models\Configs;
 use App\Models\Extensions\BaseAlbum;
 use App\Models\Photo;
 use App\Models\SizeVariant;
@@ -68,7 +67,6 @@ use App\Models\Tag;
 use App\Models\TagAlbum;
 use App\SmartAlbums\BaseSmartAlbum;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -84,21 +82,20 @@ class AlbumController extends Controller
 	/**
 	 * Provided an albumID, returns the album.
 	 */
+	#[\Deprecated('Use AlbumHeadController::get to fetch album metadata without children/photos')]
 	public function get(GetAlbumRequest $request): AbstractAlbumResource
 	{
 		$config = new AlbumConfig($request->album());
 		$album_resource = null;
 
-		if ($config->is_accessible) {
-			$album_resource = match (true) {
-				$request->album() instanceof BaseSmartAlbum => new SmartAlbumResource($request->album()),
-				$request->album() instanceof TagAlbum => new TagAlbumResource($request->album()),
-				$request->album() instanceof Album => new AlbumResource($request->album()),
-				// @codeCoverageIgnoreStart
-				default => throw new LycheeLogicException('This should not happen'),
-				// @codeCoverageIgnoreEnd
-			};
-		}
+		$album_resource = match (true) {
+			$request->album() instanceof BaseSmartAlbum => new SmartAlbumResource($request->album()),
+			$request->album() instanceof TagAlbum => new TagAlbumResource($request->album()),
+			$request->album() instanceof Album => new AlbumResource($request->album()),
+			// @codeCoverageIgnoreStart
+			default => throw new LycheeLogicException('This should not happen'),
+			// @codeCoverageIgnoreEnd
+		};
 
 		AlbumVisit::dispatchIf((MetricsController::shouldMeasure() && $request->album() instanceof BaseAlbum), $this->visitorId(), $request->album()->get_id());
 
@@ -245,8 +242,7 @@ class AlbumController extends Controller
 	 */
 	public function delete(DeleteAlbumsRequest $request, Delete $delete): void
 	{
-		$file_deleter = $delete->do($request->albumIds());
-		App::terminating(fn () => $file_deleter->do());
+		$delete->do($request->albumIds());
 	}
 
 	/**
@@ -395,7 +391,7 @@ class AlbumController extends Controller
 		if ($size_variant === null || $size_variant->type === SizeVariantType::PLACEHOLDER) {
 			return false;
 		}
-		if ($size_variant->type === SizeVariantType::ORIGINAL && !Configs::getValueAsBool('watermark_original')) {
+		if ($size_variant->type === SizeVariantType::ORIGINAL && !request()->configs()->getValueAsBool('watermark_original')) {
 			return false;
 		}
 

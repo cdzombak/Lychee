@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 namespace App\Relations;
@@ -16,6 +16,7 @@ use App\Models\Builders\AlbumBuilder;
 use App\Models\Extensions\SortingDecorator;
 use App\Policies\AlbumQueryPolicy;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @extends HasManyBidirectionally<Album,Album>
@@ -61,7 +62,8 @@ class HasManyChildAlbums extends HasManyBidirectionally
 	{
 		if (static::$constraints) {
 			parent::addConstraints();
-			$this->album_query_policy->applyVisibilityFilter($this->getRelationQuery());
+			$user = Auth::user();
+			$this->album_query_policy->applyVisibilityFilter($this->getRelationQuery(), $user);
 		}
 	}
 
@@ -73,7 +75,8 @@ class HasManyChildAlbums extends HasManyBidirectionally
 	public function addEagerConstraints(array $models)
 	{
 		parent::addEagerConstraints($models);
-		$this->album_query_policy->applyVisibilityFilter($this->getRelationQuery());
+		$user = Auth::user();
+		$this->album_query_policy->applyVisibilityFilter($this->getRelationQuery(), $user);
 	}
 
 	/**
@@ -122,7 +125,7 @@ class HasManyChildAlbums extends HasManyBidirectionally
 				$children_of_model = $this->getRelationValue($dictionary, $key, 'many');
 				$sorting = $model->getEffectiveAlbumSorting();
 				$children_of_model = $children_of_model
-					->sortBy($sorting->column->value, SORT_NATURAL | SORT_FLAG_CASE, $sorting->order === OrderSortingType::DESC)
+					->sortBy($sorting->column->toColumn(), SORT_NATURAL | SORT_FLAG_CASE, $sorting->order === OrderSortingType::DESC)
 					->values();
 				$model->setRelation($relation, $children_of_model);
 				// This is the newly added code which sets this method apart

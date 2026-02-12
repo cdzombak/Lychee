@@ -4,11 +4,9 @@
 		:class="{
 			'absolute top-0 w-full sm:w-1/2 left-1/2 -translate-x-1/2': true,
 			'lg:hover:opacity-100 transition-opacity duration-500 ease-in-out': !isTouchDevice(),
-			'opacity-50 lg:opacity-20': !isTouchDevice() && !lycheeStore.is_desktop_dock_full_transparency_enabled,
-			'opacity-75': isTouchDevice() && !lycheeStore.is_mobile_dock_full_transparency_enabled,
-			'opacity-0':
-				(!isTouchDevice() && lycheeStore.is_desktop_dock_full_transparency_enabled) ||
-				(isTouchDevice() && lycheeStore.is_mobile_dock_full_transparency_enabled),
+			'opacity-50 lg:opacity-20': !isTouchDevice() && !isFullTransparency,
+			'opacity-75': isTouchDevice() && !isFullTransparency,
+			'opacity-0': isFullTransparency,
 			'z-20 mt-14 sm:mt-0': true,
 			'sm:h-1/4': !props.isNarrowMenu,
 			'h-14': props.isNarrowMenu,
@@ -69,10 +67,12 @@ import { trans } from "laravel-vue-i18n";
 import { useLeftMenuStateStore } from "@/stores/LeftMenuState";
 import { useRoute } from "vue-router";
 import { usePhotoStore } from "@/stores/PhotoState";
+import { useAlbumStore } from "@/stores/AlbumState";
 
 const toast = useToast();
 const lycheeStore = useLycheeStateStore();
 const photoStore = usePhotoStore();
+const albumStore = useAlbumStore();
 const leftMenu = useLeftMenuStateStore();
 const togglableStore = useTogglablesStateStore();
 const { is_slideshow_active, are_details_open } = storeToRefs(togglableStore);
@@ -85,7 +85,7 @@ const isWatermarkerEnabled = computed(
 	() =>
 		leftMenu.initData?.modules.is_watermarker_enabled &&
 		photoStore.photo &&
-		photoStore.photo.rights.can_edit &&
+		albumStore.rights?.can_edit &&
 		needSizeVariantsWatermark(photoStore.photo.size_variants),
 );
 
@@ -126,4 +126,11 @@ const emits = defineEmits<{
 
 const route = useRoute();
 const isTimeline = computed(() => route.name === "timeline");
+
+const isFullTransparency = computed(() => {
+	if (isTouchDevice()) {
+		return lycheeStore.is_mobile_dock_full_transparency_enabled;
+	}
+	return lycheeStore.is_desktop_dock_full_transparency_enabled;
+});
 </script>

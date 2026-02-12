@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -51,16 +51,13 @@ class PhotoStarTest extends BaseApiWithDataTest
 		]);
 		$this->assertNoContent($response);
 
-		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album', ['album_id' => $this->album1->id]);
+		$response = $this->actingAs($this->userMayUpload1)->getJsonWithData('Album::photos', ['album_id' => $this->album1->id]);
 		$this->assertOk($response);
 		$response->assertJson([
-			'config' => [],
-			'resource' => [
-				'photos' => [
-					[
-						'id' => $this->photo1->id,
-						'is_starred' => true,
-					],
+			'photos' => [
+				[
+					'id' => $this->photo1->id,
+					'is_starred' => true,
 				],
 			],
 		]);

@@ -3,7 +3,7 @@
 /**
  * SPDX-License-Identifier: MIT
  * Copyright (c) 2017-2018 Tobias Reich
- * Copyright (c) 2018-2025 LycheeOrg.
+ * Copyright (c) 2018-2026 LycheeOrg.
  */
 
 /**
@@ -20,6 +20,7 @@ namespace Tests\ImageProcessing\Image\Handlers;
 
 use App\Facades\Helpers;
 use App\Models\Configs;
+use App\Repositories\ConfigManager;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use function Safe\date;
@@ -48,8 +49,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		$response = $this->actingAs($this->admin)->upload('Photo', filename: $filename, album_id: $this->album5->id);
 		$this->assertCreated($response);
 
-		$this->clearCachedSmartAlbums();
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album5->id]);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => $this->album5->id]);
 		$this->assertOk($response);
 
 		return $response;
@@ -70,14 +70,14 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		$taken_at = Carbon::create(
 			2019, 6, 1, 1, 28, 25, '+02:00'
 		);
-		$photo = $response->json('resource.photos.0');
-		self::assertEquals('f/2.8', $photo['aperture']);
-		self::assertEquals('16 mm', $photo['focal']);
-		self::assertEquals('1250', $photo['iso']);
-		self::assertEquals('EF16-35mm f/2.8L USM', $photo['lens']);
-		self::assertEquals('Canon', $photo['make']);
-		self::assertEquals('Canon EOS R', $photo['model']);
-		self::assertEquals('30 s', $photo['shutter']);
+		$photo = $response->json('photos.0');
+		self::assertEquals('2.8', $photo['preformatted']['aperture']);
+		self::assertEquals('16 mm', $photo['preformatted']['focal']);
+		self::assertEquals('ISO 1250', $photo['preformatted']['iso']);
+		self::assertEquals('EF16-35mm f/2.8L USM', $photo['preformatted']['lens']);
+		self::assertEquals('Canon', $photo['preformatted']['make']);
+		self::assertEquals('Canon EOS R', $photo['preformatted']['model']);
+		self::assertEquals('30 sec', $photo['preformatted']['shutter']);
 		self::assertEquals($taken_at->format('Y-m-d\TH:i:sP'), $photo['taken_at']);
 		self::assertEquals($taken_at->getTimezone()->getName(), $photo['taken_at_orig_tz']);
 		self::assertEquals('tests/Samples/night.jpg', $photo['title']);
@@ -106,12 +106,13 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	 */
 	public function testUploadWithPlaceholder(): void
 	{
-		$init_config_value1 = Configs::getValue('low_quality_image_placeholder');
+		$config_manager = resolve(ConfigManager::class);
+		$init_config_value1 = $config_manager->getValue('low_quality_image_placeholder');
 		Configs::set('low_quality_image_placeholder', '1');
-		static::assertEquals('1', Configs::getValue('low_quality_image_placeholder'));
+		static::assertEquals('1', $config_manager->getValue('low_quality_image_placeholder'));
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_NIGHT_IMAGE);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 		self::assertEquals(16, $photo['size_variants']['placeholder']['width']);
 		self::assertEquals(16, $photo['size_variants']['placeholder']['height']);
 		$responseContent = $response->getContent();
@@ -138,7 +139,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		/*
 		 * Check some Exif data
 		 */
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 		self::assertEquals(480, $photo['size_variants']['small']['width']);
 		self::assertEquals(360, $photo['size_variants']['small']['height']);
 		self::assertEquals(1440, $photo['size_variants']['medium']['width']);
@@ -161,7 +162,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		/*
 		 * Check some Exif data
 		 */
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 		self::assertEquals(480, $photo['size_variants']['small']['width']);
 		self::assertEquals(360, $photo['size_variants']['small']['height']);
 		self::assertEquals(1440, $photo['size_variants']['medium']['width']);
@@ -184,7 +185,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		/*
 		 * Check some Exif data
 		 */
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 		self::assertEquals(480, $photo['size_variants']['small']['width']);
 		self::assertEquals(360, $photo['size_variants']['small']['height']);
 		self::assertEquals(1440, $photo['size_variants']['medium']['width']);
@@ -207,7 +208,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		/*
 		 * Check some Exif data
 		 */
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 		self::assertEquals(480, $photo['size_variants']['small']['width']);
 		self::assertEquals(360, $photo['size_variants']['small']['height']);
 		self::assertEquals(1440, $photo['size_variants']['medium']['width']);
@@ -230,7 +231,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		/*
 		 * Check some Exif data
 		 */
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 		self::assertEquals(480, $photo['size_variants']['small']['width']);
 		self::assertEquals(360, $photo['size_variants']['small']['height']);
 		self::assertEquals(1440, $photo['size_variants']['medium']['width']);
@@ -242,19 +243,19 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	public function testPNGUpload(): void
 	{
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_PNG);
-		self::assertStringEndsWith('.png', $response->json('resource.photos.0.size_variants.original.url'));
+		self::assertStringEndsWith('.png', $response->json('photos.0.size_variants.original.url'));
 	}
 
 	public function testGIFUpload(): void
 	{
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_GIF);
-		self::assertStringEndsWith('.gif', $response->json('resource.photos.0.size_variants.original.url'));
+		self::assertStringEndsWith('.gif', $response->json('photos.0.size_variants.original.url'));
 	}
 
 	public function testWEBPUpload(): void
 	{
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_WEBP);
-		self::assertStringEndsWith('.webp', $response->json('resource.photos.0.size_variants.original.url'));
+		self::assertStringEndsWith('.webp', $response->json('photos.0.size_variants.original.url'));
 	}
 
 	/**
@@ -267,11 +268,11 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		$this->assertHasExifToolOrSkip();
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_TRAIN_IMAGE);
-		$id = $response->json('resource.photos.0.id');
+		$id = $response->json('photos.0.id');
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_TRAIN_VIDEO);
-		$photo = $response->json('resource.photos.0');
-		$id2 = $response->json('resource.photos.0.id');
+		$photo = $response->json('photos.0');
+		$id2 = $response->json('photos.0.id');
 
 		self::assertEquals($id, $id2);
 		self::assertEquals('E905E6C6-C747-4805-942F-9904A0281F02', $photo['live_photo_content_id']);
@@ -291,11 +292,11 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		$this->assertHasExifToolOrSkip();
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_TRAIN_VIDEO);
-		$id = $response->json('resource.photos.0.id');
+		$id = $response->json('photos.0.id');
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_TRAIN_IMAGE);
-		$photo = $response->json('resource.photos.0');
-		$id2 = $response->json('resource.photos.0.id');
+		$photo = $response->json('photos.0');
+		$id2 = $response->json('photos.0.id');
 
 		self::assertNotEquals($id, $id2);
 		self::assertEquals('E905E6C6-C747-4805-942F-9904A0281F02', $photo['live_photo_content_id']);
@@ -319,7 +320,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		$this->assertHasFFMpegOrSkip();
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_GMP_IMAGE);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertStringEndsWith('.mov', $photo['live_photo_url']);
 		self::assertEquals(pathinfo($photo['live_photo_url'], PATHINFO_DIRNAME), pathinfo($photo['size_variants']['original']['url'], PATHINFO_DIRNAME));
@@ -349,7 +350,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		file_put_contents(storage_path('logs/daily-' . date('Y-m-d') . '.log'), '');
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_GMP_BROKEN_IMAGE);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		// Size variants are generated, because they are extracted from the
 		// still part of the GMP, not the video part.
@@ -384,7 +385,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 		$this->assertHasFFMpegOrSkip();
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_GAMING_VIDEO);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertEquals(TestConstants::SAMPLE_FILE_GAMING_VIDEO, $photo['title']);
 		self::assertEquals(TestConstants::MIME_TYPE_VID_MP4, $photo['type']);
@@ -410,16 +411,17 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	 */
 	public function testVideoUploadWithoutFFmpeg(): void
 	{
-		$hasExifTool = Configs::getValueAsInt(TestConstants::CONFIG_HAS_EXIF_TOOL);
+		$config_manager = resolve(ConfigManager::class);
+		$hasExifTool = $config_manager->getValueAsInt(TestConstants::CONFIG_HAS_EXIF_TOOL);
 		Configs::set(TestConstants::CONFIG_HAS_EXIF_TOOL, 0);
 
-		$hasFFMpeg = Configs::getValueAsInt(TestConstants::CONFIG_HAS_FFMPEG);
+		$hasFFMpeg = $config_manager->getValueAsInt(TestConstants::CONFIG_HAS_FFMPEG);
 		Configs::set(TestConstants::CONFIG_HAS_FFMPEG, 0);
 
 		file_put_contents(storage_path('logs/daily-' . date('Y-m-d') . '.log'), '');
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_GAMING_VIDEO);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertEquals(TestConstants::SAMPLE_FILE_GAMING_VIDEO, $photo['title']);
 		self::assertEquals(TestConstants::MIME_TYPE_VID_MP4, $photo['type']);
@@ -456,19 +458,20 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	 */
 	public function testPhotoUploadWithUndefinedExifTag(): void
 	{
-		$hasExifTool = Configs::getValueAsBool(TestConstants::CONFIG_HAS_EXIF_TOOL);
+		$config_manager = resolve(ConfigManager::class);
+		$hasExifTool = $config_manager->getValueAsBool(TestConstants::CONFIG_HAS_EXIF_TOOL);
 		Configs::set(TestConstants::CONFIG_HAS_EXIF_TOOL, false);
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_UNDEFINED_EXIF_TAG);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
-		self::assertEquals('f/10.0', $photo['aperture']);
-		self::assertEquals('70 mm', $photo['focal']);
-		self::assertEquals('100', $photo['iso']);
-		self::assertEquals('17-70mm F2.8-4 DC MACRO OS HSM | Contemporary 013', $photo['lens']);
-		self::assertEquals('Canon', $photo['make']);
-		self::assertEquals('Canon EOS 100D', $photo['model']);
-		self::assertEquals('1/250 s', $photo['shutter']);
+		self::assertEquals('10.0', $photo['preformatted']['aperture']);
+		self::assertEquals('70 mm', $photo['preformatted']['focal']);
+		self::assertEquals('ISO 100', $photo['preformatted']['iso']);
+		self::assertEquals('17-70mm F2.8-4 DC MACRO OS HSM | Contemporary 013', $photo['preformatted']['lens']);
+		self::assertEquals('Canon', $photo['preformatted']['make']);
+		self::assertEquals('Canon EOS 100D', $photo['preformatted']['model']);
+		self::assertEquals('1/250 sec', $photo['preformatted']['shutter']);
 		self::assertEquals(TestConstants::MIME_TYPE_IMG_JPEG, $photo['type']);
 		self::assertEquals(3059, $photo['size_variants']['original']['width']);
 		self::assertEquals(2083, $photo['size_variants']['original']['height']);
@@ -493,16 +496,16 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	public function testUploadMultibyteTitle(): void
 	{
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_SUNSET_IMAGE);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertEquals('tests/Samples/fin de journée.jpg', $photo['title']);
-		self::assertEquals('f/8.0', $photo['aperture']);
-		self::assertEquals('200 mm', $photo['focal']);
-		self::assertEquals('400', $photo['iso']);
-		self::assertEquals('EF70-200mm f/2.8L IS USM', $photo['lens']);
-		self::assertEquals('Canon', $photo['make']);
-		self::assertEquals('Canon EOS R5', $photo['model']);
-		self::assertEquals('1/320 s', $photo['shutter']);
+		self::assertEquals('8.0', $photo['preformatted']['aperture']);
+		self::assertEquals('200 mm', $photo['preformatted']['focal']);
+		self::assertEquals('ISO 400', $photo['preformatted']['iso']);
+		self::assertEquals('EF70-200mm f/2.8L IS USM', $photo['preformatted']['lens']);
+		self::assertEquals('Canon', $photo['preformatted']['make']);
+		self::assertEquals('Canon EOS R5', $photo['preformatted']['model']);
+		self::assertEquals('1/320 sec', $photo['preformatted']['shutter']);
 		self::assertEquals(TestConstants::MIME_TYPE_IMG_JPEG, $photo['type']);
 		self::assertEquals(914, $photo['size_variants']['original']['width']);
 		self::assertEquals(1625, $photo['size_variants']['original']['height']);
@@ -515,7 +518,8 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 
 	public function testUploadMultibyteTitleWithoutExifTool(): void
 	{
-		$hasExifTool = Configs::getValueAsBool(TestConstants::CONFIG_HAS_EXIF_TOOL);
+		$config_manager = resolve(ConfigManager::class);
+		$hasExifTool = $config_manager->getValueAsBool(TestConstants::CONFIG_HAS_EXIF_TOOL);
 		Configs::set(TestConstants::CONFIG_HAS_EXIF_TOOL, false);
 		$this->testUploadMultibyteTitle();
 		Configs::set(TestConstants::CONFIG_HAS_EXIF_TOOL, $hasExifTool);
@@ -529,11 +533,12 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	 */
 	public function testTakenAtForPhotoUploadWithoutExif(): void
 	{
-		$useLastModifiedDate = Configs::getValueAsBool(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF);
+		$config_manager = resolve(ConfigManager::class);
+		$useLastModifiedDate = $config_manager->getValueAsBool(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF);
 		Configs::set(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF, true);
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_WITHOUT_EXIF);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertEquals('2023-03-14T20:05:03+00:00', $photo['taken_at']);
 		self::assertEquals('+00:00', $photo['taken_at_orig_tz']);
@@ -549,17 +554,17 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	 */
 	public function testTakenAtForPhotoUploadWithoutExif2(): void
 	{
-		$useLastModifiedDate = Configs::getValueAsBool(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF);
+		$config_manager = resolve(ConfigManager::class);
+		$useLastModifiedDate = $config_manager->getValueAsBool(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF);
 		Configs::set(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF, true);
 
 		$this->catchFailureSilence = [];
 		$response = $this->actingAs($this->admin)->upload('Photo', filename: TestConstants::SAMPLE_FILE_WITHOUT_EXIF, album_id: $this->album5->id, file_last_modified_time: 0);
 		$this->assertCreated($response);
 
-		$this->clearCachedSmartAlbums();
-		$response = $this->getJsonWithData('Album', ['album_id' => $this->album5->id]);
+		$response = $this->getJsonWithData('Album::photos', ['album_id' => $this->album5->id]);
 		$this->assertOk($response);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertEquals('1970-01-01T00:00:00+00:00', $photo['taken_at']);
 		self::assertEquals('+00:00', $photo['taken_at_orig_tz']);
@@ -576,7 +581,7 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	public function testTakenAtForPhotoUploadWithoutExif3(): void
 	{
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_WITHOUT_EXIF);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertEquals(null, $photo['taken_at']);
 		self::assertEquals(null, $photo['taken_at_orig_tz']);
@@ -590,11 +595,12 @@ abstract class BaseImageHandler extends BaseApiWithDataTest
 	 */
 	public function testTakenAtForPhotoUploadWithExif(): void
 	{
-		$useLastModifiedDate = Configs::getValueAsBool(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF);
+		$config_manager = resolve(ConfigManager::class);
+		$useLastModifiedDate = $config_manager->getValueAsBool(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF);
 		Configs::set(TestConstants::CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF, true);
 
 		$response = $this->uploadImage(TestConstants::SAMPLE_FILE_NIGHT_IMAGE);
-		$photo = $response->json('resource.photos.0');
+		$photo = $response->json('photos.0');
 
 		self::assertEquals('2019-06-01T01:28:25+02:00', $photo['taken_at']);
 		self::assertEquals('+02:00', $photo['taken_at_orig_tz']);

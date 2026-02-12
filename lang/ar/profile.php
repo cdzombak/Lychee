@@ -20,6 +20,7 @@ return [
         'change' => 'تغيير تسجيل الدخول',
         'api_token' => 'رمز API …',
         'missing_fields' => 'حقول مفقودة',
+        'ldap_managed' => 'معلومات تسجيل دخول المستخدم تتم إدارتها بواسطة LDAP.',
     ],
     'register' => [
         'username_exists' => 'اسم المستخدم موجود بالفعل.',
@@ -56,5 +57,24 @@ return [
         'credential_updated' => 'تم تحديث بيانات الاعتماد!',
         'credential_registred' => 'تم التسجيل بنجاح!',
         '5_chars' => 'على الأقل 5 أحرف.',
+    ],
+    'preferences' => [
+        'header' => 'Preferences',
+        'save' => 'Save Preference',
+        'reset' => 'Reset',
+        'change_saved' => 'Preference saved!',
+    ],
+    'shared_albums' => [
+        'instruction' => 'Choose how shared albums (albums from other users) appear in your gallery:',
+        'mode_default' => 'Use Server Default',
+        'mode_default_desc' => 'Inherit the server\'s default visibility mode.',
+        'mode_show' => 'Show Inline',
+        'mode_show_desc' => 'Shared albums appear below your own albums.',
+        'mode_separate' => 'Separate Tabs',
+        'mode_separate_desc' => 'View albums in separate "My Albums" and "Shared with Me" tabs.',
+        'mode_separate_shared_only' => 'Shared Only',
+        'mode_separate_shared_only_desc' => 'Separate tabs showing only directly shared albums (excludes public albums).',
+        'mode_hide' => 'Hide',
+        'mode_hide_desc' => 'Don\'t show any shared albums.',
     ],
 ];
