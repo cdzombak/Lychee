@@ -18,36 +18,83 @@
 
 namespace Tests\ImageProcessing\Photo;
 
+use App\Enum\PhotoHighlightVisibilityType;
+use App\Models\Configs;
 use Tests\Feature_v2\Base\BaseApiWithDataTest;
 
 class PhotoStarTest extends BaseApiWithDataTest
 {
 	public function testSetStarPhotoUnauthorizedForbidden(): void
 	{
-		$response = $this->postJson('Photo::star', []);
+		// With anonymous visibility (and album1 not public), non-owning users cannot star
+		Configs::set('photos_star_visibility', PhotoHighlightVisibilityType::EDITOR->value);
+
+		$response = $this->postJson('Photo::highlight', []);
 		$this->assertUnprocessable($response);
 
-		$response = $this->postJson('Photo::star', [
+		$response = $this->postJson('Photo::highlight', [
 			'photo_ids' => [$this->photo1->id],
-			'is_starred' => true,
+			'is_highlighted' => true,
 		]);
 		$this->assertUnauthorized($response);
 
-		$response = $this->actingAs($this->userNoUpload)->postJson('Photo::star', [
+		$response = $this->actingAs($this->userNoUpload)->postJson('Photo::highlight', [
 			'photo_ids' => [$this->photo1->id],
-			'is_starred' => true,
+			'is_highlighted' => true,
 		]);
 		$this->assertForbidden($response);
 	}
 
-	public function testSetStarPhotoAuthorizedOwner(): void
+	public function testSetStarPhotoAnonymous(): void
 	{
-		$response = $this->actingAs($this->userMayUpload1)->postJson('Photo::star', []);
+		// With anonymous visibility (and album1 not public), non-owning users cannot star
+		Configs::set('photos_star_visibility', PhotoHighlightVisibilityType::ANONYMOUS->value);
+
+		$response = $this->postJson('Photo::highlight', []);
 		$this->assertUnprocessable($response);
 
-		$response = $this->actingAs($this->userMayUpload1)->postJson('Photo::star', [
+		$response = $this->postJson('Photo::highlight', [
 			'photo_ids' => [$this->photo1->id],
-			'is_starred' => true,
+			'is_highlighted' => true,
+		]);
+		$this->assertNoContent($response);
+
+		$response = $this->actingAs($this->userNoUpload)->postJson('Photo::highlight', [
+			'photo_ids' => [$this->photo1->id],
+			'is_highlighted' => true,
+		]);
+		$this->assertNoContent($response);
+	}
+
+	public function testSetStarPhotoWithAuthenticatedVisibility(): void
+	{
+		Configs::set('photos_star_visibility', PhotoHighlightVisibilityType::AUTHENTICATED->value);
+
+		$response = $this->postJson('Photo::highlight', []);
+		$this->assertUnprocessable($response);
+
+		$response = $this->postJson('Photo::highlight', [
+			'photo_ids' => [$this->photo1->id],
+			'is_highlighted' => true,
+		]);
+		$this->assertUnauthorized($response);
+
+		$response = $this->actingAs($this->userNoUpload)->postJson('Photo::highlight', [
+			'photo_ids' => [$this->photo1->id],
+			'is_highlighted' => true,
+		]);
+		// Under AUTHENTICATED visibility, any logged-in user can star
+		$this->assertNoContent($response);
+	}
+
+	public function testSetStarPhotoAuthorizedOwner(): void
+	{
+		$response = $this->actingAs($this->userMayUpload1)->postJson('Photo::highlight', []);
+		$this->assertUnprocessable($response);
+
+		$response = $this->actingAs($this->userMayUpload1)->postJson('Photo::highlight', [
+			'photo_ids' => [$this->photo1->id],
+			'is_highlighted' => true,
 		]);
 		$this->assertNoContent($response);
 
@@ -57,7 +104,7 @@ class PhotoStarTest extends BaseApiWithDataTest
 			'photos' => [
 				[
 					'id' => $this->photo1->id,
-					'is_starred' => true,
+					'is_highlighted' => true,
 				],
 			],
 		]);

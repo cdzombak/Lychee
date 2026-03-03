@@ -12,20 +12,20 @@ export function usePhotoActions(photoStore: PhotoStore, albumId: Ref<string | un
 	const photosStore = usePhotosStore();
 	const albumStore = useAlbumStore();
 
-	function toggleStar() {
+	function toggleHighlight() {
 		if (photoStore.photo === undefined) {
 			return;
 		}
 
-		const newStarValue = !photoStore.photo.is_starred;
-		PhotoService.star([photoStore.photo.id], newStarValue).then(() => {
+		const newStarValue = !photoStore.photo.is_highlighted;
+		PhotoService.highlight([photoStore.photo.id], newStarValue).then(() => {
 			// Update the current photo store
-			photoStore.photo!.is_starred = newStarValue;
+			photoStore.photo!.is_highlighted = newStarValue;
 
 			// Update the photo in the album list (photosStore) to keep it in sync
 			const photoIndex = photosStore.photos.findIndex((p) => p.id === photoStore.photo!.id);
 			if (photoIndex !== -1) {
-				photosStore.photos[photoIndex].is_starred = newStarValue;
+				photosStore.photos[photoIndex].is_highlighted = newStarValue;
 			}
 
 			AlbumService.clearCache(albumId.value);
@@ -70,10 +70,23 @@ export function usePhotoActions(photoStore: PhotoStore, albumId: Ref<string | un
 			const isToggleOff = albumStore.modelAlbum?.header_id === photoStore.photo!.id;
 			if (albumStore.modelAlbum !== undefined) {
 				albumStore.modelAlbum.header_id = isToggleOff ? null : photoStore.photo!.id;
+				if (albumStore.modelAlbum.preFormattedData) {
+					albumStore.modelAlbum.preFormattedData.header_photo_focus = null;
+				}
+			}
+			if (
+				albumStore.album !== undefined &&
+				"editable" in albumStore.album &&
+				albumStore.album.editable !== undefined &&
+				albumStore.album.editable !== null
+			) {
+				albumStore.album.editable.header_id = isToggleOff ? null : photoStore.photo!.id;
+				albumStore.album.preFormattedData.header_photo_focus = null;
 			}
 
 			// Update the header image URL in the album's preFormattedData
 			if (albumStore.album?.preFormattedData) {
+				albumStore.album.preFormattedData.header_photo_focus = null;
 				if (isToggleOff) {
 					albumStore.album.preFormattedData.url = null;
 				} else {
@@ -100,7 +113,7 @@ export function usePhotoActions(photoStore: PhotoStore, albumId: Ref<string | un
 	}
 
 	return {
-		toggleStar,
+		toggleHighlight,
 		rotatePhotoCCW,
 		rotatePhotoCW,
 		setAlbumHeader,

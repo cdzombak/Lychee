@@ -13,6 +13,22 @@
 				<GoBack @go-back="emits('goBack')" />
 			</template>
 			<template #end>
+				<Button
+					v-if="!albumStore.rights?.can_edit && leftMenuStore.initData?.root_album?.can_highlight"
+					text
+					v-tooltip.bottom="
+						photoStore.photo.is_highlighted ? $t('gallery.photo.actions.unhighlight') : $t('gallery.photo.actions.highlight')
+					"
+					:icon="photoStore.photo.is_highlighted ? 'pi pi-flag-fill' : 'pi pi-flag'"
+					class="ltr:mr-2 rtl:ml-2"
+					:class="
+						photoStore.photo.is_highlighted
+							? '[&>span]:text-yellow-500 lg:hover:[&>span]:text-yellow-100'
+							: '[&>span]:text-white lg:hover:[&>span]:text-yellow-500'
+					"
+					severity="secondary"
+					@click="emits('toggleHighlight')"
+				/>
 				<div :class="is_slideshow_active ? 'hidden' : 'flex'">
 					<Button
 						v-if="is_slideshow_enabled"
@@ -71,12 +87,14 @@ import { useLycheeStateStore } from "@/stores/LycheeState";
 import GoBack from "./GoBack.vue";
 import { usePhotoStore } from "@/stores/PhotoState";
 import { useAlbumStore } from "@/stores/AlbumState";
+import { useLeftMenuStateStore } from "@/stores/LeftMenuState";
 
 const emits = defineEmits<{
 	toggleDetails: [];
 	toggleEdit: [];
 	toggleSlideShow: [];
 	goBack: [];
+	toggleHighlight: [];
 }>();
 
 const photoStore = usePhotoStore();
@@ -85,6 +103,7 @@ const togglableStore = useTogglablesStateStore();
 const { is_full_screen, is_photo_edit_open, are_details_open, is_slideshow_active } = storeToRefs(togglableStore);
 const isDownloadOpen = ref(false);
 const lycheeStore = useLycheeStateStore();
+const leftMenuStore = useLeftMenuStateStore();
 const { is_exif_disabled, is_slideshow_enabled } = storeToRefs(lycheeStore);
 
 function openInNewTab(url: string) {

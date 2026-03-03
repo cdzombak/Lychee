@@ -54,11 +54,11 @@ Route::get('/octane-health', function () {
 
 Route::get('/', VueController::class)->name('home')->middleware(['migration:complete']);
 Route::get('/home', VueController::class)->name('homepage')->middleware(['migration:complete']);
-Route::get('/flow/{albumId?}/{photoId?}', [VueController::class, 'gallery'])->name('flow')->middleware(['migration:complete', 'unlock_with_password']);
-Route::get('/gallery/{albumId?}/{photoId?}', [VueController::class, 'gallery'])->name('gallery')->middleware(['migration:complete', 'unlock_with_password']);
-Route::get('/frame/{albumId?}', [VueController::class, 'gallery'])->name('frame')->middleware(['migration:complete']);
-Route::get('/map/{albumId?}', [VueController::class, 'gallery'])->name('map')->middleware(['migration:complete']);
-Route::get('/search/{albumId?}/{photoId?}', [VueController::class, 'gallery'])->name('search')->middleware(['migration:complete']);
+Route::get('/flow/{albumId?}/{photoId?}', [VueController::class, 'gallery'])->name('flow')->middleware(['migration:complete', 'unlock_with_password', 'resolve_album_slug']);
+Route::get('/gallery/{albumId?}/{photoId?}', [VueController::class, 'gallery'])->name('gallery')->middleware(['migration:complete', 'legacy_id_redirect', 'unlock_with_password', 'resolve_album_slug']);
+Route::get('/frame/{albumId?}', [VueController::class, 'gallery'])->name('frame')->middleware(['migration:complete', 'resolve_album_slug']);
+Route::get('/map/{albumId?}', [VueController::class, 'gallery'])->name('map')->middleware(['migration:complete', 'resolve_album_slug']);
+Route::get('/search/{albumId?}/{photoId?}', [VueController::class, 'gallery'])->name('search')->middleware(['migration:complete', 'resolve_album_slug']);
 Route::get('/timeline/{date?}/{photoId?}', VueController::class)->name('timeline')->middleware(['migration:complete']);
 Route::get('/profile', VueController::class)->name('profile')->middleware(['migration:complete', 'login_required:always']);
 Route::get('/users', VueController::class)->middleware(['migration:complete', 'login_required:always']);
@@ -85,6 +85,8 @@ Route::get('/fixTree', VueController::class)->middleware(['migration:complete', 
 Route::get('/duplicatesFinder', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/renamerRules', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/purchasables', VueController::class)->middleware(['migration:complete', 'login_required:always']);
+Route::get('/contact', VueController::class)->middleware(['migration:complete']);
+Route::get('/contact-messages', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/orders', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/order/{orderId}/{transactionId?}', VueController::class)->middleware(['migration:complete']);
 Route::get('/basket', VueController::class)->middleware(['migration:complete']);

@@ -47,6 +47,7 @@ class RequestAttribute
 	public const ALBUM_ASPECT_RATIO_ATTRIBUTE = 'album_aspect_ratio';
 
 	public const USERNAME_ATTRIBUTE = 'username';
+	public const REMEMBER_ME_ATTRIBUTE = 'remember_me';
 
 	public const PASSWORD_ATTRIBUTE = 'password';
 	public const OLD_PASSWORD_ATTRIBUTE = 'old_password';
@@ -63,6 +64,9 @@ class RequestAttribute
 	public const ALBUM_PHOTO_LAYOUT = 'photo_layout';
 	public const ALBUM_TIMELINE_ALBUM = 'album_timeline';
 	public const ALBUM_TIMELINE_PHOTO = 'photo_timeline';
+	public const ALBUM_TITLE_COLOR_ATTRIBUTE = 'title_color';
+	public const ALBUM_TITLE_POSITION_ATTRIBUTE = 'title_position';
+	public const HEADER_PHOTO_FOCUS_ATTRIBUTE = 'header_photo_focus';
 
 	public const PAGE_ATTRIBUTE = 'page';
 
@@ -84,7 +88,7 @@ class RequestAttribute
 
 	public const FILE_ATTRIBUTE = 'file';
 	public const SHALL_OVERRIDE_ATTRIBUTE = 'shall_override';
-	public const IS_STARRED_ATTRIBUTE = 'is_starred';
+	public const IS_HIGHLIGHTED_ATTRIBUTE = 'is_highlighted';
 	public const RATING_ATTRIBUTE = 'rating';
 	public const DIRECTION_ATTRIBUTE = 'direction';
 
@@ -140,4 +144,9 @@ class RequestAttribute
 	public const APPLIES_TO_SUBALBUMS_ATTRIBUTE = 'applies_to_subalbums';
 	public const PURCHASABLE_ID_ATTRIBUTE = 'purchasable_id';
 	public const PURCHASABLE_IDS_ATTRIBUTE = 'purchasable_ids';
+
+	/**
+	 * Album slug attribute.
+	 */
+	public const SLUG_ATTRIBUTE = 'slug';
 }

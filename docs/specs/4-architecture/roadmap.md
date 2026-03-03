@@ -6,7 +6,6 @@ High-level planning document for Lychee features and architectural initiatives.
 
 | Feature ID | Name | Status | Priority | Assignee | Started | Updated | Progress |
 |------------|------|--------|----------|----------|---------|---------|----------|
-| - | - | - | - | - | - | - | - |
 
 ## Paused Features
 
@@ -18,6 +17,18 @@ High-level planning document for Lychee features and architectural initiatives.
 
 | Feature ID | Name | Completed | Notes |
 |------------|------|-----------|-------|
+| 024 | CLI Sync File-List Support | 2026-03-03 | `lychee:sync` now accepts individual file paths alongside directories; `Exec::doFiles()` added; `ImportImageJob` accepts nullable Album; 7 new tests. |
+| 023 | Remember Me Login | 2026-03-01 | Spec, plan, tasks drafted. Implementation completed. |
+| 022 | Contact Form | 2026-03-01 | Spec, plan, and tasks drafted. Supports-only feature: visitor form (public page), admin message management page, configurable sample Q&A, security question, consent text, privacy URL, custom submit button. 16 increments planned (~16 hours). Implementation completed. |
+| 021 | Album Variant ZIP Download | 2026-02-28 | Spec, plan, tasks drafted. Starting implementation. |
+| 020 | Raw Upload Support | 2026-02-28 | All 47 tasks done. RAW=0 enum shift, 4 migrations, RawToJpeg converter, DetectAndStoreRaw + CreateRawSizeVariant pipes, download gating, frontend RAW download button (22 langs), 38 tests passing. PHPStan 0 errors, php-cs-fixer clean, knowledge map + image-processing ref updated. |
+| 019 | Friendly URLs (Album Slugs) | 2026-02-28 | All 24 tasks done. Migration, model, SlugRule, middleware, update requests, feature tests (26 tests/1048 assertions), frontend UI, translations (22 langs). Quality gates: PHPStan 0 errors, php-cs-fixer clean, npm build/check/format clean. |
+| 018 | Photo Albums Sidebar  | 2026-02-26 | Spec, plan, tasks drafted. Pending implementation. |
+| 017 | Apply Renamer Rules & Watermark Confirm  | 2026-02-26 | Spec, plan, tasks drafted. Pending implementation. |
+| 016 | Bulk License Edit | 2026-02-27 | Backend complete (T-016-01 to T-016-04), next: quality gates & frontend |
+| 015 | Upload Watermark Toggle | 2026-02-24 | Per-upload watermark control: UI toggle in upload dialog, backend API parameter (apply_watermark), ApplyWatermark pipe respects flag, admin setting (watermark_optout_disabled) to enforce watermarking, translations in 22 languages, end-to-end flow complete (9 increments: I0-I8b) |
+| 013 | Starred to Highlighted Rename | 2026-02-22 | Renamed is_starred → is_highlighted, StarredAlbum → HighlightedAlbum, auto-inserts 5-star rating for highlighted photos, config key rename, translations for 22 languages, 29 tasks complete |
+| 012 | Embeddable Photo Album Widget | 2026-02-20 | JavaScript widget for embedding albums/photo streams on external websites, supports all gallery layouts (square/justified/masonry/grid/film), lightbox, CORS API, theme customization, embed code generator UI |
 | 011 | My Rated Pictures Smart Albums | 2026-01-28 | Two new smart albums filtering by user ratings: MyRatedPicturesAlbum (all photos rated by current user), MyBestPicturesAlbum (top N rated with tie-inclusive logic), hidden from guests, requires SE license for best pictures, translations in 21 languages |
 | 010 | LDAP Authentication Support | 2026-01-26 | Enterprise directory integration with auto-provisioning, role mapping via groups, TLS/SSL support, graceful degradation to local auth, comprehensive logging, full documentation (11 increments: I1-I11 complete) |
 | 009 | Rating Ordering and Smart Albums | 2026-01-28 | Photo ordering by rating (average, user-specific), smart albums for rating ranges (Unrated, 1-5 Stars, Best Pictures with configurable count and tie-inclusive logic), translations in 21 languages |
@@ -91,4 +102,4 @@ features/
 
 ---
 
-*Last updated: 2026-01-26*
+*Last updated: 2026-02-26*

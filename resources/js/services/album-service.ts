@@ -16,6 +16,7 @@ export type CreateTagAlbumData = {
 export type UpdateAbumData = {
 	album_id: string;
 	title: string;
+	slug: string | null;
 	license: string | null;
 	description: string | null;
 	photo_sorting_column: App.Enum.ColumnSortingPhotoType | null;
@@ -32,9 +33,17 @@ export type UpdateAbumData = {
 	photo_timeline: App.Enum.TimelinePhotoGranularity | null;
 };
 
+export type UpdateAlbumHeaderData = {
+	album_id: string;
+	title_color: App.Enum.AlbumTitleColor | null;
+	title_position: App.Enum.AlbumTitlePosition | null;
+	header_photo_focus: { x: number; y: number } | null;
+};
+
 export type UpdateTagAlbumData = {
 	album_id: string;
 	title: string;
+	slug: string | null;
 	tags: string[];
 	description: string | null;
 	photo_sorting_column: App.Enum.ColumnSortingPhotoType | null;
@@ -87,20 +96,6 @@ const AlbumService = {
 		return requester.get(`${Constants.getApiUrl()}Albums`, { data: {}, id: "albums" });
 	},
 
-	get(album_id: string, page?: number): Promise<AxiosResponse<App.Http.Resources.Models.AbstractAlbumResource>> {
-		const params = {
-			album_id: album_id,
-			page: page ?? 1,
-		};
-
-		const requester = axios as unknown as AxiosCacheInstance;
-		return requester.get(`${Constants.getApiUrl()}Album`, {
-			params: params,
-			data: {},
-			id: `album_${album_id}_page${page ?? 1}`,
-		});
-	},
-
 	getHead(album_id: string): Promise<AxiosResponse<App.Http.Resources.Models.HeadAbstractAlbumResource>> {
 		const requester = axios as unknown as AxiosCacheInstance;
 		return requester.get(`${Constants.getApiUrl()}Album::head`, {
@@ -148,6 +143,10 @@ const AlbumService = {
 		return axios.patch(`${Constants.getApiUrl()}Album`, data);
 	},
 
+	updateAlbumHeader(data: UpdateAlbumHeaderData): Promise<AxiosResponse> {
+		return axios.patch(`${Constants.getApiUrl()}Album::header`, data);
+	},
+
 	updateTag(data: UpdateTagAlbumData): Promise<AxiosResponse> {
 		return axios.patch(`${Constants.getApiUrl()}TagAlbum`, data);
 	},
@@ -192,8 +191,8 @@ const AlbumService = {
 		return axios.get(`${Constants.getApiUrl()}Map`, { params: { album_id: album_id }, data: {} });
 	},
 
-	download(album_ids: string[]): void {
-		location.href = `${Constants.getApiUrl()}Zip?album_ids=${album_ids.join(",")}`;
+	download(album_ids: string[], variant: App.Enum.DownloadVariantType = "ORIGINAL"): void {
+		location.href = `${Constants.getApiUrl()}Zip?album_ids=${album_ids.join(",")}&variant=${variant}`;
 	},
 
 	uploadTrack(album_id: string, file: Blob): Promise<AxiosResponse> {

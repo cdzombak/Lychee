@@ -10,10 +10,12 @@ namespace App\Http\Resources\GalleryConfigs;
 
 use App\Enum\AlbumDecorationOrientation;
 use App\Enum\AlbumDecorationType;
+use App\Enum\AlbumHeaderSize;
 use App\Enum\AlbumLayoutType;
 use App\Enum\DefaultAlbumProtectionType;
 use App\Enum\ImageOverlayType;
 use App\Enum\PaginationMode;
+use App\Enum\PhotoHighlightVisibilityType;
 use App\Enum\PhotoThumbInfoType;
 use App\Enum\SmallLargeType;
 use App\Enum\ThumbAlbumSubtitleType;
@@ -68,6 +70,7 @@ class InitConfig extends Data
 	public AlbumLayoutType $album_layout;
 
 	// Download configuration
+	public bool $is_raw_download_enabled;
 	public bool $is_thumb_download_enabled;
 	public bool $is_thum2x_download_enabled;
 	public bool $is_small_download_enabled;
@@ -121,6 +124,7 @@ class InitConfig extends Data
 	// Homepage
 	public string $default_homepage;
 	public bool $is_timeline_page_enabled = false;
+	public bool $is_contact_form_enabled = false;
 
 	// Pagination settings
 	public PaginationMode $photos_pagination_mode;
@@ -132,6 +136,12 @@ class InitConfig extends Data
 
 	// Album settings
 	public DefaultAlbumProtectionType $default_album_protection;
+	public PhotoHighlightVisibilityType $photos_star_visibility;
+
+	// Enhanced Album Display
+	public bool $is_album_enhanced_display_enabled;
+	public AlbumHeaderSize $album_header_size;
+	public bool $is_album_header_landing_title_enabled;
 
 	public function __construct()
 	{
@@ -174,6 +184,7 @@ class InitConfig extends Data
 		$this->album_layout = request()->configs()->getValueAsEnum('album_layout', AlbumLayoutType::class);
 
 		// Download configuration
+		$this->is_raw_download_enabled = request()->configs()->getValueAsBool('raw_download_enabled');
 		$this->is_thumb_download_enabled = request()->configs()->getValueAsBool('disable_thumb_download') === false;
 		$this->is_thum2x_download_enabled = request()->configs()->getValueAsBool('disable_thumb2x_download') === false;
 		$this->is_small_download_enabled = request()->configs()->getValueAsBool('disable_small_download') === false;
@@ -215,6 +226,7 @@ class InitConfig extends Data
 		// Homepage
 		$this->default_homepage = request()->configs()->getValueAsString('home_page_default');
 		$this->is_timeline_page_enabled = request()->configs()->getValueAsBool('timeline_page_enabled');
+		$this->is_contact_form_enabled = request()->configs()->getValueAsBool('contact_form_enabled');
 
 		// Pagination settings
 		$this->photos_pagination_mode = request()->configs()->getValueAsEnum('photos_pagination_ui_mode', PaginationMode::class);
@@ -226,6 +238,12 @@ class InitConfig extends Data
 
 		// Album settings
 		$this->default_album_protection = request()->configs()->getValueAsEnum('default_album_protection', DefaultAlbumProtectionType::class);
+		$this->photos_star_visibility = request()->configs()->getValueAsEnum('photos_star_visibility', PhotoHighlightVisibilityType::class);
+
+		// Enhanced Album Display
+		$this->is_album_enhanced_display_enabled = request()->configs()->getValueAsBool('album_enhanced_display_enabled');
+		$this->album_header_size = request()->configs()->getValueAsEnum('album_header_size', AlbumHeaderSize::class);
+		$this->is_album_header_landing_title_enabled = request()->configs()->getValueAsBool('album_header_landing_title_enabled');
 
 		$this->set_supporter_properties();
 	}

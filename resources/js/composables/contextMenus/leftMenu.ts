@@ -35,8 +35,15 @@ export function useLeftMenu(
 	const { user } = storeToRefs(authStore);
 
 	const { initData, left_menu_open } = storeToRefs(LeftMenuStateStore);
-	const { clockwork_url, is_se_enabled, is_se_preview_enabled, is_se_info_hidden, is_favourite_enabled, is_timeline_page_enabled } =
-		storeToRefs(lycheeStore);
+	const {
+		clockwork_url,
+		is_se_enabled,
+		is_se_preview_enabled,
+		is_se_info_hidden,
+		is_favourite_enabled,
+		is_timeline_page_enabled,
+		is_contact_form_enabled,
+	} = storeToRefs(lycheeStore);
 	const openLycheeAbout = ref(false);
 	const logsEnabled = ref(true);
 
@@ -122,6 +129,12 @@ export function useLeftMenu(
 				},
 			},
 			{
+				label: "left-menu.contact",
+				icon: "pi pi-envelope",
+				route: "/contact",
+				access: is_contact_form_enabled.value && !canSeeAdmin.value,
+			},
+			{
 				label: "Shop Photo Prints",
 				icon: "pi pi-shopping-cart",
 				url: "https://photography.dzombak.com",
@@ -198,6 +211,12 @@ export function useLeftMenu(
 						access: (initData.value.modules.is_mod_webshop_enabled ?? false) && (initData.value.settings.can_edit ?? false),
 					},
 					{
+						label: "left-menu.messages",
+						icon: "pi pi-inbox",
+						route: "/contact-messages",
+						access: is_contact_form_enabled.value,
+					},
+					{
 						label: "diagnostics.title",
 						icon: "wrench",
 						route: "/diagnostics",
@@ -253,7 +272,7 @@ export function useLeftMenu(
 						label: "left-menu.api",
 						icon: "book",
 						access: initData.value.settings.can_edit ?? false,
-						url: "/docs/api",
+						url: Constants.BASE_URL + "/docs/api",
 					},
 					{
 						label: "left-menu.source_code",

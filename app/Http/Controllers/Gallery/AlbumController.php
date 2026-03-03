@@ -21,10 +21,11 @@ use App\Actions\Album\SetSmartProtectionPolicy;
 use App\Actions\Album\Transfer;
 use App\Actions\Album\Unlock;
 use App\Actions\Photo\BaseArchive as PhotoBaseArchive;
+use App\Enum\AlbumTitleColor;
+use App\Enum\AlbumTitlePosition;
 use App\Enum\SizeVariantType;
 use App\Events\AlbumRouteCacheUpdated;
 use App\Events\Metrics\AlbumDownload;
-use App\Events\Metrics\AlbumVisit;
 use App\Events\Metrics\PhotoDownload;
 use App\Exceptions\Internal\LycheeLogicException;
 use App\Exceptions\UnauthenticatedException;
@@ -33,7 +34,6 @@ use App\Http\Requests\Album\AddAlbumRequest;
 use App\Http\Requests\Album\AddTagAlbumRequest;
 use App\Http\Requests\Album\DeleteAlbumsRequest;
 use App\Http\Requests\Album\DeleteTrackRequest;
-use App\Http\Requests\Album\GetAlbumRequest;
 use App\Http\Requests\Album\MergeAlbumsRequest;
 use App\Http\Requests\Album\MoveAlbumsRequest;
 use App\Http\Requests\Album\RenameAlbumRequest;
@@ -45,17 +45,13 @@ use App\Http\Requests\Album\SetPinnedRequest;
 use App\Http\Requests\Album\TargetListAlbumRequest;
 use App\Http\Requests\Album\TransferAlbumRequest;
 use App\Http\Requests\Album\UnlockAlbumRequest;
+use App\Http\Requests\Album\UpdateAlbumHeaderRequest;
 use App\Http\Requests\Album\UpdateAlbumRequest;
 use App\Http\Requests\Album\UpdateTagAlbumRequest;
 use App\Http\Requests\Album\WatermarkAlbumRequest;
 use App\Http\Requests\Album\ZipRequest;
 use App\Http\Requests\Traits\HasVisitorIdTrait;
 use App\Http\Resources\Editable\EditableBaseAlbumResource;
-use App\Http\Resources\GalleryConfigs\AlbumConfig;
-use App\Http\Resources\Models\AbstractAlbumResource;
-use App\Http\Resources\Models\AlbumResource;
-use App\Http\Resources\Models\SmartAlbumResource;
-use App\Http\Resources\Models\TagAlbumResource;
 use App\Http\Resources\Models\TargetAlbumResource;
 use App\Http\Resources\Models\Utils\AlbumProtectionPolicy;
 use App\Jobs\WatermarkerJob;
@@ -64,7 +60,6 @@ use App\Models\Extensions\BaseAlbum;
 use App\Models\Photo;
 use App\Models\SizeVariant;
 use App\Models\Tag;
-use App\Models\TagAlbum;
 use App\SmartAlbums\BaseSmartAlbum;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
@@ -78,29 +73,6 @@ class AlbumController extends Controller
 	use HasVisitorIdTrait;
 
 	public const COMPACT_HEADER = 'compact';
-
-	/**
-	 * Provided an albumID, returns the album.
-	 */
-	#[\Deprecated('Use AlbumHeadController::get to fetch album metadata without children/photos')]
-	public function get(GetAlbumRequest $request): AbstractAlbumResource
-	{
-		$config = new AlbumConfig($request->album());
-		$album_resource = null;
-
-		$album_resource = match (true) {
-			$request->album() instanceof BaseSmartAlbum => new SmartAlbumResource($request->album()),
-			$request->album() instanceof TagAlbum => new TagAlbumResource($request->album()),
-			$request->album() instanceof Album => new AlbumResource($request->album()),
-			// @codeCoverageIgnoreStart
-			default => throw new LycheeLogicException('This should not happen'),
-			// @codeCoverageIgnoreEnd
-		};
-
-		AlbumVisit::dispatchIf((MetricsController::shouldMeasure() && $request->album() instanceof BaseAlbum), $this->visitorId(), $request->album()->get_id());
-
-		return new AbstractAlbumResource($config, $album_resource);
-	}
 
 	/**
 	 * Create an album.
@@ -303,6 +275,20 @@ class AlbumController extends Controller
 	}
 
 	/**
+	 * Update the album header customization (title color, position, focus point).
+	 */
+	public function updateAlbumHeader(UpdateAlbumHeaderRequest $request): EditableBaseAlbumResource
+	{
+		$album = $request->album();
+		$album->title_color = $request->titleColor() ?? AlbumTitleColor::WHITE;
+		$album->title_position = $request->titlePosition() ?? AlbumTitlePosition::TOP_LEFT;
+		$album->header_photo_focus = $request->headerPhotoFocus();
+		$album->save();
+
+		return EditableBaseAlbumResource::fromModel($album);
+	}
+
+	/**
 	 * Rename an album.
 	 */
 	public function rename(RenameAlbumRequest $request): void
@@ -334,7 +320,7 @@ class AlbumController extends Controller
 				AlbumDownload::dispatchIf($should_measure, $this->visitorId(), $album->get_id());
 			}
 
-			return AlbumBaseArchive::resolve()->do($request->albums());
+			return AlbumBaseArchive::resolve()->do($request->albums(), $request->sizeVariant());
 		}
 
 		// We dispatch one event per photo.

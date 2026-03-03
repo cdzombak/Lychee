@@ -80,7 +80,7 @@ class Create
 		);
 
 		$pre_pipes = [
-			Init\ConvertUnsupportedMedia::class,
+			Init\DetectAndStoreRaw::class,
 			Init\AssertSupportedMedia::class,
 			Init\FetchLastModifiedTime::class,
 			Init\MayLoadFileMetadata::class,
@@ -144,7 +144,7 @@ class Create
 			$pipes[] = Duplicate\SaveIfDirty::class;
 		}
 		$pipes[] = Duplicate\ThrowSkipDuplicate::class;
-		$pipes[] = Shared\SetStarred::class;
+		$pipes[] = Shared\SetHighlighted::class;
 		$pipes[] = Shared\Save::class;
 		$pipes[] = Shared\SetParent::class;
 		$pipes[] = Shared\SaveStatistics::class;
@@ -170,7 +170,7 @@ class Create
 			Standalone\FixTimeStamps::class,
 			Standalone\InitNamingStrategy::class,
 			Shared\HydrateMetadata::class,
-			Shared\SetStarred::class,
+			Shared\SetHighlighted::class,
 			Shared\SetOwnership::class,
 			Standalone\SetOriginalChecksum::class,
 			Standalone\FetchSourceImage::class,
@@ -183,6 +183,7 @@ class Create
 			Shared\SetParent::class,
 			Shared\SaveStatistics::class,
 			Standalone\CreateOriginalSizeVariant::class,
+			Standalone\CreateRawSizeVariant::class,
 			Standalone\CreateSizeVariants::class,
 			Standalone\ApplyWatermark::class,
 			Standalone\EncodePlaceholder::class,
@@ -264,7 +265,7 @@ class Create
 			Standalone\FixTimeStamps::class,
 			Standalone\InitNamingStrategy::class,
 			Shared\HydrateMetadata::class,
-			Shared\SetStarred::class,
+			Shared\SetHighlighted::class,
 			Shared\SetOwnership::class,
 			Standalone\SetOriginalChecksum::class,
 			Standalone\FetchSourceImage::class,
@@ -276,6 +277,7 @@ class Create
 			Shared\Save::class,
 			Shared\SetParent::class,
 			Standalone\CreateOriginalSizeVariant::class,
+			Standalone\CreateRawSizeVariant::class,
 			Standalone\CreateSizeVariants::class,
 			Standalone\ApplyWatermark::class,
 			Standalone\EncodePlaceholder::class,

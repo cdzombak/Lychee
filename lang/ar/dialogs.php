@@ -66,6 +66,7 @@ return [
         'password' => 'كلمة المرور',
         'unknown_invalid' => 'مستخدم غير معروف أو كلمة مرور غير صالحة.',
         'signin' => 'تسجيل الدخول',
+        'remember_me' => 'تذكرني',
     ],
     'register' => [
         'enter_license' => 'أدخل مفتاح الترخيص الخاص بك أدناه:',
@@ -120,6 +121,7 @@ return [
         'uploading' => 'جارٍ التحميل',
         'finished' => 'منتهي',
         'failed_error' => 'فشل التحميل. الخادم أعاد خطأ!',
+        'apply_watermark' => 'Apply watermark',
     ],
     'visibility' => [
         'public' => 'عام',
@@ -210,6 +212,13 @@ return [
         'updated' => 'تم تحديث العلامات!',
         'tags_override_info' => 'إذا لم يتم تحديد هذا الخيار، فسيتم إضافة العلامات إلى العلامات الحالية للصورة.',
     ],
+    'photo_license' => [
+        'question' => 'Select a license for this photo.',
+        'question_multiple' => 'Select a license for all %d selected photos.',
+        'select_license' => 'Select License',
+        'set_license' => 'Set License',
+        'updated' => 'License updated!',
+    ],
     'photo_copy' => [
         'no_albums' => 'لا توجد ألبومات للنسخ إليها',
         'copy_to' => 'نسخ %s إلى:',
@@ -250,5 +259,33 @@ return [
         'message' => 'انتهت جلستك.<br />يرجى إعادة تحميل الصفحة.',
         'reload' => 'إعادة تحميل',
         'go_to_gallery' => 'الذهاب إلى المعرض',
+    ],
+    'selected_images' => [
+        'names_copied' => 'The names of the selected images have been copied!',
+    ],
+    'apply_renamer' => [
+        'title' => 'Apply Renamer Rules',
+        'description' => 'Select the renamer rules to apply and configure the scope.',
+        'no_rules' => 'No renamer rules found.',
+        'target' => 'Target',
+        'scope' => 'Scope',
+        'photos' => 'Photos',
+        'albums' => 'Albums',
+        'current' => 'Current',
+        'descendants' => 'Descendants',
+        'preview' => 'Preview',
+        'preview_title' => 'Preview Changes',
+        'no_changes' => 'No changes detected.',
+        'original' => 'Original',
+        'new_title' => 'New Title',
+        'count_changes' => ':count item(s) will be renamed.',
+        'back' => 'Back',
+        'apply' => 'Apply',
+        'success' => 'Renamer rules applied successfully!',
+    ],
+    'watermark_confirm' => [
+        'title' => 'Apply Watermark',
+        'description' => 'Are you sure you want to apply a watermark to the photos in this album? This action cannot be undone.',
+        'confirm' => 'Apply Watermark',
     ],
 ];

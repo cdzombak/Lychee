@@ -50,7 +50,13 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		photo_thumb_info: "title" as App.Enum.PhotoThumbInfoType,
 		is_photo_thumb_tags_enabled: false,
 
+		// Enhanced Album Display
+		is_album_enhanced_display_enabled: false,
+		album_header_size: "half_screen" as App.Enum.AlbumHeaderSize,
+		is_album_header_landing_title_enabled: false,
+
 		// Download settings
+		is_raw_download_enabled: false,
 		is_thumb_download_enabled: false,
 		is_thum2x_download_enabled: false,
 		is_small_download_enabled: false,
@@ -60,6 +66,9 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 
 		// menu stuff
 		clockwork_url: "" as null | string,
+
+		// Contact stuff
+		is_contact_form_enabled: false,
 
 		// Timeline settings
 		is_timeline_left_border_visible: true,
@@ -155,6 +164,10 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.album_decoration = data.album_decoration;
 					this.album_decoration_orientation = data.album_decoration_orientation;
 
+					this.is_album_enhanced_display_enabled = data.is_album_enhanced_display_enabled;
+					this.album_header_size = data.album_header_size;
+					this.is_album_header_landing_title_enabled = data.is_album_header_landing_title_enabled;
+
 					this.clockwork_url = data.clockwork_url;
 
 					this.slideshow_timeout = data.slideshow_timeout;
@@ -179,6 +192,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.is_photo_thumb_tags_enabled = data.is_photo_thumb_tags_enabled;
 					this.album_view_mode = data.album_layout;
 
+					this.is_raw_download_enabled = data.is_raw_download_enabled;
 					this.is_thumb_download_enabled = data.is_thumb_download_enabled;
 					this.is_thum2x_download_enabled = data.is_thum2x_download_enabled;
 					this.is_small_download_enabled = data.is_small_download_enabled;
@@ -216,6 +230,8 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.albums_infinite_scroll_threshold = data.albums_infinite_scroll_threshold;
 
 					this.default_album_protection = data.default_album_protection;
+
+					this.is_contact_form_enabled = data.is_contact_form_enabled;
 				})
 				.catch((error) => {
 					// In this specific case, even though it has been possibly disabled, we really need to see the error.

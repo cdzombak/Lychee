@@ -66,6 +66,7 @@ return [
         'password' => '密碼',
         'unknown_invalid' => '未知的使用者或密碼無效。',
         'signin' => '登入',
+        'remember_me' => '記住我',
     ],
     'register' => [
         'enter_license' => '在下方輸入您的授權鑰匙：',
@@ -120,6 +121,7 @@ return [
         'uploading' => '上傳中',
         'finished' => '已完成',
         'failed_error' => '上傳失敗。伺服器回傳錯誤！',
+        'apply_watermark' => 'Apply watermark',
     ],
     'visibility' => [
         'public' => '公開',
@@ -210,6 +212,13 @@ return [
         'updated' => '已更新標籤！',
         'tags_override_info' => '如果未勾選，標籤將會新增到照片現有的標籤中。',
     ],
+    'photo_license' => [
+        'question' => 'Select a license for this photo.',
+        'question_multiple' => 'Select a license for all %d selected photos.',
+        'select_license' => 'Select License',
+        'set_license' => 'Set License',
+        'updated' => 'License updated!',
+    ],
     'photo_copy' => [
         'no_albums' => '沒有可複製的相簿至',
         'copy_to' => '複製 %s 至：',
@@ -250,5 +259,33 @@ return [
         'message' => '工作階段已過期。<br />請重新整理頁面。',
         'reload' => '重新載入',
         'go_to_gallery' => '前往至展示頁面',
+    ],
+    'selected_images' => [
+        'names_copied' => 'The names of the selected images have been copied!',
+    ],
+    'apply_renamer' => [
+        'title' => 'Apply Renamer Rules',
+        'description' => 'Select the renamer rules to apply and configure the scope.',
+        'no_rules' => 'No renamer rules found.',
+        'target' => 'Target',
+        'scope' => 'Scope',
+        'photos' => 'Photos',
+        'albums' => 'Albums',
+        'current' => 'Current',
+        'descendants' => 'Descendants',
+        'preview' => 'Preview',
+        'preview_title' => 'Preview Changes',
+        'no_changes' => 'No changes detected.',
+        'original' => 'Original',
+        'new_title' => 'New Title',
+        'count_changes' => ':count item(s) will be renamed.',
+        'back' => 'Back',
+        'apply' => 'Apply',
+        'success' => 'Renamer rules applied successfully!',
+    ],
+    'watermark_confirm' => [
+        'title' => 'Apply Watermark',
+        'description' => 'Are you sure you want to apply a watermark to the photos in this album? This action cannot be undone.',
+        'confirm' => 'Apply Watermark',
     ],
 ];

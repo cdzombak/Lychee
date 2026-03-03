@@ -1,74 +1,68 @@
 # Current Session
 
-_Last updated: 2026-01-16_
+_Last updated: 2026-03-03_
 
 ## Active Features
 
-**Feature 009 – Rating Ordering and Smart Albums**
+**Feature 024 – CLI Sync File-List Support**
 - Status: Planning (spec, plan, tasks complete)
 - Priority: P2
-- Started: 2026-01-16
-- Dependency: Feature 001 (Photo Star Rating)
-- Note: Best Pictures smart album requires Lychee SE license
+- License: Open
+- Started: 2026-03-03
+- Dependencies: None
 
 ## Session Summary
 
-Created Feature 009 specification for rating ordering and rating-based smart albums.
+Feature 024 (CLI Sync File-List Support) specification, plan, and tasks created per GitHub issue #1231. The `lychee:sync` artisan command currently rejects individual file paths with "Given path is not a directory". This feature extends the command to accept both directories and individual file paths in a single invocation.
 
-### Feature 009: Rating Ordering and Smart Albums
+### Feature 024: CLI Sync File-List Support
 
-**User Request:**
-- Add `rating_avg` column to photos for sorting
-- Add "Sort by Rating" option
-- Create 6 rating smart albums: Unrated, 1★, 2★, 3★, 4★, 5★
-- Create Best Pictures smart album with configurable cutoff
-- Each smart album has enable/disable and public/private settings
+**Problem:**
+Users want to run commands like:
+```bash
+php artisan lychee:sync $(find /storage/NAS/photos/ -type f -mtime -1) \
+  --import_via_symlink=1 --skip_duplicates=1
+```
+Currently this fails because the `lychee:sync` command only accepts directory paths, not individual file paths.
 
-**Decisions Made:**
-- **Q-009-01:** Option B - Add denormalized `rating_avg` column to photos table (fast indexed sorting)
-- **Q-009-02:** Option C - Hybrid threshold logic (1★/2★ exact buckets, 3★+ threshold)
-- **Q-009-03:** Option B - Top N by rating with ties included
-- **Q-009-04:** Rating smart albums sorted by rating DESC
+**Key Design Decisions:**
+- Accept both file and directory paths in the existing `{dir*}` (renamed to `{paths*}`) positional argument.
+- File paths bypass the `BuildTree` pipe and are queued directly via `ImportImageJob`.
+- Mixed invocations (some dirs, some files) are supported; each path is processed independently.
+- `skip_duplicates` applies to file-list mode; `delete_missing_*` flags are inactive for file paths (with a notice).
+- No new external dependencies; no HTTP API changes.
 
-**Smart Album Logic:**
-| Album | Condition |
-|-------|-----------|
-| Unrated | `rating_avg IS NULL` |
-| 1★ | `1.0 <= rating_avg < 2.0` |
-| 2★ | `2.0 <= rating_avg < 3.0` |
-| 3★+ | `rating_avg >= 3.0` |
-| 4★+ | `rating_avg >= 4.0` |
-| 5★ | `rating_avg >= 5.0` |
-| Best Pictures | Top N by rating (ties included) |
+**Implementation Phases:**
+- I1 (Tests first): Write failing tests for S-024-02 through S-024-08 (~60 min)
+- I2 (DTO extension): Add `file_list` to `ImportDTO` (~30 min)
+- I3 (Command layer): Classify paths in `Sync::validatePaths()` (~60 min)
+- I4 (Import layer): Add `Exec::doFiles()` for direct file import (~60 min)
+- I5 (Duplicate detection & flag guard): skip_duplicates + delete_missing notice (~45 min)
+- I6 (Quality gates): php-cs-fixer, phpstan, docs (~30 min)
 
-**Deliverables Created:**
-1. [docs/specs/4-architecture/features/009-rating-ordering/spec.md](docs/specs/4-architecture/features/009-rating-ordering/spec.md)
-2. [docs/specs/4-architecture/features/009-rating-ordering/plan.md](docs/specs/4-architecture/features/009-rating-ordering/plan.md)
-3. [docs/specs/4-architecture/features/009-rating-ordering/tasks.md](docs/specs/4-architecture/features/009-rating-ordering/tasks.md)
-4. Updated [docs/specs/4-architecture/roadmap.md](docs/specs/4-architecture/roadmap.md) with Feature 009
-5. Updated [docs/specs/4-architecture/open-questions.md](docs/specs/4-architecture/open-questions.md) with resolved questions
+**Total: 6 increments (~5.25 hours)**
 
-**Paused:**
-- Feature 006 (Photo Star Rating Filter) - paused per user request
+**Deliverables:**
+1. [spec.md](docs/specs/4-architecture/features/024-sync-file-list/spec.md)
+2. [plan.md](docs/specs/4-architecture/features/024-sync-file-list/plan.md)
+3. [tasks.md](docs/specs/4-architecture/features/024-sync-file-list/tasks.md)
 
 ## Next Steps
 
-1. Run analysis gate checklist
-2. Begin implementation starting with I1 (Database Schema)
+1. Run analysis gate checklist.
+2. Begin implementation with I1: write failing feature tests.
 
 ## Open Questions
 
-None - all questions (Q-009-01 through Q-009-04) resolved.
+None - requirements are clear from issue #1231 and existing codebase analysis.
 
 ## References
 
-**Feature 009:**
-- Feature spec: [009-rating-ordering/spec.md](docs/specs/4-architecture/features/009-rating-ordering/spec.md)
-- Implementation plan: [009-rating-ordering/plan.md](docs/specs/4-architecture/features/009-rating-ordering/plan.md)
-- Task checklist: [009-rating-ordering/tasks.md](docs/specs/4-architecture/features/009-rating-ordering/tasks.md)
-
-**Paused:**
-- Feature 006 spec: [006-photo-rating-filter/spec.md](docs/specs/4-architecture/features/006-photo-rating-filter/spec.md)
+**Feature 024:**
+- Feature spec: [024-sync-file-list/spec.md](docs/specs/4-architecture/features/024-sync-file-list/spec.md)
+- Implementation plan: [024-sync-file-list/plan.md](docs/specs/4-architecture/features/024-sync-file-list/plan.md)
+- Task checklist: [024-sync-file-list/tasks.md](docs/specs/4-architecture/features/024-sync-file-list/tasks.md)
+- GitHub issue: https://github.com/LycheeOrg/Lychee/issues/1231
 
 **Common:**
 - Roadmap: [roadmap.md](docs/specs/4-architecture/roadmap.md)
@@ -78,11 +72,11 @@ None - all questions (Q-009-01 through Q-009-04) resolved.
 
 **Session Context for Handoff:**
 
-Feature 009 (Rating Ordering and Smart Albums) fully planned. Key design decisions:
-1. Denormalized `rating_avg` column on photos table for sorting performance
-2. Hybrid threshold logic for rating smart albums (1★/2★ exact, 3★+ cumulative)
-3. Best Pictures shows top N photos with ties included (Lychee SE only)
-4. All rating smart albums sorted by rating DESC
-5. 44 tasks organized into 14 increments
+Feature 024 (CLI Sync File-List Support) fully planned with 6 increments (~5.25 hours total). This is an open-licensed feature:
+1. `lychee:sync` positional argument accepts files and directories.
+2. File paths bypass `BuildTree` pipe; queued directly via `ImportImageJob`.
+3. Mixed invocations (dirs + files) supported in a single call.
+4. `skip_duplicates` applies to file-list mode; `delete_missing_*` inactive for file paths.
+5. No new dependencies; no HTTP API changes.
 
-Feature 006 (Photo Star Rating Filter) paused. Ready to begin implementation of Feature 009.
+Ready to begin I1: write failing feature tests.

@@ -100,10 +100,6 @@ class TestConstants
 	public const CONFIG_MAP_INCLUDE_SUBALBUMS = 'map_include_subalbums';
 	public const CONFIG_PHOTOS_SORTING_COL = 'sorting_photos_col';
 	public const CONFIG_PHOTOS_SORTING_ORDER = 'sorting_photos_order';
-	public const CONFIG_PUBLIC_RECENT = 'public_recent';
-	public const CONFIG_PUBLIC_SEARCH = 'search_public';
-	public const CONFIG_PUBLIC_STARRED = 'public_starred';
-	public const CONFIG_PUBLIC_ON_THIS_DAY = 'public_on_this_day';
 	public const CONFIG_RAW_FORMATS = 'raw_formats';
 	public const CONFIG_USE_LAST_MODIFIED_DATE_WHEN_NO_EXIF = 'use_last_modified_date_when_no_exif_date';
 
@@ -139,13 +135,13 @@ class TestConstants
 			'title' => self::PHOTO_NIGHT_TITLE,
 			'type' => 'image/jpeg',
 			'size_variants' => [
-				'original' => ['type' => 0, 'width' => 6720, 'height' => 4480],
-				'medium2x' => ['type' => 1, 'width' => 3240, 'height' => 2160],
-				'medium' => ['type' => 2, 'width' => 1620, 'height' => 1080],
-				'small2x' => ['type' => 3, 'width' => 1080,	'height' => 720],
-				'small' => ['type' => 4, 'width' => 540, 'height' => 360],
-				'thumb2x' => ['type' => 5, 'width' => 400, 'height' => 400],
-				'thumb' => ['type' => 6, 'width' => 200, 'height' => 200],
+				'original' => ['type' => 1, 'width' => 6720, 'height' => 4480],
+				'medium2x' => ['type' => 2, 'width' => 3240, 'height' => 2160],
+				'medium' => ['type' => 3, 'width' => 1620, 'height' => 1080],
+				'small2x' => ['type' => 4, 'width' => 1080,	'height' => 720],
+				'small' => ['type' => 5, 'width' => 540, 'height' => 360],
+				'thumb2x' => ['type' => 6, 'width' => 400, 'height' => 400],
+				'thumb' => ['type' => 7, 'width' => 200, 'height' => 200],
 			],
 		],
 		self::SAMPLE_FILE_MONGOLIA_IMAGE => [
@@ -154,13 +150,13 @@ class TestConstants
 			'title' => self::PHOTO_MONGOLIA_TITLE,
 			'type' => 'image/jpeg',
 			'size_variants' => [
-				'original' => ['type' => 0, 'width' => 1280, 'height' => 850],
+				'original' => ['type' => 1, 'width' => 1280, 'height' => 850],
 				'medium2x' => null,
 				'medium' => null,
-				'small2x' => ['type' => 3, 'width' => 1084,	'height' => 720],
-				'small' => ['type' => 4, 'width' => 542, 'height' => 360],
-				'thumb2x' => ['type' => 5, 'width' => 400, 'height' => 400],
-				'thumb' => ['type' => 6, 'width' => 200, 'height' => 200],
+				'small2x' => ['type' => 4, 'width' => 1084,	'height' => 720],
+				'small' => ['type' => 5, 'width' => 542, 'height' => 360],
+				'thumb2x' => ['type' => 6, 'width' => 400, 'height' => 400],
+				'thumb' => ['type' => 7, 'width' => 200, 'height' => 200],
 			],
 		],
 		self::SAMPLE_FILE_SUNSET_IMAGE => [
@@ -169,13 +165,13 @@ class TestConstants
 			'title' => self::PHOTO_SUNSET_TITLE,
 			'type' => 'image/jpeg',
 			'size_variants' => [
-				'original' => ['type' => 0, 'width' => 914, 'height' => 1625],
+				'original' => ['type' => 1, 'width' => 914, 'height' => 1625],
 				'medium2x' => null,
-				'medium' => ['type' => 2, 'width' => 607, 'height' => 1080],
-				'small2x' => ['type' => 3, 'width' => 405,	'height' => 720],
-				'small' => ['type' => 4, 'width' => 202, 'height' => 360],
-				'thumb2x' => ['type' => 5, 'width' => 400, 'height' => 400],
-				'thumb' => ['type' => 6, 'width' => 200, 'height' => 200],
+				'medium' => ['type' => 3, 'width' => 607, 'height' => 1080],
+				'small2x' => ['type' => 4, 'width' => 405,	'height' => 720],
+				'small' => ['type' => 5, 'width' => 202, 'height' => 360],
+				'thumb2x' => ['type' => 6, 'width' => 400, 'height' => 400],
+				'thumb' => ['type' => 7, 'width' => 200, 'height' => 200],
 			],
 		],
 		self::SAMPLE_FILE_TRAIN_IMAGE => [
@@ -184,13 +180,13 @@ class TestConstants
 			'title' => self::PHOTO_TRAIN_TITLE,
 			'type' => 'image/jpeg',
 			'size_variants' => [
-				'original' => ['type' => 0, 'width' => 4032, 'height' => 3024],
-				'medium2x' => ['type' => 1, 'width' => 2880, 'height' => 2160],
-				'medium' => ['type' => 2, 'width' => 1440, 'height' => 1080],
-				'small2x' => ['type' => 3, 'width' => 960,	'height' => 720],
-				'small' => ['type' => 4, 'width' => 480, 'height' => 360],
-				'thumb2x' => ['type' => 5, 'width' => 400, 'height' => 400],
-				'thumb' => ['type' => 6, 'width' => 200, 'height' => 200],
+				'original' => ['type' => 1, 'width' => 4032, 'height' => 3024],
+				'medium2x' => ['type' => 2, 'width' => 2880, 'height' => 2160],
+				'medium' => ['type' => 3, 'width' => 1440, 'height' => 1080],
+				'small2x' => ['type' => 4, 'width' => 960,	'height' => 720],
+				'small' => ['type' => 5, 'width' => 480, 'height' => 360],
+				'thumb2x' => ['type' => 6, 'width' => 400, 'height' => 400],
+				'thumb' => ['type' => 7, 'width' => 200, 'height' => 200],
 			],
 		],
 	];

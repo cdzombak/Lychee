@@ -34,6 +34,9 @@ This document tracks modules, dependencies, and architectural relationships acro
     - Syncs attributes (email, display_name) on each login
     - Queries LDAP groups to assign admin role (`may_administrate`)
     - Sets random password for LDAP users (local password not used)
+  - **Import Actions** (`app/Actions/Import/`) - CLI sync and import pipeline
+    - `Exec::do(string $path, ?Album $parent_album)` — tree-based directory import (BuildTree pipe chain)
+    - `Exec::doFiles(array $file_paths, ?Album $parent_album)` — direct file import, bypasses tree-based album creation (Feature 024)
 - **DTOs** (`app/DTO/`) - Data transfer objects (Spatie Data)
   - **LdapConfiguration** (`app/DTO/LdapConfiguration.php`) - Validates LDAP environment variables
   - **LdapUser** (`app/DTO/LdapUser.php`) - LDAP authentication result (username, userDn, email, display_name)
@@ -151,7 +154,7 @@ Implements offset-based pagination for albums and photos to efficiently handle l
    - `GET /Album::albums?page={n}` - Paginated child albums (PaginatedAlbumsResource)
    - `GET /Album::photos?page={n}` - Paginated photos (PaginatedPhotosResource)
 2. **Repository Methods** - `AlbumRepository::getChildrenPaginated()` and `PhotoRepository::getPhotosForAlbumPaginated()` use SortingDecorator for efficient queries
-3. **Album Type Support** - Works with regular albums, Smart albums (Recent, Starred), and Tag albums
+3. **Album Type Support** - Works with regular albums, Smart albums (Recent, Highlighted), and Tag albums
 4. **Backward Compatibility** - Legacy `/Album` endpoint unchanged, returns full album data
 
 **Frontend Architecture:**
@@ -177,7 +180,7 @@ Implements offset-based pagination for albums and photos to efficiently handle l
 Replaces on-the-fly virtual column computation with physical database fields updated asynchronously:
 
 1. **Mutation Events** - Photo/album changes trigger domain events
-   - Photo: created, deleted, updated (taken_at, is_starred, NSFW status changes)
+   - Photo: created, deleted, updated (taken_at, is_highlighted, NSFW status changes)
    - Album: created, deleted, moved, NSFW status changes
 2. **Event Listeners** - Dispatch `RecomputeAlbumStatsJob` for affected album
 3. **Job Execution** - Recomputes 6 fields in database transaction:
@@ -189,8 +192,32 @@ Replaces on-the-fly virtual column computation with physical database fields upd
 6. **CLI Commands**:
    - `lychee:recompute-album-stats` - Unified command: with album_id for single-album recompute, without album_id for bulk backfill of all albums
    - `lychee:recompute-album-stats {album_id}` - Manual recovery after propagation failures
+   - `lychee:sync {paths*}` - Sync files and directories to Lychee (Feature 024): accepts both directory paths (tree-based import) and individual file paths (direct import via `Exec::doFiles()`); mixed invocations supported; `--album_id` optional
 
 **Benefits**: 50%+ query time reduction for album listings, removes expensive nested set JOINs from read path
+
+### RAW Upload Pipeline (Feature 020)
+Preserves original camera RAW / HEIC / PSD files as a dedicated size variant while converting to a displayable JPEG for the gallery.
+
+**Size Variant numbering:** `RAW=0, ORIGINAL=1, MEDIUM2X=2, MEDIUM=3, SMALL2X=4, SMALL=5, THUMB2X=6, THUMB=7, PLACEHOLDER=8`
+
+**Upload flow (Init pipes):**
+1. `DetectAndStoreRaw` — if extension is in `CONVERTIBLE_RAW_EXTENSIONS` (`.nef`, `.cr2`, `.cr3`, `.arw`, `.dng`, `.orf`, `.rw2`, `.raf`, `.pef`, `.srw`, `.nrw`, `.psd`, `.heic`, `.heif`): stores original in `InitDTO::$raw_source_file`, converts to JPEG via `RawToJpeg`. On failure: graceful fallback (keeps original file as-is, no RAW variant). PDF files are explicitly excluded.
+2. `AssertSupportedMedia` → `FetchLastModifiedTime` → `MayLoadFileMetadata` → `FindDuplicate` (unchanged)
+
+**Upload flow (Standalone pipes, added after `CreateOriginalSizeVariant`):**
+- `CreateRawSizeVariant` — if `$raw_source_file` is set in DTO: copies raw file to storage, creates DB row with `type=RAW(0)` and `0×0` dimensions.
+
+**Key classes:**
+- `app/Actions/Photo/Convert/RawToJpeg.php` — Imagick converter, quality 92, does NOT delete source
+- `app/Actions/Photo/Pipes/Init/DetectAndStoreRaw.php` — replaces deleted `ConvertUnsupportedMedia`
+- `app/Actions/Photo/Pipes/Standalone/CreateRawSizeVariant.php`
+
+**Removed classes:** `HeifToJpeg`, `ConvertUnsupportedMedia`, `PhotoConverterFactory`, `ConvertableImageType`, `PhotoConverter` interface
+
+**API:** `DownloadVariantType::RAW` maps to the RAW download endpoint gated by `raw_download_enabled` config. The frontend checks whether a RAW size variant exists in the `size_variants` response to conditionally show the download button.
+
+**Migrations:** `2026_02_28_000001` (shift type values), `2026_02_28_000002` (add `raw_download_enabled` config), `2026_02_28_000003` (reclassify existing raw-format ORIGINAL rows), `2026_02_28_000004` (add `size_raw` to `album_size_statistics`)
 
 ### Naming Conventions
 - PHP: snake_case for variables, PSR-4 for classes

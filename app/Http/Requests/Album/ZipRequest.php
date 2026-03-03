@@ -45,6 +45,12 @@ class ZipRequest extends BaseApiRequest implements HasAlbums, HasPhotos, HasSize
 	 */
 	public function authorize(): bool
 	{
+		// Gate RAW downloads behind the raw_download_enabled config option
+		if ($this->size_variant === DownloadVariantType::RAW &&
+			!request()->configs()->getValueAsBool('raw_download_enabled')) {
+			return false;
+		}
+
 		/** @var AbstractAlbum $album */
 		foreach ($this->albums as $album) {
 			if (!Gate::check(AlbumPolicy::CAN_DOWNLOAD, $album)) {
@@ -70,7 +76,7 @@ class ZipRequest extends BaseApiRequest implements HasAlbums, HasPhotos, HasSize
 		return [
 			RequestAttribute::ALBUM_IDS_ATTRIBUTE => ['sometimes', new AlbumIDListRule()],
 			RequestAttribute::PHOTO_IDS_ATTRIBUTE => ['sometimes', new RandomIDListRule()],
-			RequestAttribute::SIZE_VARIANT_ATTRIBUTE => ['required_if_accepted:photos_ids', new Enum(DownloadVariantType::class)],
+			RequestAttribute::SIZE_VARIANT_ATTRIBUTE => ['sometimes', new Enum(DownloadVariantType::class)],
 			RequestAttribute::FROM_ID_ATTRIBUTE => ['required_if_accepted:photos_ids', new AlbumIDRule(true)],
 		];
 	}
@@ -131,7 +137,7 @@ class ZipRequest extends BaseApiRequest implements HasAlbums, HasPhotos, HasSize
 		$photo_query = Photo::query()->with(['albums']);
 		// The condition is required, because Lychee also supports to archive
 		// the "live video" as a size variant which is not a proper size variant
-		$variant = $this->size_variant->getSizeVariantType();
+		$variant = $this->size_variant?->getSizeVariantType();
 		if ($variant !== null) { // NOT LIVE PHOTO
 			// If a proper size variant is requested, eagerly load the size
 			// variants but only the requested type due to efficiency reasons

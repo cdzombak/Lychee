@@ -25,6 +25,15 @@ use Illuminate\Support\Facades\Route;
 Route::get('/LandingPage', LandingPageController::class)->middleware(['cache_control']);
 Route::get('/Frame', [Gallery\FrameController::class, 'get']);
 
+/**
+ * CONTACT FORM.
+ */
+Route::get('/Contact::Init', [Contact\ContactController::class, 'init'])->middleware(['cache_control', 'support:se']);
+Route::post('/Contact', [Contact\ContactController::class, 'store'])->middleware(['throttle:5,1440', 'support:se']);
+Route::get('/Contact', [Contact\ContactController::class, 'index'])->middleware('support:se');
+Route::patch('/Contact', [Contact\ContactController::class, 'update'])->middleware('support:se');
+Route::delete('/Contact', [Contact\ContactController::class, 'destroy'])->middleware('support:se');
+
 Route::get('/Gallery::Init', [Gallery\ConfigController::class, 'getInit']);
 Route::get('/Gallery::Footer', [Gallery\ConfigController::class, 'getFooter'])->middleware(['cache_control']);
 Route::get('/Gallery::getLayout', [Gallery\ConfigController::class, 'getGalleryLayout'])->middleware(['cache_control']);
@@ -42,7 +51,6 @@ Route::get('/Albums', [Gallery\AlbumsController::class, 'get'])->middleware(['lo
 /**
  * ALBUM.
  */
-Route::get('/Album', [Gallery\AlbumController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
 Route::get('/Album::head', [Gallery\AlbumHeadController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
 Route::get('/Album::albums', [Gallery\AlbumChildrenController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
 Route::get('/Album::photos', [Gallery\AlbumPhotosController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
@@ -57,6 +65,7 @@ Route::delete('/Album', [Gallery\AlbumController::class, 'delete']);
 Route::post('/Album::move', [Gallery\AlbumController::class, 'move']);
 Route::post('/Album::cover', [Gallery\AlbumController::class, 'cover']);
 Route::post('/Album::header', [Gallery\AlbumController::class, 'header']);
+Route::patch('/Album::header', [Gallery\AlbumController::class, 'updateAlbumHeader'])->middleware('support:pro');
 Route::post('/Album::merge', [Gallery\AlbumController::class, 'merge']);
 Route::post('/Album::transfer', [Gallery\AlbumController::class, 'transfer']);
 Route::post('/Album::track', [Gallery\AlbumController::class, 'setTrack'])
@@ -139,12 +148,14 @@ Route::post('/Photo', [Gallery\PhotoController::class, 'upload'])
 Route::patch('/Photo', [Gallery\PhotoController::class, 'update']);
 Route::patch('/Photo::rename', [Gallery\PhotoController::class, 'rename']);
 Route::patch('/Photo::tags', [Gallery\PhotoController::class, 'tags']);
+Route::patch('/Photo::license', [Gallery\PhotoController::class, 'license']);
 Route::post('/Photo::move', [Gallery\PhotoController::class, 'move']);
 Route::post('/Photo::copy', [Gallery\PhotoController::class, 'copy']);
-Route::post('/Photo::star', [Gallery\PhotoController::class, 'star']);
+Route::post('/Photo::highlight', [Gallery\PhotoController::class, 'highlight']);
 Route::post('/Photo::setRating', [Gallery\PhotoController::class, 'rate']);
 Route::post('/Photo::rotate', [Gallery\PhotoController::class, 'rotate']);
 Route::post('/Photo::watermark', [Gallery\PhotoController::class, 'watermark'])->middleware('support:se');
+Route::get('/Photo/{photo_id}/albums', [Gallery\PhotoController::class, 'albums']);
 Route::delete('/Photo', [Gallery\PhotoController::class, 'delete']);
 
 // Route::get('/Photo::getArchive', [PhotoController::class, 'getArchive'])
@@ -332,3 +343,4 @@ Route::post('/Renamer', [RenamerController::class, 'store'])->middleware(['suppo
 Route::put('/Renamer', [RenamerController::class, 'update'])->middleware(['support:se']);
 Route::delete('/Renamer', [RenamerController::class, 'destroy'])->middleware(['support:se']);
 Route::post('/Renamer::test', [RenamerController::class, 'test'])->middleware(['support:se']);
+Route::post('/Renamer::preview', [RenamerController::class, 'preview'])->middleware(['support:se']);

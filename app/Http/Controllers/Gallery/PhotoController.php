@@ -23,15 +23,18 @@ use App\Http\Requests\Photo\CopyPhotosRequest;
 use App\Http\Requests\Photo\DeletePhotosRequest;
 use App\Http\Requests\Photo\EditPhotoRequest;
 use App\Http\Requests\Photo\FromUrlRequest;
+use App\Http\Requests\Photo\GetPhotoAlbumsRequest;
 use App\Http\Requests\Photo\MovePhotosRequest;
 use App\Http\Requests\Photo\RenamePhotoRequest;
 use App\Http\Requests\Photo\RotatePhotoRequest;
 use App\Http\Requests\Photo\SetPhotoRatingRequest;
-use App\Http\Requests\Photo\SetPhotosStarredRequest;
+use App\Http\Requests\Photo\SetPhotosHighlightedRequest;
+use App\Http\Requests\Photo\SetPhotosLicenseRequest;
 use App\Http\Requests\Photo\SetPhotosTagsRequest;
 use App\Http\Requests\Photo\UploadPhotoRequest;
 use App\Http\Requests\Photo\WatermarkPhotoRequest;
 use App\Http\Resources\Editable\UploadMetaResource;
+use App\Http\Resources\Models\PhotoAlbumResource;
 use App\Http\Resources\Models\PhotoResource;
 use App\Image\Files\NativeLocalFile;
 use App\Image\Files\ProcessableJobFile;
@@ -42,9 +45,11 @@ use App\Jobs\WatermarkerJob;
 use App\Models\Photo;
 use App\Models\SizeVariant;
 use App\Models\Tag;
+use App\Policies\AlbumPolicy;
 use App\Policies\PhotoPolicy;
 use App\Repositories\ConfigManager;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -85,6 +90,7 @@ class PhotoController extends Controller
 			$final,
 			$request->album(),
 			$request->file_last_modified_time(),
+			$request->apply_watermark(),
 			$meta);
 	}
 
@@ -94,6 +100,7 @@ class PhotoController extends Controller
 		NativeLocalFile $final,
 		?AbstractAlbum $album,
 		?int $file_last_modified_time,
+		?bool $apply_watermark,
 		UploadMetaResource $meta,
 	): UploadMetaResource {
 		$processable_file = new ProcessableJobFile(
@@ -120,7 +127,7 @@ class PhotoController extends Controller
 			return $meta;
 		}
 
-		ProcessImageJob::dispatch($processable_file, $album, $file_last_modified_time);
+		ProcessImageJob::dispatch($processable_file, $album, $file_last_modified_time, $apply_watermark);
 		$meta->stage = config('queue.default') === 'sync' ? FileStatus::DONE : FileStatus::READY;
 
 		return $meta;
@@ -165,12 +172,12 @@ class PhotoController extends Controller
 	}
 
 	/**
-	 * Set the is-starred attribute of the given photos.
+	 * Set the is-highlighted attribute of the given photos.
 	 */
-	public function star(SetPhotosStarredRequest $request): void
+	public function highlight(SetPhotosHighlightedRequest $request): void
 	{
 		foreach ($request->photos() as $photo) {
-			$photo->is_starred = $request->isStarred();
+			$photo->is_highlighted = $request->isHighlighted();
 			$photo->save();
 		}
 	}
@@ -287,6 +294,40 @@ class PhotoController extends Controller
 			});
 			DB::commit();
 		});
+	}
+
+	/**
+	 * Set the license for multiple photos.
+	 */
+	public function license(SetPhotosLicenseRequest $request): void
+	{
+		$license = $request->license();
+		$photo_ids = collect($request->photoIds());
+		DB::transaction(function () use ($photo_ids, $license): void {
+			// Process photos in chunks of 100 to avoid memory issues
+			$photo_ids->chunk(100)->each(function ($photo_id) use ($license): void {
+				Photo::query()->whereIn('id', $photo_id)->update(['license' => $license->value]);
+			});
+		});
+	}
+
+	/**
+	 * Get the albums containing a photo, filtered by user access.
+	 *
+	 * @param GetPhotoAlbumsRequest $request
+	 *
+	 * @return Collection<int,PhotoAlbumResource>
+	 */
+	public function albums(GetPhotoAlbumsRequest $request): Collection
+	{
+		$photo = $request->photo();
+		$user = Auth::user();
+		$album_policy = resolve(AlbumPolicy::class);
+
+		return $photo->albums
+			->filter(fn ($album) => $album_policy->canAccess($user, $album))
+			->values()
+			->map(fn ($album) => new PhotoAlbumResource($album));
 	}
 
 	/**

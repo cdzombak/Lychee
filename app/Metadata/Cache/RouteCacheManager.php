@@ -41,6 +41,7 @@ final readonly class RouteCacheManager
 			'api/v2/Album::albums' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true, extra: [RequestAttribute::ALBUM_ID_ATTRIBUTE]),
 			'api/v2/Album::head' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true, extra: [RequestAttribute::ALBUM_ID_ATTRIBUTE]),
 			'api/v2/Album::getTargetListAlbums' => false, // TODO: cache me later.
+			'api/v2/Photo/{photo_id}/albums' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true),
 			'api/v2/Albums' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true),
 			'api/v2/Auth::config' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: true),
 			'api/v2/Auth::rights' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: true),
@@ -151,6 +152,9 @@ final readonly class RouteCacheManager
 			'api/v2/Shop/Management/List' => false,
 			'api/v2/Shop/Order/List' => false,
 			'api/v2/Shop/Order/{order_id}' => false,
+
+			'api/v2/Contact' => false,
+			'api/v2/Contact::Init' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: false),
 		];
 	}
 

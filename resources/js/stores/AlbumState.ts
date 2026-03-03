@@ -73,7 +73,7 @@ export const useAlbumStore = defineStore("album-store", {
 		 * Handles:
 		 * - Model albums (regular albums with children and photos)
 		 * - Tag albums (albums based on photo tags)
-		 * - Smart albums (Recent, Starred, On This Day, Unsorted, Untagged)
+		 * - Smart albums (Recent, Highlighted, On This Day, Unsorted, Untagged)
 		 * - Password-protected albums
 		 * - Race conditions when user navigates quickly between albums
 		 */
@@ -338,7 +338,7 @@ export const useAlbumStore = defineStore("album-store", {
 							// Tag album: Photos filtered by tag
 							this.tagAlbum = data.data.resource as App.Http.Resources.Models.HeadTagAlbumResource;
 						} else {
-							// Smart album: Recent, Starred, On This Day, Unsorted, Untagged
+							// Smart album: Recent, Highlighted, On This Day, Unsorted, Untagged
 							this.smartAlbum = data.data.resource as App.Http.Resources.Models.HeadSmartAlbumResource;
 						}
 					}

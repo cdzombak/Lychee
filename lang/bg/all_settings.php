@@ -1,19 +1,18 @@
 <?php
-
 return [
-    /*
+    'documentation' => [
+        /*
     |--------------------------------------------------------------------------
     | All Settings
     |--------------------------------------------------------------------------
     */
-
-    'documentation' => [
         'version' => 'Текуща версия на Lychee',
         'check_for_updates' => 'Автоматична проверка за нови актуализации',
         'sorting_photos_col' => 'Колона по подразбиране за сортиране на снимки',
         'sorting_photos_order' => 'Ред по подразбиране за сортиране на снимки',
         'sorting_albums_col' => 'Колона по подразбиране за сортиране на албуми',
         'sorting_albums_order' => 'Ред по подразбиране за сортиране на албуми',
+        'photos_star_visibility' => 'Кой може да вижда и да поставя звездичка (флаг) на изображение',
         'imagick' => 'Активиране на обработка с Imagick',
         'dropbox_key' => 'API ключ за Dropbox',
         'skip_duplicates' => 'Пропускане на дубликат, ако е открит при импортиране',
@@ -54,6 +53,7 @@ return [
         'grants_download' => 'Разрешава изтеглянето по подразбиране.',
         'photos_wraparound' => 'При достигане на последната снимка в албума, връщане в началото',
         'raw_formats' => 'Позволени допълнителни формати (няма да се обработват)',
+        'raw_download_enabled' => 'Allow users to download the original RAW file',
         'map_display' => 'Показване на картата при наличие на GPS координати',
         'zip64' => 'Използване на 64-битов Zip вместо 32-битов',
         'map_display_public' => 'Позволяване на анонимни потребители да имат достъп до картата',
@@ -126,7 +126,7 @@ return [
         'SA_random_thumbs' => 'Използване на произволни миниатюри вместо избрани или по ред на сортиране.',
         'login_required' => 'Изискване за вход за достъп до галерията.',
         'enable_unsorted' => 'Активиране на смарт албум „Несортирани“.',
-        'enable_starred' => 'Активиране на смарт албум „Избрани“.',
+        'enable_highlighted' => 'Активиране на смарт албум „Избрани“.',
         'enable_recent' => 'Активиране на смарт албум „Скорошно качени“.',
         'enable_on_this_day' => 'Активиране на смарт албум „На този ден“.',
         'enable_unrated' => 'Активиране на смарт албум „Без оценка“.',
@@ -294,6 +294,7 @@ return [
         'watermark_shift_x_direction' => 'Посока на хоризонталното изместване',
         'watermark_shift_y' => 'Вертикално изместване',
         'watermark_shift_y_direction' => 'Посока на вертикалното изместване',
+        'watermark_optout_disabled' => 'Disable watermark opt-out during upload',
         'renamer_enabled' => 'Активиране на правила за преименуване',
         'renamer_enforced' => 'Принудително прилагане на правилата за преименуване',
         'renamer_enforced_before' => 'Прилагане на принудителните правила преди потребителските',
@@ -338,6 +339,9 @@ return [
         'webshop_auto_fulfill_enabled' => 'Активиране на автоматично изпълнение на поръчките.',
         'webshop_manual_fulfill_enabled' => 'Активиране на автоматично изпълнение на поръчките при ръчно действие.',
         'enable_photo_details_always_open' => 'Детайлите на снимката да са винаги видими.',
+        'album_enhanced_display_enabled' => 'Активиране на разширени функции на заглавната част на албума',
+        'album_header_size' => 'Размер на заглавната част на албума',
+        'album_header_landing_title_enabled' => 'Display landing title on album header',
     ],
     'details' => [
         'version' => '',
@@ -346,6 +350,7 @@ return [
         'sorting_photos_order' => '',
         'sorting_albums_col' => '',
         'sorting_albums_order' => '',
+        'photos_star_visibility' => '',
         'imagick' => '',
         'dropbox_key' => 'Използвайте стойност "disabled", за да маркирате тази настройка като изключена.',
         'skip_duplicates' => '',
@@ -386,6 +391,7 @@ return [
         'grants_download' => '',
         'photos_wraparound' => '',
         'raw_formats' => '',
+        'raw_download_enabled' => 'When enabled, users with download permissions can download the untouched RAW/HEIC/PSD file that was preserved during upload.',
         'map_display' => '',
         'zip64' => '',
         'map_display_public' => '',
@@ -458,7 +464,7 @@ return [
         'SA_random_thumbs' => '',
         'login_required' => '',
         'enable_unsorted' => '<span class="pi pi-exclamation-triangle text-orange-500"></span> Деактивирането на този смарт албум ще направи снимките без албум невидими.',
-        'enable_starred' => '',
+        'enable_highlighted' => '',
         'enable_recent' => '',
         'enable_on_this_day' => '',
         'enable_unrated' => 'Показване на смарт албум, съдържащ снимки без рейтинг.',
@@ -626,6 +632,7 @@ return [
         'watermark_shift_x_direction' => 'Посока на хоризонталното изместване: наляво или надясно?',
         'watermark_shift_y' => 'Брой пиксели/пропорционално изместване, приложено вертикално към водния знак.',
         'watermark_shift_y_direction' => 'Посока на вертикалното изместване: нагоре или надолу?',
+        'watermark_optout_disabled' => '',
         'renamer_enabled' => 'Това ви позволява да преименувате файлове въз основа на правила, дефинирани в модула за преименуване.',
         'renamer_enforced' => 'Правилата, дефинирани от собственика на инстанцията на Lychee, ще се прилагат независимо от потребителските настройки.',
         'renamer_enforced_before' => 'Правилата на собственика ще се прилагат преди правилата на потребителя.',
@@ -670,6 +677,9 @@ return [
         'webshop_auto_fulfill_enabled' => 'След приключване на плащането, съдържанието автоматично става достъпно за потребителя, когато е възможно.',
         'webshop_manual_fulfill_enabled' => 'Когато се кликне върху "Маркирай като доставено", съдържанието автоматично става достъпно за потребителя, когато е възможно.',
         'enable_photo_details_always_open' => 'При отваряне на изгледа на снимка, панелът с детайли винаги е видим.',
+        'album_enhanced_display_enabled' => 'Опция за включване на нов стил на заглавната част с по-голямо заглавие, бутон „Отвори галерията“ и възможност за персонализиране на стила на заглавието.',
+        'album_header_size' => 'Опция за конфигуриране на размера на изображението в заглавната част.',
+        'album_header_landing_title_enabled' => 'Display the landing title at the bottom of the Album header. You can configure the landing title in the Landing page module.',
     ],
     'category_name' => [
         'config' => 'Основни',
