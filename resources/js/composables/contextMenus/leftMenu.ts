@@ -35,15 +35,8 @@ export function useLeftMenu(
 	const { user } = storeToRefs(authStore);
 
 	const { initData, left_menu_open } = storeToRefs(LeftMenuStateStore);
-	const {
-		clockwork_url,
-		is_se_enabled,
-		is_se_preview_enabled,
-		is_se_info_hidden,
-		is_favourite_enabled,
-		is_timeline_page_enabled,
-		is_contact_form_enabled,
-	} = storeToRefs(lycheeStore);
+	const { clockwork_url, is_se_enabled, is_se_preview_enabled, is_se_info_hidden, is_favourite_enabled, is_timeline_page_enabled } =
+		storeToRefs(lycheeStore);
 	const openLycheeAbout = ref(false);
 	const logsEnabled = ref(true);
 
@@ -132,7 +125,7 @@ export function useLeftMenu(
 				label: "left-menu.contact",
 				icon: "pi pi-envelope",
 				route: "/contact",
-				access: is_contact_form_enabled.value && !canSeeAdmin.value,
+				access: initData.value.modules.is_contact_enabled && !canSeeAdmin.value,
 			},
 			{
 				label: "Shop Photo Prints",
@@ -214,7 +207,8 @@ export function useLeftMenu(
 						label: "left-menu.messages",
 						icon: "pi pi-inbox",
 						route: "/contact-messages",
-						access: is_contact_form_enabled.value,
+						access: initData.value.modules.is_contact_enabled && canSeeAdmin.value,
+						num: initData.value.modules.messages_count,
 					},
 					{
 						label: "diagnostics.title",
