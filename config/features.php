@@ -142,6 +142,40 @@ return [
 
 	/*
 	 |--------------------------------------------------------------------------
+	 | Enable Webhooks
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, admins can configure outgoing webhooks that are triggered
+	 | on photo lifecycle events (photo.add, photo.move, photo.delete).
+	 | Disabled by default — set WEBHOOK_ENABLED=true to activate.
+	 */
+	'webhook' => (bool) env('WEBHOOK_ENABLED', false),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | Webhook HTTP request timeout
+	 |--------------------------------------------------------------------------
+	 |
+	 | Controls how long (in seconds) Lychee waits for a webhook endpoint to
+	 | respond before treating the request as failed.
+	 */
+	'webhook_timeout_seconds' => (int) env('WEBHOOK_TIMEOUT_SECONDS', 10),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | Enable Vulnerability Check
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, Lychee periodically fetches the list of published security
+	 | advisories from the configured url.advisories.api_url and compares them
+	 | against the running version. Matching vulnerabilities are surfaced in the
+	 | diagnostic error panel (admin-only) and as a dismissable modal on login.
+	 | Enabled by default — set VULNERABILITY_CHECK_ENABLED=false to opt out.
+	 */
+	'vulnerability-check' => (bool) env('VULNERABILITY_CHECK_ENABLED', true),
+
+	/*
+	 |--------------------------------------------------------------------------
 	 | Populate Request object macros while testing
 	 |--------------------------------------------------------------------------
 	 |

@@ -234,7 +234,7 @@ return [
         'copied' => '¡Foto(s) copiadas!',
     ],
     'photo_delete' => [
-        'confirm' => '¿Estás seguro de que quieres eliminar la foto "% s"?',
+        'confirm' => '¿Estás seguro de que quieres eliminar la foto "%s"?',
         'confirm_multiple' => '¿Estás seguro de que deseas eliminar las %d fotos seleccionadas?',
         'deleted' => '¡Foto(s) eliminadas!',
     ],
@@ -292,5 +292,11 @@ return [
         'title' => 'Apply Watermark',
         'description' => 'Are you sure you want to apply a watermark to the photos in this album? This action cannot be undone.',
         'confirm' => 'Apply Watermark',
+    ],
+    'security_advisories' => [
+        'title' => 'Security Vulnerabilities Detected',
+        'description' => 'The following vulnerabilities affect your current Lychee version:',
+        'no_cvss' => '(no CVSS score)',
+        'go_to_diagnostics' => 'Go to Diagnostics',
     ],
 ];
