@@ -1,4 +1,5 @@
 <?php
+
 return [
     'button' => [
         /*
@@ -56,7 +57,8 @@ return [
         'move' => 'نقل الصورة',
         'delete' => 'حذف الصورة',
         'edit' => 'تعديل المعلومات',
-        'show_hide_meta' => 'إظهار المعلومات',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'سنحافظ على إخفائها.',
         'button_hidden' => 'سنخفي الزر في الرأس.',
     ],
@@ -112,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => 'اكتمل',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'تم التحميل:',
         'release' => 'افرج عن الملف لتحميله!',
         'select' => 'انقر هنا لاختيار الملفات للتحميل',

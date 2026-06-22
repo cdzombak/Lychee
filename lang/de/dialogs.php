@@ -56,7 +56,8 @@ return [
         'move' => 'Foto verschieben',
         'delete' => 'Foto löschen',
         'edit' => 'Informationen bearbeiten',
-        'show_hide_meta' => 'Informationen anzeigen',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'Es wird verborgen bleiben.',
         'button_hidden' => 'Schaltfläche im Header wird ausgeblendet.',
     ],
@@ -112,6 +113,8 @@ return [
     ],
     'upload' => [
         'completed' => 'Abgeschlossen',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'Hochgeladen:',
         'release' => 'Datei zum Hochladen freigeben!',
         'select' => 'Hier klicken um Dateien zum Hochladen auszuwählen',
@@ -269,7 +272,7 @@ return [
         'go_to_gallery' => 'Zur Galerie gehen',
     ],
     'selected_images' => [
-        'names_copied' => 'Die Namen der ausgewählten Bilder wurden kopiert!'
+        'names_copied' => 'Die Namen der ausgewählten Bilder wurden kopiert!',
     ],
     'apply_renamer' => [
         'title' => 'Umbenennungsregeln anwenden',
@@ -297,9 +300,9 @@ return [
         'confirm' => 'Wasserzeichen hinzufügen',
     ],
     'security_advisories' => [
-        'title' => 'Security Vulnerabilities Detected',
-        'description' => 'The following vulnerabilities affect your current Lychee version:',
-        'no_cvss' => '(no CVSS score)',
-        'go_to_diagnostics' => 'Go to Diagnostics',
+        'title' => 'Sicherheitslücken erkannt',
+        'description' => 'Folgende Sicherheitslücken betreffen deine aktuelle Version von Lychee:',
+        'no_cvss' => '(keine CVSS-Bewertung)',
+        'go_to_diagnostics' => 'Zur Diagnose',
     ],
 ];

@@ -1,4 +1,5 @@
 <?php
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +33,8 @@ return [
     'live_video' => 'Часть видео с живого фото',
     'download_raw' => 'Download RAW',
     'download_album' => 'Выберите разрешение изображений для ZIP-архива альбома. Если у фотографии нет выбранного варианта, будет использован оригинал.',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => 'Дата камеры',
     'album_reserved' => 'Все права защищены',
     'map' => [
@@ -137,6 +140,8 @@ return [
         'header_photos' => 'Фотографии',
         'show_highlighted' => 'Filter highlighted images',
         'copy_highlighted_names' => 'Copy highlighted photo names to clipboard',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'Здесь ничего нет',
         'upload' => 'Загрузить фотографии',
         'tabs' => [
@@ -194,7 +199,6 @@ return [
             'tags_required' => 'Теги обязательны.',
             'all_tags_must_match' => 'Все теги должны совпадать.',
         ],
-
     ],
     'photo' => [
         'actions' => [
@@ -315,6 +319,10 @@ return [
         'merge_all' => 'Объединить выбранные',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => 'Загрузить фото',
         'take_photo' => 'Сделать фото',
         'import_link' => 'Импортировать по ссылке',

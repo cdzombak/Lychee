@@ -7,6 +7,7 @@
 		:data-width="props.photo.size_variants.original?.width"
 		:data-height="props.photo.size_variants.original?.height"
 		:data-photo-id="props.photo.id"
+		@mouseenter="prefetchFaces"
 	>
 		<span
 			class="thumbimg relative w-full h-full border-none overflow-hidden"
@@ -78,7 +79,17 @@
 		>
 			<img class="absolute aspect-square w-fit h-fit" alt="play" :src="srcPlay" />
 		</div>
-		<div class="absolute top-0 ltr:right-0 rtl:left-0 w-1/4 flex flex-row-reverse px-1">
+		<!-- Touch select mode indicator -->
+		<div
+			v-if="is_touch_select_mode"
+			class="absolute top-1.5 ltr:right-1.5 rtl:left-1.5 z-10 w-5 h-5 rounded-full pointer-events-none flex items-center justify-center"
+			:class="{
+				'border border-white bg-black/40': !props.isSelected,
+			}"
+		>
+			<i v-if="props.isSelected" class="pi pi-check-circle text-lg text-primary-400" />
+		</div>
+		<div v-else class="absolute top-0 ltr:right-0 rtl:left-0 w-1/4 flex flex-row-reverse px-1">
 			<ThumbBuyMe :is-in-basket="isInBasket" @click="toggleBuyMe" v-if="props.isBuyable" />
 			<ThumbFavourite v-if="is_favourite_enabled" :is-favourite="isFavourite" @click="toggleFavourite" />
 		</div>
@@ -91,6 +102,12 @@
 			/>
 			<ThumbBadge v-if="userStore.isLoggedIn && props.isCoverId" class="bg-yellow-500" icon="folder-cover" />
 			<ThumbBadge v-if="userStore.isLoggedIn && props.isHeaderId" class="bg-slate-400 hidden sm:block" pi="image" />
+			<ThumbBadge
+				v-if="!props.photo.is_validated"
+				class="bg-surface-800"
+				border-color="border-none"
+				pi="shield text-amber-500 text-shadow-md"
+			/>
 		</div>
 		<!-- Rating Overlay -->
 		<ThumbRatingOverlay v-if="rating_album_view_mode !== 'never' && props.photo.rating !== null" :rating="props.photo.rating" />
@@ -113,6 +130,8 @@ import { useOrderManagementStore } from "@/stores/OrderManagement";
 import { useUserStore } from "@/stores/UserState";
 import { useAlbumsStore } from "@/stores/AlbumsState";
 import { useAlbumStore } from "@/stores/AlbumState";
+import { useTogglablesStateStore } from "@/stores/ModalsState";
+import { usePhotoFacesStore } from "@/stores/PhotoFacesState";
 
 const { getNoImageIcon, getPlayIcon } = useImageHelpers();
 
@@ -136,8 +155,11 @@ const lycheeStore = useLycheeStateStore();
 const orderStore = useOrderManagementStore();
 const albumsStore = useAlbumsStore();
 const albumStore = useAlbumStore();
+const togglableStore = useTogglablesStateStore();
 const { is_favourite_enabled, display_thumb_photo_overlay, photo_thumb_info, is_photo_thumb_tags_enabled, rating_album_view_mode } =
 	storeToRefs(lycheeStore);
+const facesStore = usePhotoFacesStore();
+const { is_touch_select_mode } = storeToRefs(togglableStore);
 const srcPlay = ref(getPlayIcon());
 const srcNoImage = ref(getNoImageIcon());
 const isImageLoaded = ref(false);
@@ -153,6 +175,12 @@ function toggleBuyMe() {
 
 function onImageLoad() {
 	isImageLoaded.value = true;
+}
+
+function prefetchFaces() {
+	if ((props.photo.face_count ?? 0) > 0) {
+		facesStore.prefetch(props.photo.id);
+	}
 }
 
 const isFavourite = computed(() => favourites.getPhotoIds.includes(props.photo.id));

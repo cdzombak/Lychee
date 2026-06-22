@@ -33,6 +33,8 @@ return [
     'live_video' => 'Video part of live-photo',
     'download_raw' => 'Download RAW',
     'download_album' => 'Seleziona la risoluzione dell\'immagine per l\'archivio ZIP dell\'album. Se una foto non ha la variante selezionata, verrà utilizzato l\'originale.',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => 'Camera date',
     'album_reserved' => 'All Rights Reserved',
     'map' => [
@@ -138,6 +140,8 @@ return [
         'header_photos' => 'Photos',
         'show_highlighted' => 'Filter highlighted images',
         'copy_highlighted_names' => 'Copy highlighted photo names to clipboard',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'Nothing to see here',
         'upload' => 'Upload photos',
         'tabs' => [
@@ -195,7 +199,6 @@ return [
             'tags_required' => 'Tags are required.',
             'all_tags_must_match' => 'All tags must match.',
         ],
-
     ],
     'photo' => [
         'actions' => [
@@ -314,6 +317,10 @@ return [
         'merge_all' => 'Merge Selected',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => 'Upload Photo',
         'take_photo' => 'Scatta una foto',
         'import_link' => 'Import from Link',

@@ -33,6 +33,8 @@ return [
     'live_video' => 'Videodeel van live-foto',
     'download_raw' => 'Download RAW',
     'download_album' => 'Selecteer de beeldresolutie voor het album-ZIP-archief. Als een foto de geselecteerde variant niet heeft, wordt het origineel gebruikt.',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => 'Cameradatum',
     'album_reserved' => 'Alle rechten voorbehouden',
     'map' => [
@@ -138,6 +140,8 @@ return [
         'header_photos' => 'Foto’s',
         'show_highlighted' => 'Filter highlighted images',
         'copy_highlighted_names' => 'Copy highlighted photo names to clipboard',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'Niets te zien hier',
         'upload' => 'Foto’s uploaden',
         'tabs' => [
@@ -195,7 +199,6 @@ return [
             'tags_required' => 'Tags zijn vereist.',
             'all_tags_must_match' => 'Alle tags moeten overeenkomen.',
         ],
-
     ],
     'photo' => [
         'actions' => [
@@ -316,6 +319,10 @@ return [
         'merge_all' => 'Alles samenvoegen',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => 'Foto uploaden',
         'take_photo' => 'Foto nemen',
         'import_link' => 'Importeer van link',

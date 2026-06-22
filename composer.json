@@ -7,7 +7,7 @@
         "source": "https://github.com/LycheeOrg/Lychee",
         "issues": "https://github.com/LycheeOrg/Lychee/issues",
         "docs": "https://lycheeorg.dev/docs/",
-        "chat": "https://gitter.im/LycheeOrg/Lobby"
+        "chat": "https://discord.gg/JMPvuRQcTf"
     },
     "keywords": [
         "photos",
@@ -52,9 +52,9 @@
         "bepsvpt/secure-headers": "^9.0",
         "composer/semver": "^3.4",
         "dedoc/scramble": "^0.13.1",
-        "directorytree/ldaprecord-laravel": "^3.4.2",
+        "directorytree/ldaprecord-laravel": "^4.0.0",
         "doctrine/dbal": "^3.9",
-        "farzai/color-palette": "^1.0",
+        "farzai/color-palette": "^2.0",
         "geocoder-php/cache-provider": "^4.4",
         "geocoder-php/nominatim-provider": "^5.7",
         "graham-campbell/markdown": "^16.0",
@@ -76,7 +76,7 @@
         "omnipay/mollie": "^5.5",
         "omnipay/stripe": "^3.2",
         "opcodesio/log-viewer": "dev-lycheeOrg",
-        "paypal/paypal-server-sdk": "2.2.0",
+        "paypal/paypal-server-sdk": "2.3.0",
         "php-ffmpeg/php-ffmpeg": "^1.0",
         "php-http/guzzle7-adapter": "^1.0",
         "php-http/message": "^1.12",
@@ -97,7 +97,7 @@
         "spatie/laravel-feed": "^4.0",
         "spatie/laravel-image-optimizer": "^1.8",
         "spatie/laravel-typescript-transformer": "^2.4",
-        "symfony/cache": "^v7.1.5",
+        "symfony/cache": "^v8.0.10",
         "thecodingmachine/safe": "^3.3"
     },
     "require-dev": {
@@ -107,7 +107,7 @@
         "barryvdh/laravel-debugbar": "^4.0",
         "barryvdh/laravel-ide-helper": "^3.0",
         "brianium/paratest": "^7.4",
-        "dominikb/composer-license-checker": "^2.7",
+        "dominikb/composer-license-checker": "^3.0",
         "fakerphp/faker": "^1.23.0",
         "filp/whoops": "^2.5",
         "friendsofphp/php-cs-fixer": "^3.3",

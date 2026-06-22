@@ -13,6 +13,7 @@ use App\Contracts\Image\StreamStats;
 use App\Contracts\Models\AbstractAlbum;
 use App\Contracts\Models\AbstractSizeVariantNamingStrategy;
 use App\Contracts\PhotoCreate\PhotoDTO;
+use App\Enum\UserUploadTrustLevel;
 use App\Image\Files\FlysystemFile;
 use App\Image\Files\NativeLocalFile;
 use App\Image\Files\TemporaryLocalFile;
@@ -34,6 +35,12 @@ class StandaloneDTO implements PhotoDTO
 	// that should be preserved as a RAW size variant after conversion to JPEG.
 	public NativeLocalFile|null $raw_source_file = null;
 
+	// User-supplied title override (takes precedence over EXIF-extracted title when non-null).
+	public ?string $title = null;
+
+	// User-supplied description override (takes precedence over EXIF-extracted description when non-null).
+	public ?string $description = null;
+
 	public function __construct(
 		// The resulting photo
 		public Photo $photo,
@@ -47,6 +54,8 @@ class StandaloneDTO implements PhotoDTO
 		public readonly ?AbstractAlbum $album,
 		// Indicates the intended owner of the image.
 		public readonly int $intended_owner_id,
+		// Pre-resolved upload trust level (null = resolve at runtime in SetUploadValidated).
+		public readonly UserUploadTrustLevel $upload_trust_level,
 		public readonly bool $shall_import_via_symlink,
 		public readonly bool $shall_delete_imported,
 		public readonly bool $shall_rename_photo_title,
@@ -65,12 +74,22 @@ class StandaloneDTO implements PhotoDTO
 			exif_info: $init_dto->exif_info,
 			album: $init_dto->album,
 			intended_owner_id: $init_dto->intended_owner_id,
+			upload_trust_level: $init_dto->upload_trust_level,
 			shall_import_via_symlink: $init_dto->import_mode->shall_import_via_symlink,
 			shall_delete_imported: $init_dto->import_mode->shall_delete_imported,
 			shall_rename_photo_title: $init_dto->import_mode->shall_rename_photo_title,
 			apply_watermark: $init_dto->apply_watermark,
 		);
 		$dto->raw_source_file = $init_dto->raw_source_file;
+		$dto->title = $init_dto->title;
+		$dto->description = $init_dto->description;
+
+		// Pre-allocate the photo ID so the controller can return it in the upload response
+		// before the job finishes. The trait's generateKey() will consume and then clear
+		// this value; a DB-collision retry will therefore generate a fresh random ID.
+		if ($init_dto->preallocated_id !== null) {
+			$dto->photo->preallocateId($init_dto->preallocated_id);
+		}
 
 		return $dto;
 	}

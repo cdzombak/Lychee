@@ -1,5 +1,6 @@
 import { ALL } from "@/config/constants";
 import AlbumService from "@/services/album-service";
+import FaceDetectionService from "@/services/face-detection-service";
 import { defineStore } from "pinia";
 import { useTogglablesStateStore } from "./ModalsState";
 import { usePhotosStore } from "./PhotosState";
@@ -34,6 +35,8 @@ export const useAlbumStore = defineStore("album-store", {
 		photos_per_page: 0,
 		photos_total: 0,
 		photos_loading: false as boolean,
+		/** Earliest page that has been loaded into the photos store (used for background prepend tracking). */
+		photos_min_page: 1,
 
 		// New pagination state for albums (via /Album::albums endpoint)
 		albums_current_page: 1,
@@ -44,6 +47,14 @@ export const useAlbumStore = defineStore("album-store", {
 
 		// Tag filter state for photos
 		active_tag_filter: null as { tag_ids: number[]; tag_logic: string } | null,
+
+		// Person filter state for photos
+		active_person_filter: null as string | null,
+
+		// People in this album (loaded lazily)
+		album_people: [] as App.Http.Resources.Models.PersonResource[],
+		album_people_total: 0 as number,
+		album_people_loaded: false as boolean,
 	}),
 	actions: {
 		refresh(): Promise<void> {
@@ -63,6 +74,7 @@ export const useAlbumStore = defineStore("album-store", {
 			this.photos_per_page = 0;
 			this.photos_total = 0;
 			this.photos_loading = false;
+			this.photos_min_page = 1;
 			this.albums_current_page = 1;
 			this.albums_last_page = 0;
 			this.albums_per_page = 0;
@@ -70,6 +82,11 @@ export const useAlbumStore = defineStore("album-store", {
 			this.albums_loading = false;
 			// Reset tag filter
 			this.active_tag_filter = null;
+			// Reset person filter and people list
+			this.active_person_filter = null;
+			this.album_people = [];
+			this.album_people_total = 0;
+			this.album_people_loaded = false;
 		},
 
 		/**
@@ -202,12 +219,13 @@ export const useAlbumStore = defineStore("album-store", {
 		 *
 		 * @param page - Page number to load (1-indexed)
 		 * @param append - If true, merge with existing photos; if false, replace them
+		 * @param prepend - If true, insert photos at the beginning (for background loading of previous pages)
 		 *
 		 * Handles timeline mode: When append=true and timeline is enabled,
 		 * PhotosState.appendPhotos() intelligently merges photos into existing
 		 * timeline groups rather than creating duplicate date headers.
 		 */
-		loadPhotos(page: number = 1, append: boolean = false): Promise<void> {
+		loadPhotos(page: number = 1, append: boolean = false, prepend: boolean = false): Promise<void> {
 			const photosState = usePhotosStore();
 
 			if (this.albumId === ALL || this.albumId === undefined) {
@@ -216,38 +234,57 @@ export const useAlbumStore = defineStore("album-store", {
 
 			// Capture current album ID to detect navigation during loading
 			const requestedAlbumId = this.albumId;
-			this.photos_loading = true;
+			// Background prepend operations don't show a loading indicator to
+			// avoid flickering and to not block the loadMorePhotos guard.
+			if (!prepend) {
+				this.photos_loading = true;
+			}
 
-			// Extract tag filter params from state
+			// Extract active filter params from state
 			const tag_ids = this.active_tag_filter?.tag_ids ?? null;
 			const tag_logic = this.active_tag_filter?.tag_logic ?? "OR";
+			const person_id = this.active_person_filter ?? null;
 
-			return AlbumService.getPhotos(requestedAlbumId, page, tag_ids, tag_logic)
+			return AlbumService.getPhotos(requestedAlbumId, page, tag_ids, tag_logic, person_id)
 				.then((data) => {
 					// Race condition guard: Don't update state if user navigated away
 					if (this.albumId !== requestedAlbumId) {
 						return;
 					}
+					// prependPhotos inserts before existing photos for prepend=true (background loading of previous pages)
 					// appendPhotos handles timeline merging for append=true
 					// setPhotos replaces all photos and rebuilds timeline for append=false
-					if (append) {
-						photosState.appendPhotos(data.data.photos, this.config?.is_photo_timeline_enabled ?? false);
+					if (prepend) {
+						photosState.prependPhotos(data.data.photos, this.config?.is_photo_timeline_enabled ?? false, page);
+						// Track the earliest page that has been prepended
+						if (page < this.photos_min_page) {
+							this.photos_min_page = page;
+						}
+					} else if (append) {
+						photosState.appendPhotos(data.data.photos, this.config?.is_photo_timeline_enabled ?? false, page);
+						this.photos_current_page = data.data.current_page;
+						this.photos_last_page = data.data.last_page;
+						this.photos_per_page = data.data.per_page;
+						this.photos_total = data.data.total;
 					} else {
-						photosState.setPhotos(data.data.photos, this.config?.is_photo_timeline_enabled ?? false);
+						photosState.setPhotos(data.data.photos, this.config?.is_photo_timeline_enabled ?? false, page);
+						this.photos_current_page = data.data.current_page;
+						this.photos_last_page = data.data.last_page;
+						this.photos_per_page = data.data.per_page;
+						this.photos_total = data.data.total;
+						this.photos_min_page = page;
 					}
 					if (useLycheeStateStore().is_debug_enabled) {
 						console.debug(`photos: ${photosState.photos.length}/${data.data.total}`);
 					}
-					this.photos_current_page = data.data.current_page;
-					this.photos_last_page = data.data.last_page;
-					this.photos_per_page = data.data.per_page;
-					this.photos_total = data.data.total;
 				})
 				.catch((error) => {
 					console.error(error);
 				})
 				.finally(() => {
-					this.photos_loading = false;
+					if (!prepend) {
+						this.photos_loading = false;
+					}
 				});
 		},
 
@@ -313,7 +350,92 @@ export const useAlbumStore = defineStore("album-store", {
 			return this.loadPhotos(1, false);
 		},
 
-		async load(): Promise<void> {
+		/**
+		 * Load all people detected in the album (first page, up to pagination limit).
+		 * Safe to call multiple times — skips if already loaded.
+		 */
+		loadAlbumPeople(): Promise<void> {
+			if (this.album_people_loaded || !this.albumId || this.albumId === ALL) {
+				return Promise.resolve();
+			}
+			return FaceDetectionService.getAlbumPeople(this.albumId)
+				.then((response) => {
+					this.album_people = response.data.data;
+					this.album_people_total = response.data.total;
+					this.album_people_loaded = true;
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		},
+
+		/** Filter photos to those containing the given person and reload. */
+		setPersonFilter(person_id: string): Promise<void> {
+			this.active_person_filter = person_id;
+			return this.loadPhotos(1, false);
+		},
+
+		/** Clear person filter and reload all photos. */
+		clearPersonFilter(): Promise<void> {
+			this.active_person_filter = null;
+			return this.loadPhotos(1, false);
+		},
+
+		/**
+		 * Search for a photo across pages that have not yet been loaded.
+		 *
+		 * The search first goes backward (prepending pages from startPage-1 down to 1),
+		 * then forward (appending pages from startPage+1 up to photos_last_page), stopping
+		 * as soon as the photo is found.  Each iteration guards against concurrent
+		 * navigation by comparing this.albumId with requestedAlbumId.
+		 *
+		 * @param photoId          - The photo ID to search for
+		 * @param startPage        - The page that was already loaded (search starts around it)
+		 * @param requestedAlbumId - The album ID captured at the start of load(); used to
+		 *                           abort the search when the user navigates away
+		 */
+		async _searchPhotoInPages(photoId: string, startPage: number, requestedAlbumId: string): Promise<void> {
+			const photosState = usePhotosStore();
+
+			// Clamp to the actual last page so an out-of-range `?page=N` doesn't trigger
+			// a long chain of requests for pages that do not exist.
+			const effectiveStart = Math.min(startPage, this.photos_last_page);
+
+			// Search backward: prepend pages from startPage-1 down to 1
+			for (let p = effectiveStart - 1; p >= 1; p--) {
+				if (this.albumId !== requestedAlbumId) {
+					return;
+				}
+				await this.loadPhotos(p, false, true);
+				if (photosState.photos.some((ph) => ph.id === photoId)) {
+					return;
+				}
+			}
+
+			// Search forward: append pages from startPage+1 up to photos_last_page
+			for (let p = effectiveStart + 1; p <= this.photos_last_page; p++) {
+				if (this.albumId !== requestedAlbumId) {
+					return;
+				}
+				await this.loadPhotos(p, true, false);
+				if (photosState.photos.some((ph) => ph.id === photoId)) {
+					return;
+				}
+			}
+		},
+
+		/**
+		 * Load the album metadata and first batch of photos.
+		 *
+		 * @param startPage - The page to load first. When provided (>1), that page is loaded
+		 *                    immediately so a directly linked photo can be displayed, then
+		 *                    pages 1…startPage-1 are loaded in the background (prepended).
+		 * @param photoId   - Optional photo ID expected on this page. When given and not
+		 *                    found in startPage, other pages are searched sequentially
+		 *                    (backward then forward) before giving up and showing the album.
+		 *                    The ?page=N query parameter is treated as a hint, not a guarantee.
+		 */
+		async load(startPage: number = 1, photoId?: string): Promise<void> {
 			const togglableState = useTogglablesStateStore();
 			const photosState = usePhotosStore();
 			const albumsStore = useAlbumsStore();
@@ -349,7 +471,14 @@ export const useAlbumStore = defineStore("album-store", {
 					this.config = data.data.config;
 					layoutStore.layout = data.data.config.photo_layout;
 
-					const loader = [this.loadPhotos(1, false)];
+					// Clamp startPage to a valid range (guard against bad query params)
+					const resolvedStart = startPage > 1 ? startPage : 1;
+
+					// Load the target page first so a directly linked photo can be displayed
+					// immediately. Previous pages are prepended in background afterwards.
+					await this.loadPhotos(resolvedStart, false);
+
+					const loader: Promise<void>[] = [];
 
 					if (data.data.config.is_model_album) {
 						this.modelAlbum = data.data.resource as App.Http.Resources.Models.HeadAlbumResource;
@@ -359,7 +488,31 @@ export const useAlbumStore = defineStore("album-store", {
 					} else {
 						this.smartAlbum = data.data.resource as App.Http.Resources.Models.HeadSmartAlbumResource;
 					}
+
+					// When a specific photo is expected but was not found in the initial page,
+					// search other pages sequentially (backward then forward).  This is run
+					// concurrently with album loading so the album header appears quickly.
+					const photoFoundInInitialPage = photoId !== undefined && photosState.photos.some((p) => p.id === photoId);
+					if (photoId !== undefined && !photoFoundInInitialPage) {
+						loader.push(this._searchPhotoInPages(photoId, resolvedStart, requestedAlbumId));
+					}
+
 					await Promise.all(loader);
+
+					// Fire off background loading of immediately preceding pages (prepend).
+					// Only done when we are NOT searching (the sequential search already covers
+					// those pages, and running both would load them twice).
+					// Capped at the 5 most-recent previous pages to avoid issuing too many
+					// concurrent requests when jumping to a high page number (e.g. page 50).
+					// These are intentionally NOT awaited so the photo panel can render
+					// while earlier pages stream in, without blocking albumStore.load().
+					if (photoId === undefined || photoFoundInInitialPage) {
+						const backgroundPagesLimit = 5;
+						const firstBackgroundPage = Math.max(1, resolvedStart - backgroundPagesLimit);
+						for (let p = resolvedStart - 1; p >= firstBackgroundPage; p--) {
+							void this.loadPhotos(p, false, true);
+						}
+					}
 				})
 				.catch((error) => {
 					if (this._loadingAlbumId !== requestedAlbumId) {

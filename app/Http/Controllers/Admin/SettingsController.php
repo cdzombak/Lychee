@@ -30,6 +30,12 @@ use Illuminate\Support\Facades\Storage;
  */
 class SettingsController extends Controller
 {
+	public const V8_CONFIGS = [
+		'site_logo',
+		'landing_logo',
+		'landing_header_logo',
+	];
+
 	/**
 	 * Fetch all the settings available in Lychee.
 	 *
@@ -45,10 +51,13 @@ class SettingsController extends Controller
 		$editable_configs = ConfigCategory::with([
 			'configs' => fn ($query) => $query
 				->when(config('features.hide-lychee-SE', false) === true, fn ($q) => $q->where('cat', '!=', 'lychee SE'))
+				->when(config('features.enable-request-caching') === false, fn ($q) => $q->where('cat', '!=', 'Mod Cache'))
 				->when($docker_info->isDocker(), fn ($q) => $q->where('not_on_docker', '!=', true))
 				->when(!$request->verify()->is_supporter() && !$request->configs()->getValueAsBool('enable_se_preview'), fn ($q) => $q->where('level', '=', 0))
 				->when(!$request->verify()->is_pro(), fn ($q) => $q->where('level', '<', 2))
-				->when(config('features.webshop') === false, fn ($q) => $q->where('key', 'NOT LIKE', 'webshop_%')),
+				->when(config('features.webshop') === false, fn ($q) => $q->where('key', 'NOT LIKE', 'webshop_%'))
+				->when(config('features.ai-vision') === false || config('features.v8') === false, fn ($q) => $q->where('key', 'NOT LIKE', 'ai_vision_%'))
+				->when(config('features.v8') === false, fn ($q) => $q->whereNotIn('key', self::V8_CONFIGS)),
 		])->orderBy('order', 'asc')->get();
 
 		return ConfigCategoryResource::collect($editable_configs->filter(fn ($cat) => $cat->configs->isNotEmpty())->values());

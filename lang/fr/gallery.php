@@ -1,4 +1,5 @@
 <?php
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +33,8 @@ return [
     'live_video' => 'Partie vidéo d’une live-photo',
     'download_raw' => 'Download RAW',
     'download_album' => 'Sélectionnez la résolution d\'image pour l\'archive ZIP de l\'album. Si une photo ne possède pas la variante sélectionnée, l\'originale sera utilisée.',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => 'Données de l’appareil',
     'album_reserved' => 'Tous droits réservés',
     'map' => [
@@ -137,6 +140,8 @@ return [
         'header_photos' => 'Photos',
         'show_highlighted' => 'Filter highlighted images',
         'copy_highlighted_names' => 'Copy highlighted photo names to clipboard',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'Rien à voir ici',
         'upload' => 'Téléverser des photos',
         'tabs' => [
@@ -314,6 +319,10 @@ return [
         'merge_all' => 'Fusionner la sélection',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => 'Téléverser une photo',
         'take_photo' => 'Prendre une photo',
         'import_link' => 'Importer via un lien',

@@ -1,4 +1,5 @@
 <?php
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -6,7 +7,7 @@ return [
     |--------------------------------------------------------------------------
     */
     'gallery' => 'Galerie',
-    'access_gallery' => 'Access the gallery',
-    'Powered_by_Lychee' => 'Powered by Lychee',
-    'copyright' => 'All images on this website are subject to copyright by %1$s © %2$s',
+    'access_gallery' => 'Vstup do Galerie',
+    'Powered_by_Lychee' => 'Běží na platformě Lychee',
+    'copyright' => 'Všechny obrázky na této webové stránce jsou chráněny autorským právem %1$s © %2$s',
 ];

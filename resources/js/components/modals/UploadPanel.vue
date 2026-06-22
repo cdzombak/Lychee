@@ -1,27 +1,43 @@
 <template>
 	<Dialog v-model:visible="is_upload_visible" modal pt:root:class="border-none" :dismissable-mask="true">
 		<template #container>
-			<div v-if="setup" class="w-screen max-w-md max-h-screen flex flex-col p-4">
+			<div v-if="setup" class="w-screen max-w-lg max-h-screen flex flex-col p-4">
 				<div v-if="counts.files > 0" class="flex flex-wrap justify-center w-full max-w-md">
-					<span v-if="counts.completed === counts.files" class="w-full text-center text-muted-color-emphasis font-bold">{{
-						$t("dialogs.upload.completed")
-					}}</span>
+					<template v-if="counts.completed === counts.files">
+						<span v-if="counts.errors > 0" class="w-full text-center text-danger-700 font-bold">{{
+							$t("dialogs.upload.completed_with_errors", { errors: String(counts.errors) })
+						}}</span>
+						<span v-else-if="counts.warnings > 0" class="w-full text-center text-warning-600 font-bold">{{
+							$t("dialogs.upload.completed_with_warnings", { warnings: String(counts.warnings) })
+						}}</span>
+						<span v-else class="w-full text-center text-muted-color-emphasis font-bold">{{ $t("dialogs.upload.completed") }}</span>
+					</template>
 					<span v-else class="w-full text-center">{{ $t("dialogs.upload.uploaded") }} {{ counts.completed }} / {{ counts.files }}</span>
 					<ProgressBar
 						class="w-full"
 						:value="Math.round((counts.completed * 100) / counts.files)"
 						:show-value="false"
 						:pt:value:class="'duration-300'"
-						:class="counts.completed === counts.files ? 'successProgressBarSeverity' : ''"
+						:class="
+							counts.completed === counts.files
+								? counts.errors > 0
+									? 'errorProgressBarSeverity'
+									: counts.warnings > 0
+										? 'warningProgressBarSeverity'
+										: 'successProgressBarSeverity'
+								: ''
+						"
 					/>
 				</div>
 				<ScrollPanel v-if="counts.files > 0" class="w-full h-48 py-4 pr-3 mr-5" :pt:scrollbar:class="'opacity-100'">
 					<UploadingLine
 						v-for="(uploadable, index) in list_upload_files"
-						:key="uploadable.file.name"
+						:key="uploadable.uid"
 						:file="uploadable.file"
-						:album-id="albumId"
+						:album-id="uploadable.album_id ?? albumId"
+						:album-title="uploadable.albumTitle"
 						:status="uploadable.status"
+						:message="uploadable.message"
 						:index="index"
 						:chunk-size="setup.upload_chunk_size"
 						:apply-watermark="applyWatermark"
@@ -93,18 +109,18 @@ import InputSwitch from "primevue/inputswitch";
 import { computed, onMounted, onUnmounted, Ref, ref, watch } from "vue";
 import UploadingLine from "@/components/forms/upload/UploadingLine.vue";
 import ScrollPanel from "primevue/scrollpanel";
-import UploadService from "@/services/upload-service";
 import ProgressBar from "primevue/progressbar";
 import AlbumService from "@/services/album-service";
+import { useRandomId } from "@/composables/useRandomId";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import { useTogglablesStateStore } from "@/stores/ModalsState";
 
 const togglableStore = useTogglablesStateStore();
-const { is_upload_visible, list_upload_files } = storeToRefs(togglableStore);
+const { is_upload_visible, list_upload_files, upload_config: setup } = storeToRefs(togglableStore);
+const generateId = useRandomId();
 const route = useRoute();
 
-const setup = ref<App.Http.Resources.GalleryConfigs.UploadConfig | undefined>(undefined);
 const albumId = ref(route.params.albumId ?? (null as string | null)) as Ref<string | null>;
 const applyWatermark = ref(true);
 
@@ -117,17 +133,14 @@ const isDropping = ref(false);
 const showCancel = computed(() => counts.value.files > 0 && counts.value.completed < counts.value.files);
 const showResume = computed(() => counts.value.waiting > 0 && counts.value.uploading === 0);
 
-function load() {
-	UploadService.getSetUp().then((response) => {
-		setup.value = response.data;
-	});
-}
 const counts = computed(() => {
 	return {
 		files: list_upload_files.value.length,
 		waiting: list_upload_files.value.filter((f) => f.status === "waiting").length,
 		completed: list_upload_files.value.filter((f) => f.status === "done" || f.status === "error" || f.status === "warning").length,
 		uploading: list_upload_files.value.filter((f) => f.status === "uploading").length,
+		errors: list_upload_files.value.filter((f) => f.status === "error").length,
+		warnings: list_upload_files.value.filter((f) => f.status === "warning").length,
 	};
 });
 
@@ -139,7 +152,7 @@ function upload(event: Event) {
 	}
 
 	for (let i = 0; i < target.files.length; i++) {
-		list_upload_files.value.push({ file: target.files[i], status: "waiting" });
+		list_upload_files.value.push({ uid: generateId(), file: target.files[i], status: "waiting" });
 	}
 
 	// Start uploading chunks.
@@ -173,15 +186,25 @@ function uploadNext(searchIndex = 0, max_processing_limit: number | undefined = 
 	}
 }
 
-function uploadCompleted(index: number, status: "done" | "error" | "warning") {
+function uploadCompleted(index: number, status: "done" | "error" | "warning", message: string | undefined) {
 	list_upload_files.value[index].status = status;
+	list_upload_files.value[index].message = message;
 
 	uploadNext(index, 1);
 
 	// Only refresh if all uploads are done.
 	if (counts.value.completed === counts.value.files) {
-		AlbumService.clearCache(albumId.value ?? "unsorted");
+		// Clear cache for the route-level album and any per-file album_id overrides (folder-drop targets).
+		const albumIds = new Set<string>([albumId.value ?? "unsorted"]);
+		list_upload_files.value.forEach((f) => {
+			if (f.album_id) albumIds.add(f.album_id);
+		});
+		albumIds.forEach((id) => AlbumService.clearCache(id));
 		emits("refresh");
+
+		if (setup.value?.close_upload_on_success && counts.value.errors === 0 && counts.value.warnings === 0) {
+			close();
+		}
 	}
 }
 
@@ -228,7 +251,6 @@ function disableAutoScroll() {
 }
 
 onMounted(() => {
-	load();
 	addEventListener("scroll", disableAutoScroll);
 });
 onUnmounted(() => {

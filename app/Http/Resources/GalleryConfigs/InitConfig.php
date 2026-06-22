@@ -8,6 +8,7 @@
 
 namespace App\Http\Resources\GalleryConfigs;
 
+use App\Assets\Features;
 use App\Enum\AlbumDecorationOrientation;
 use App\Enum\AlbumDecorationType;
 use App\Enum\AlbumHeaderSize;
@@ -54,6 +55,7 @@ class InitConfig extends Data
 	public bool $is_desktop_dock_full_transparency_enabled;
 	public bool $is_mobile_dock_full_transparency_enabled;
 	public bool $is_photo_details_always_open;
+	public bool $is_face_overlay_visible;
 
 	// Thumbs configuration
 	public VisibilityType $display_thumb_album_overlay;
@@ -77,6 +79,7 @@ class InitConfig extends Data
 	public bool $is_small2x_download_enabled;
 	public bool $is_medium_download_enabled;
 	public bool $is_medium2x_download_enabled;
+	public bool $is_download_archive_chunked;
 
 	// Clockwork
 	public ?string $clockwork_url;
@@ -90,6 +93,7 @@ class InitConfig extends Data
 
 	// Site title & dropbox key if logged in as admin.
 	public string $title;
+	public string $site_logo;
 	public string $dropbox_api_key;
 
 	// Lychee SE is available.
@@ -105,6 +109,9 @@ class InitConfig extends Data
 	// Live Metrics settings
 	public bool $is_live_metrics_enabled;
 
+	// White Label settings
+	public bool $is_white_label_enabled;
+
 	public bool $is_basic_auth_enabled = true;
 	public bool $is_webauthn_enabled = true;
 	// User registration enabled
@@ -113,6 +120,7 @@ class InitConfig extends Data
 	// Gesture settings
 	public bool $is_scroll_to_navigate_photos_enabled;
 	public bool $is_swipe_vertically_to_go_back_enabled;
+	public bool $disable_swipe_effect;
 
 	// Rating settings
 	public bool $is_rating_show_avg_in_details_enabled;
@@ -120,6 +128,9 @@ class InitConfig extends Data
 	public VisibilityType $rating_photo_view_mode;
 	public bool $is_rating_show_avg_in_album_view_enabled;
 	public VisibilityType $rating_album_view_mode;
+
+	// Embed
+	public bool $is_embed_enabled = true;
 
 	// Homepage
 	public string $default_homepage;
@@ -142,6 +153,8 @@ class InitConfig extends Data
 	public bool $is_album_enhanced_display_enabled;
 	public AlbumHeaderSize $album_header_size;
 	public bool $is_album_header_landing_title_enabled;
+
+	public bool $use_admin_dashboard;
 
 	public function __construct()
 	{
@@ -171,6 +184,7 @@ class InitConfig extends Data
 		$this->is_desktop_dock_full_transparency_enabled = request()->configs()->getValueAsBool('desktop_dock_full_transparency_enabled');
 		$this->is_mobile_dock_full_transparency_enabled = request()->configs()->getValueAsBool('mobile_dock_full_transparency_enabled');
 		$this->is_photo_details_always_open = request()->configs()->getValueAsBool('enable_photo_details_always_open');
+		$this->is_face_overlay_visible = request()->configs()->getValueAsString('ai_vision_face_overlay_default_visibility') === 'visible';
 
 		// Thumbs configuration
 		$this->display_thumb_album_overlay = request()->configs()->getValueAsEnum('display_thumb_album_overlay', VisibilityType::class);
@@ -191,6 +205,7 @@ class InitConfig extends Data
 		$this->is_small2x_download_enabled = request()->configs()->getValueAsBool('disable_small2x_download') === false;
 		$this->is_medium_download_enabled = request()->configs()->getValueAsBool('disable_medium_download') === false;
 		$this->is_medium2x_download_enabled = request()->configs()->getValueAsBool('disable_medium2x_download') === false;
+		$this->is_download_archive_chunked = request()->configs()->getValueAsBool('download_archive_chunked');
 
 		// Clockwork
 		$this->has_clockwork_in_menu();
@@ -205,6 +220,7 @@ class InitConfig extends Data
 		// Site title & dropbox key if logged in as admin.
 		// dd(request()->config());
 		$this->title = request()->configs()->getValueAsString('site_title');
+		$this->site_logo = request()->configs()->getValueAsString('site_logo');
 		$this->dropbox_api_key = Auth::user()?->may_administrate === true ? request()->configs()->getValueAsString('dropbox_key') : 'disabled';
 
 		$this->is_basic_auth_enabled = AuthServiceProvider::isBasicAuthEnabled();
@@ -215,6 +231,7 @@ class InitConfig extends Data
 		// Gesture settings
 		$this->is_scroll_to_navigate_photos_enabled = request()->configs()->getValueAsBool('is_scroll_to_navigate_photos_enabled');
 		$this->is_swipe_vertically_to_go_back_enabled = request()->configs()->getValueAsBool('is_swipe_vertically_to_go_back_enabled');
+		$this->disable_swipe_effect = request()->configs()->getValueAsBool('disable_swipe_effect');
 
 		// Rating settings
 		$this->is_rating_show_avg_in_details_enabled = request()->configs()->getValueAsBool('rating_show_avg_in_details');
@@ -222,6 +239,9 @@ class InitConfig extends Data
 		$this->rating_photo_view_mode = request()->configs()->getValueAsEnum('rating_photo_view_mode', VisibilityType::class);
 		$this->is_rating_show_avg_in_album_view_enabled = request()->configs()->getValueAsBool('rating_show_avg_in_album_view');
 		$this->rating_album_view_mode = request()->configs()->getValueAsEnum('rating_album_view_mode', VisibilityType::class);
+
+		// Embed
+		$this->is_embed_enabled = request()->configs()->getValueAsBool('is_embed_enabled');
 
 		// Homepage
 		$this->default_homepage = request()->configs()->getValueAsString('home_page_default');
@@ -243,6 +263,7 @@ class InitConfig extends Data
 		$this->is_album_enhanced_display_enabled = request()->configs()->getValueAsBool('album_enhanced_display_enabled');
 		$this->album_header_size = request()->configs()->getValueAsEnum('album_header_size', AlbumHeaderSize::class);
 		$this->is_album_header_landing_title_enabled = request()->configs()->getValueAsBool('album_header_landing_title_enabled');
+		$this->use_admin_dashboard = request()->configs()->getValueAsBool('use_admin_dashboard');
 
 		$this->set_supporter_properties();
 	}
@@ -288,6 +309,8 @@ class InitConfig extends Data
 		$this->is_se_info_hidden = $is_supporter || request()->configs()->getValueAsBool('disable_se_call_for_actions');
 
 		$this->is_live_metrics_enabled = $this->is_se_enabled && request()->configs()->getValueAsBool('live_metrics_enabled');
+
+		$this->is_white_label_enabled = $this->is_se_enabled && Features::active('white_label_enabled');
 
 		$this->is_se_expired = request()->configs()->getValueAsString('license_key') !== '' && !$this->is_se_enabled;
 	}

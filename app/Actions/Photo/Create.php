@@ -24,6 +24,7 @@ use App\DTO\PhotoCreate\InitDTO;
 use App\DTO\PhotoCreate\PhotoPartnerDTO;
 use App\DTO\PhotoCreate\StandaloneDTO;
 use App\DTO\PhotoCreate\VideoPartnerDTO;
+use App\Enum\UserUploadTrustLevel;
 use App\Exceptions\Internal\LycheeLogicException;
 use App\Exceptions\PhotoResyncedException;
 use App\Exceptions\PhotoSkippedException;
@@ -44,8 +45,19 @@ class Create
 	public function __construct(
 		?ImportMode $import_mode,
 		int $intended_owner_id,
+		UserUploadTrustLevel $upload_trust_level,
+		?string $title = null,
+		?string $description = null,
+		?string $preallocated_id = null,
 	) {
-		$this->strategy_parameters = new ImportParam($import_mode, $intended_owner_id);
+		$this->strategy_parameters = new ImportParam(
+			$import_mode,
+			$intended_owner_id,
+			title: $title,
+			description: $description,
+			preallocated_id: $preallocated_id,
+			upload_trust_level: $upload_trust_level,
+		);
 	}
 
 	/**
@@ -144,6 +156,7 @@ class Create
 			$pipes[] = Duplicate\SaveIfDirty::class;
 		}
 		$pipes[] = Duplicate\ThrowSkipDuplicate::class;
+		$pipes[] = Duplicate\ThrowUntrustedDuplicate::class;
 		$pipes[] = Shared\SetHighlighted::class;
 		$pipes[] = Shared\Save::class;
 		$pipes[] = Shared\SetParent::class;
@@ -168,6 +181,7 @@ class Create
 		$pipes = [
 			Standalone\FixTimeStamps::class,
 			Standalone\InitNamingStrategy::class,
+			Standalone\ApplyUserProvidedMetadata::class,
 			Shared\HydrateMetadata::class,
 			Shared\SetHighlighted::class,
 			Shared\SetOwnership::class,
@@ -178,6 +192,7 @@ class Create
 			Standalone\PlaceGoogleMotionVideo::class,
 			Standalone\SetChecksum::class,
 			Standalone\AutoRenamer::class,
+			Shared\SetUploadValidated::class,
 			Shared\Save::class,
 			Shared\SetParent::class,
 			Shared\SaveStatistics::class,
@@ -188,8 +203,10 @@ class Create
 			Standalone\EncodePlaceholder::class,
 			Standalone\ReplaceOriginalWithBackup::class,
 			Shared\UploadSizeVariantsToS3::class,
+			Shared\GeodecodeLocation::class,
 			Shared\ExtractColourPalette::class,
 			Shared\NotifyAlbums::class,
+			Standalone\AutoScanFacesOnUpload::class,
 		];
 
 		return $this->executePipeOnDTO($pipes, $dto)->getPhoto();
@@ -264,6 +281,7 @@ class Create
 		$stand_alone_pipes = [
 			Standalone\FixTimeStamps::class,
 			Standalone\InitNamingStrategy::class,
+			Standalone\ApplyUserProvidedMetadata::class,
 			Shared\HydrateMetadata::class,
 			Shared\SetHighlighted::class,
 			Shared\SetOwnership::class,
@@ -274,6 +292,7 @@ class Create
 			Standalone\PlaceGoogleMotionVideo::class,
 			Standalone\SetChecksum::class,
 			Standalone\AutoRenamer::class,
+			Shared\SetUploadValidated::class,
 			Shared\Save::class,
 			Shared\SetParent::class,
 			Standalone\CreateOriginalSizeVariant::class,
@@ -283,6 +302,7 @@ class Create
 			Standalone\EncodePlaceholder::class,
 			Standalone\ReplaceOriginalWithBackup::class,
 			Shared\UploadSizeVariantsToS3::class,
+			Shared\GeodecodeLocation::class,
 			Shared\ExtractColourPalette::class,
 		];
 		$stand_alone_dto = $this->executePipeOnDTO($stand_alone_pipes, $stand_alone_dto);

@@ -35,6 +35,7 @@
 		</div>
 
 		<!-- Dialogs -->
+		<DownloadAlbum v-model:visible="is_download_photo_visible" :photo-ids="downloadPhotoIds" :from-id="downloadFromId" />
 		<ContextMenu ref="menu" :model="Menu" :class="Menu.length === 0 ? 'hidden' : ''">
 			<template #item="{ item, props }">
 				<Divider v-if="item.is_divider" />
@@ -58,6 +59,7 @@ import ContextMenu from "primevue/contextmenu";
 import { useContextMenu } from "@/composables/contextMenus/contextMenu";
 import PhotoService from "@/services/photo-service";
 import AlbumService from "@/services/album-service";
+import ModerationService from "@/services/moderation-service";
 import { useGalleryModals } from "@/composables/modalsTriggers/galleryModals";
 import GalleryFooter from "@/components/footers/GalleryFooter.vue";
 import { useTogglablesStateStore } from "@/stores/ModalsState";
@@ -69,6 +71,8 @@ import { usePhotosStore } from "@/stores/PhotosState";
 import { useTagStore } from "@/stores/TagState";
 import { useAlbumsStore } from "@/stores/AlbumsState";
 import { usePhotoStore } from "@/stores/PhotoState";
+import DownloadAlbum from "@/components/modals/DownloadAlbum.vue";
+import { ref } from "vue";
 
 const router = useRouter();
 const togglableStore = useTogglablesStateStore();
@@ -87,6 +91,10 @@ const { toggleDelete, toggleMove, toggleRename, toggleTag, toggleLicense, toggle
 const { selectedPhoto, selectedPhotos, selectedPhotosIds, photoSelect: selectPhoto } = useSelection(photosStore, albumsStore, togglableStore);
 
 const { photoRoute, getParentId } = usePhotoRoute(router);
+
+const is_download_photo_visible = ref(false);
+const downloadPhotoIds = ref<string[]>([]);
+const downloadFromId = ref<string | null>(null);
 
 function photoClick(photoId: string, _e: MouseEvent) {
 	router.push(photoRoute(photoId));
@@ -112,9 +120,22 @@ const photoCallbacks = {
 	toggleMove: toggleMove,
 	toggleDelete: toggleDelete,
 	toggleDownload: () => {
-		PhotoService.download(selectedPhotosIds.value, getParentId());
+		downloadPhotoIds.value = [...selectedPhotosIds.value];
+		downloadFromId.value = getParentId() ?? null;
+		is_download_photo_visible.value = true;
 	},
 	toggleApplyRenamer: toggleApplyRenamer,
+	toggleScanFaces: () => {},
+	toggleApprove: () => {
+		ModerationService.approve(selectedPhotosIds.value).then(() => {
+			selectedPhotosIds.value.forEach((photoId) => {
+				const photo = photosStore.photos.find((p) => p.id === photoId);
+				if (photo) {
+					photo.is_validated = true;
+				}
+			});
+		});
+	},
 };
 
 const albumCallbacks = {
@@ -126,6 +147,7 @@ const albumCallbacks = {
 	toggleDownload: () => {},
 	togglePin: () => {},
 	toggleApplyRenamer: () => {},
+	toggleScanFaces: () => {},
 };
 
 const {

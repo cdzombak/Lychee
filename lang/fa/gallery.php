@@ -1,4 +1,5 @@
 <?php
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +33,8 @@ return [
     'live_video' => 'بخش ویدئویی لایو-فوتو',
     'download_raw' => 'Download RAW',
     'download_album' => 'رزولوشن تصویر را برای فایل ZIP آلبوم انتخاب کنید. اگر عکسی نوع انتخاب‌شده را نداشته باشد، از نسخه اصلی استفاده می‌شود.',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => 'تاریخ دوربین',
     'album_reserved' => 'کلیه حقوق محفوظ است',
     'map' => [
@@ -137,6 +140,8 @@ return [
         'header_photos' => 'عکس‌ها',
         'show_highlighted' => 'Filter highlighted images',
         'copy_highlighted_names' => 'Copy highlighted photo names to clipboard',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'اینجا چیزی برای نمایش نیست',
         'upload' => 'بارگذاری عکس‌ها',
         'tabs' => [
@@ -194,7 +199,6 @@ return [
             'tags_required' => 'برچسب‌ها الزامی هستند.',
             'all_tags_must_match' => 'همه برچسب‌ها باید مطابقت داشته باشند.',
         ],
-
     ],
     'photo' => [
         'actions' => [
@@ -315,6 +319,10 @@ return [
         'merge_all' => 'ادغام انتخاب شده‌ها',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => 'بارگذاری عکس',
         'take_photo' => 'گرفتن عکس',
         'import_link' => 'وارد کردن از لینک',

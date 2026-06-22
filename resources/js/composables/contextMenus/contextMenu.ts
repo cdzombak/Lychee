@@ -1,5 +1,6 @@
 import { useAlbumStore } from "@/stores/AlbumState";
 import { useLeftMenuStateStore } from "@/stores/LeftMenuState";
+import { useUserStore } from "@/stores/UserState";
 import { computed, Ref, ref } from "vue";
 
 export type Selectors = {
@@ -31,6 +32,8 @@ export type PhotoCallbacks = {
 	toggleDelete: () => void;
 	toggleDownload: () => void;
 	toggleApplyRenamer: () => void;
+	toggleScanFaces: () => void;
+	toggleApprove?: () => void;
 };
 
 export type AlbumCallbacks = {
@@ -42,6 +45,7 @@ export type AlbumCallbacks = {
 	toggleDelete: () => void;
 	toggleDownload: () => void;
 	toggleApplyRenamer: () => void;
+	toggleScanFaces: () => void;
 };
 
 type MenuItem = {
@@ -94,6 +98,14 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 		const selectedPhoto = selectors.selectedPhoto.value as App.Http.Resources.Models.PhotoResource;
 		const albumStore = useAlbumStore();
 		const leftMenuStore = useLeftMenuStateStore();
+		const userStore = useUserStore();
+
+		menuItems.push({
+			label: "gallery.menus.approve",
+			icon: "pi pi-check-circle",
+			callback: photoCallbacks.toggleApprove ?? (() => {}),
+			access: userStore.isAdmin && !selectedPhoto.is_validated,
+		});
 
 		if (selectedPhoto.is_highlighted) {
 			menuItems.push({
@@ -157,6 +169,12 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_mod_renamer_enabled ?? false),
 				},
 				{
+					label: "gallery.menus.scan_faces",
+					icon: "pi pi-face-smile",
+					callback: photoCallbacks.toggleScanFaces,
+					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_ai_vision_enabled ?? false),
+				},
+				{
 					is_divider: true,
 					access: albumStore.rights?.can_edit ?? false,
 				},
@@ -205,6 +223,14 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 		const menuItems = [];
 		const albumStore = useAlbumStore();
 		const leftMenuStore = useLeftMenuStateStore();
+		const userStore = useUserStore();
+
+		menuItems.push({
+			label: "gallery.menus.approve_all",
+			icon: "pi pi-check-circle",
+			callback: photoCallbacks.toggleApprove ?? (() => {}),
+			access: userStore.isAdmin && (selectors.selectedPhotos?.value.some((p) => !p.is_validated) ?? false),
+		});
 		if (
 			selectors.selectedPhotos.value.reduce((acc: boolean, photo: App.Http.Resources.Models.PhotoResource) => acc && photo.is_highlighted, true)
 		) {
@@ -242,6 +268,12 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					icon: "pi pi-pencil",
 					callback: photoCallbacks.toggleApplyRenamer,
 					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_mod_renamer_enabled ?? false),
+				},
+				{
+					label: "gallery.menus.scan_faces_all",
+					icon: "pi pi-face-smile",
+					callback: photoCallbacks.toggleScanFaces,
+					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_ai_vision_enabled ?? false),
 				},
 				{
 					is_divider: true,
@@ -308,6 +340,12 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					icon: "pi pi-pencil",
 					callback: albumCallbacks.toggleApplyRenamer,
 					access: (selectedAlbum.rights.can_edit ?? false) && (leftMenuStore.initData?.modules.is_mod_renamer_enabled ?? false),
+				},
+				{
+					label: "gallery.menus.scan_faces",
+					icon: "pi pi-face-smile",
+					callback: albumCallbacks.toggleScanFaces,
+					access: (selectedAlbum.rights.can_edit ?? false) && (leftMenuStore.initData?.modules.is_ai_vision_enabled ?? false),
 				},
 				{
 					label: "gallery.menus.merge",

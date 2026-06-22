@@ -100,6 +100,7 @@ class RequestAttribute
 	public const MAY_UPLOAD_ATTRIBUTE = 'may_upload';
 	public const MAY_EDIT_OWN_SETTINGS_ATTRIBUTE = 'may_edit_own_settings';
 	public const MAY_ADMINISTRATE = 'may_administrate';
+	public const UPLOAD_TRUST_LEVEL_ATTRIBUTE = 'upload_trust_level';
 	public const SHARED_ALBUMS_VISIBILITY_ATTRIBUTE = 'shared_albums_visibility';
 
 	/**
@@ -138,6 +139,8 @@ class RequestAttribute
 	public const BASKET_ID_ATTRIBUTE = 'basket_id';
 	public const TRANSACTION_ID_ATTRIBUTE = 'transaction_id';
 	public const PRICES_ATTRIBUTE = 'prices';
+	public const PRINT_SIZES_ATTRIBUTE = 'print_sizes';
+	public const PIXEL_SIZES_ATTRIBUTE = 'pixel_sizes';
 	public const SIZE_VARIANT_TYPE_ATTRIBUTE = 'size_variant_type';
 	public const LICENSE_TYPE_ATTRIBUTE = 'license_type';
 	public const IS_ACTIVE_ATTRIBUTE = 'is_active';
@@ -149,4 +152,6 @@ class RequestAttribute
 	 * Album slug attribute.
 	 */
 	public const SLUG_ATTRIBUTE = 'slug';
+
+	public const CHUNK_ATTRIBUTE = 'chunk';
 }

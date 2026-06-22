@@ -24,5 +24,7 @@ return [
     'support' => 'Поддержка',
     'contact' => 'Contact',
     'messages' => 'Messages',
+    'people' => 'People',
     'webhooks' => 'Webhooks',
+    'shopSizes' => 'Size Catalogue',
 ];

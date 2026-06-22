@@ -1,13 +1,11 @@
 <?php
-
 return [
-    /*
+    'documentation' => [
+        /*
     |--------------------------------------------------------------------------
     | All Settings
     |--------------------------------------------------------------------------
     */
-
-    'documentation' => [
         'version' => 'Aktuelle Version von Lychee',
         'check_for_updates' => 'Automatisch auf Aktualisierungen prüfen',
         'sorting_photos_col' => 'Standardspalte für die Fotosortierung',
@@ -90,6 +88,9 @@ return [
         'map_display_direction' => 'Aufnahmerichtung des Bildes auf der Karte anzeigen (falls verfügbar)',
         'album_subtitle_type' => 'Untertitel für Alben in der Albenansicht festlegen',
         'upload_processing_limit' => 'Maximale Anzahl gleichzeitig verarbeiteter Bilder beim Upload',
+        'close_upload_on_success' => 'Auto-close the upload panel when all uploads complete without errors.',
+        'folder_upload_enabled' => 'Enable folder drag-and-drop album creation.',
+        'folder_upload_max_depth' => 'Maximum sub-folder recursion depth for folder uploads (0 = unlimited).',
         'new_photos_notification' => 'Benachrichtigungen bei neuen Fotos aktivieren',
         'zip_deflate_level' => 'ZIP-Kompressionsstufe',
         'default_album_protection' => 'Standardschutz für neu erstellte Alben',
@@ -264,6 +265,9 @@ return [
         'gallery_header' => 'URL des Header-Bildes in der Galerieansicht',
         'gallery_header_bar_transparent' => 'Header-Leiste transparent darstellen',
         'gallery_header_bar_gradient' => 'Verlaufshintergrund zur Header-Leiste hinzufügen',
+        'site_logo' => 'URL of logo image in the header bar',
+        'landing_logo' => 'URL of logo image in the landing view',
+        'landing_header_logo' => 'URL of logo image in the landing page header',
         'import_via_url_forbidden_localhost' => 'Import via URL darf nicht „localhost“ verwenden',
         'import_via_url_forbidden_local_ip' => 'Import via URL darf keine lokalen IP-Adressen verwenden',
         'import_via_url_require_https' => 'Import via URL muss HTTPS verwenden',
@@ -273,6 +277,7 @@ return [
         'details_links_public' => 'Anonymen Benutzern Zugriff auf Bild-Links in den Fotodetails erlauben',
         'is_scroll_to_navigate_photos_enabled' => 'Scrollen mit dem Mausrad zur Navigation zwischen Fotos aktivieren',
         'is_swipe_vertically_to_go_back_enabled' => 'Vertikale Wischgeste bei Fotos zur Rückkehr zum Album aktivieren',
+        'disable_swipe_effect' => 'Disable swipe effect on photo viewer',
         'timeline_page_enabled' => 'Zeitstrahl-Seite aktivieren',
         'timeline_quick_access_date_format_year' => 'Format für Schnellzugriff nach Jahren auf der Zeitstrahl-Seite',
         'timeline_quick_access_date_format_month' => 'Format für Schnellzugriff nach Monaten auf der Zeitstrahl-Seite',
@@ -339,6 +344,7 @@ return [
         'rating_album_view_mode' => 'Bewertung auf Foto-Vorschaubildern in der Albumansicht anzeigen',
         'rating_show_avg_in_album_view' => 'Durchschnittsbewertung auf Foto-Vorschaubildern anzeigen',
         'import_via_url_block_redirect' => 'Import via URL darf keinen Weiterleitungen folgen',
+        'ai_vision_face_recognition_warning' => 'Show face recognition legal warning',
         'webshop_lycheeorg_disclaimer_enabled' => 'Haftungsausschluss von LycheeOrg aktivieren',
         'webshop_auto_fulfill_enabled' => 'Automatische Auftragsabwicklung aktivieren',
         'webshop_manual_fulfill_enabled' => 'Automatische Auftragsabwicklung bei manueller Bestätigung aktivieren',
@@ -430,6 +436,9 @@ return [
         'map_display_direction' => '',
         'album_subtitle_type' => '',
         'upload_processing_limit' => '',
+        'close_upload_on_success' => 'When enabled, the upload panel will automatically close once all uploads finish successfully. If any upload fails or produces a warning, the panel remains open.',
+        'folder_upload_enabled' => 'When enabled, dragging a folder onto the Albums page creates an album named after the folder and uploads its contents. Sub-folders become sub-albums recursively.',
+        'folder_upload_max_depth' => '1 means only the top-level dropped folder; 2 means one level of sub-folders; 0 means no limit.',
         'new_photos_notification' => '',
         'zip_deflate_level' => '-1 = Kompression deaktivieren (STORE-Methode), 0 = keine Kompression (DEFLATE-Methode), 1 = minimale Kompression (schnell), … 9 = maximale Kompression (langsam)',
         'default_album_protection' => '',
@@ -604,6 +613,9 @@ return [
         'gallery_header' => '',
         'gallery_header_bar_transparent' => 'Wenn aktiviert, wird die Header-Leiste transparent dargestellt und das Header-Bild ist dahinter sichtbar.',
         'gallery_header_bar_gradient' => 'Wenn aktiviert, erhält die Header-Leiste einen Verlaufshintergrund zur besseren Lesbarkeit des Textes; andernfalls wird sie transparent dargestellt.',
+        'site_logo' => 'When set, replaces the website title text in the gallery header bar.',
+        'landing_logo' => 'When set, replaces the landing title and subtitle text in the landing page intro.',
+        'landing_header_logo' => 'When set, replaces the landing title and subtitle text in the top-left corner of the landing page.',
         'import_via_url_forbidden_localhost' => '<span class="pi pi-exclamation-triangle text-orange-500"></span> Das Deaktivieren dieser Option setzt Ihren Localhost der Import-Funktion aus und kann zu Server-Side Request Forgery (SSRF) führen.',
         'import_via_url_forbidden_local_ip' => '<span class="pi pi-exclamation-triangle text-orange-500"></span> Das Deaktivieren dieser Option setzt Ihr internes Netzwerk der Import-Funktion aus und kann zu Server-Side Request Forgery (SSRF) führen.',
         'import_via_url_require_https' => '<span class="pi pi-exclamation-triangle text-orange-500"></span> Das Deaktivieren dieser Option verringert die Sicherheit der Import-via-URL-Funktion.',
@@ -613,6 +625,7 @@ return [
         'details_links_public' => '',
         'is_scroll_to_navigate_photos_enabled' => '',
         'is_swipe_vertically_to_go_back_enabled' => '',
+        'disable_swipe_effect' => '',
         'timeline_page_enabled' => '',
         'timeline_quick_access_date_format_year' => 'Siehe <a class="underline" href="https://www.php.net/manual/de/datetime.format.php">datetime.format.php</a>',
         'timeline_quick_access_date_format_month' => 'Siehe <a class="underline" href="https://www.php.net/manual/de/datetime.format.php">datetime.format.php</a>',
@@ -679,6 +692,7 @@ return [
         'rating_album_view_mode' => 'Steuert die Sichtbarkeit der Bewertung auf Vorschaubildern: immer sichtbar, beim Darüberfahren mit der Maus oder nie.',
         'rating_show_avg_in_album_view' => 'Zeigt die Durchschnittsbewertung auf Foto-Vorschaubildern in der Albenansicht anstelle der Nutzerbewertung an.',
         'import_via_url_block_redirect' => '<span class="pi pi-exclamation-triangle text-orange-500"></span> Das Deaktivieren dieser Option setzt Ihren Localhost der Import-Funktion aus und kann zu Server-Side Request Forgery (SSRF) führen.',
+        'ai_vision_face_recognition_warning' => 'When enabled, a legal warning about facial recognition is displayed on the Face Clusters and Face Maintenance pages. An administrator can dismiss the warning.',
         'webshop_lycheeorg_disclaimer_enabled' => 'Lychee wird unter der MIT-Lizenz ohne Gewährleistung bereitgestellt. Das Deaktivieren dieser Option entfernt diesen Hinweis von der Bestellseite.',
         'webshop_auto_fulfill_enabled' => 'Sobald eine Zahlung abgeschlossen ist, werden die Inhalte dem Benutzer automatisch bereitgestellt, sofern möglich.',
         'webshop_manual_fulfill_enabled' => 'Sobald „Als ausgeliefert markieren“ angeklickt wird, werden die Inhalte dem Benutzer automatisch bereitgestellt, sofern möglich.',
@@ -708,7 +722,7 @@ return [
         'Users Management' => 'Benutzerverwaltung',
         'Admin' => 'Administrator',
         'access_permissions' => 'Berechtigungen',
-        'Mod Flow' => 'Flow',
+        'Mod Flow' => 'Fluss',
         'gestures' => 'Gesten',
         'Mod Watermarker' => 'Wasserzeichen',
         'Mod Renamer' => 'Umbenennungsregeln',

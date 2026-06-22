@@ -30,8 +30,10 @@ return [
     'placeholder' => 'Platzhalter für Bilder niedriger Qualität',
     'thumbnail' => 'Foto-Miniaturansicht',
     'live_video' => 'Videoteil des Live-Fotos',
-    'download_raw' => 'Download RAW',
+    'download_raw' => 'RAW Herunterladen',
     'download_album' => 'Wählen Sie die Bildauflösung für das Album-ZIP-Archiv. Falls ein Foto die gewählte Variante nicht hat, wird das Original verwendet.',
+    'downloading_part' => 'part :current / :total Herunterladen',
+    'download_error' => 'Herunterladen fehlgeschlagen',
     'camera_data' => 'Datum Kamera',
     'album_reserved' => 'Alle Rechte vorbehalten',
     'map' => [
@@ -53,7 +55,7 @@ return [
             'title_label' => 'Titel',
             'description' => 'Beschreibung',
             'location' => 'Ort',
-            'tags' => 'Tags',
+            'tags' => 'Kennzeichnungen',
             'tags_placeholder' => 'Sonnenuntergang, Strand',
             'date_from' => 'Datum von',
             'date_to' => 'Datum bis',
@@ -137,6 +139,8 @@ return [
         'header_photos' => 'Fotos',
         'show_highlighted' => 'Favoriten filtern',
         'copy_highlighted_names' => 'Namen der Favoriten in die Zwischenablage kopieren',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'Hier gibt es nichts zu sehen',
         'upload' => 'Fotos hochladen',
         'tabs' => [
@@ -194,7 +198,6 @@ return [
             'tags_required' => 'Tags sind erforderlich.',
             'all_tags_must_match' => 'Alle Tags müssen übereinstimmen.',
         ],
-
     ],
     'photo' => [
         'actions' => [
@@ -314,7 +317,11 @@ return [
         'merge' => 'Zusammenführen',
         'merge_all' => 'Auswahl zusammenführen',
         'apply_renamer' => 'Umbenennungsregeln auf Auswahl anwenden',
-        'apply_renamer_all' => 'Apply Renamer to Selected',
+        'apply_renamer_all' => 'Auswahl umbenennen',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Genehmigen',
+        'approve_all' => 'Auswahl genehmigen',
         'upload_photo' => 'Foto hochladen',
         'take_photo' => 'Foto aufnehmen',
         'import_link' => 'Von Link importieren',

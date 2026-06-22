@@ -33,6 +33,8 @@ return [
     'live_video' => 'Видео част от live-photo',
     'download_raw' => 'Download RAW',
     'download_album' => 'Изберете разделителна способност на изображенията за ZIP архива на албума. Ако снимка няма избрания вариант, ще бъде използван оригиналът.',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => 'Дата от камерата',
     'album_reserved' => 'Всички права запазени',
     'map' => [
@@ -138,6 +140,8 @@ return [
         'header_photos' => 'Снимки',
         'show_highlighted' => 'Филтрирай отбелязаните снимки',
         'copy_highlighted_names' => 'Копирай имената на маркираните снимки',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'Няма какво да се покаже',
         'upload' => 'Качване на снимки',
         'tabs' => [
@@ -315,6 +319,10 @@ return [
         'merge_all' => 'Слей избраните',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => 'Качи снимка',
         'take_photo' => 'Направи снимка',
         'import_link' => 'Импорт от линк',

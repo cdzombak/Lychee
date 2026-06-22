@@ -1,4 +1,5 @@
 <?php
+
 return [
     'button' => [
         /*
@@ -56,7 +57,8 @@ return [
         'move' => 'Foto verplaatsen',
         'delete' => 'Foto verwijderen',
         'edit' => 'Informatie bewerken',
-        'show_hide_meta' => 'Informatie tonen',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'We houden het verborgen.',
         'button_hidden' => 'We verbergen de knop in de koptekst.',
     ],
@@ -112,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => 'Voltooid',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'Geüpload:',
         'release' => 'Laat bestand los om te uploaden!',
         'select' => 'Klik hier om bestanden te selecteren om te uploaden',

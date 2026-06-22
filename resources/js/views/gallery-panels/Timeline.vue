@@ -1,7 +1,7 @@
 <template>
 	<LoadingProgress v-model:loading="timelineStore.isLoading" />
-	<LoginModal v-if="userStore.isGuest" @logged-in="refresh" />
-	<WebauthnModal v-if="userStore.isGuest" @logged-in="refresh" />
+	<LoginModal v-if="userStore.isGuest" @logged-in="onLoggedIn" />
+	<WebauthnModal v-if="userStore.isGuest" @logged-in="onLoggedIn" />
 	<CameraCapture v-if="timelineStore.rootRights?.can_upload" key="camera_capture_modal" />
 
 	<div v-if="timelineStore.rootConfig && timelineStore.rootRights" class="h-svh overflow-y-auto" id="scrollArea">
@@ -122,6 +122,7 @@
 			/>
 			<RenameDialog v-model:visible="is_rename_visible" :parent-id="undefined" :album="undefined" :photo="selectedPhoto" @renamed="refresh" />
 		</template>
+		<DownloadAlbum v-model:visible="is_download_photo_visible" :photo-ids="downloadPhotoIds" />
 		<ContextMenu ref="menu" :model="Menu" :class="Menu.length === 0 ? 'hidden' : ''">
 			<template #item="{ item, props }">
 				<Divider v-if="item.is_divider" />
@@ -179,6 +180,7 @@ import DeleteDialog from "@/components/forms/gallery-dialogs/DeleteDialog.vue";
 import { useContextMenu } from "@/composables/contextMenus/contextMenu";
 import PhotoService from "@/services/photo-service";
 import AlbumService from "@/services/album-service";
+import ModerationService from "@/services/moderation-service";
 import { EmptyAlbumCallbacks } from "@/utils/Helpers";
 import Divider from "primevue/divider";
 import ContextMenu from "primevue/contextmenu";
@@ -192,6 +194,7 @@ import { usePhotosStore } from "@/stores/PhotosState";
 import { useLayoutStore } from "@/stores/LayoutState";
 import { useAlbumsStore } from "@/stores/AlbumsState";
 import { useTimelineStore } from "@/stores/TimelineState";
+import DownloadAlbum from "@/components/modals/DownloadAlbum.vue";
 
 const { isLTR } = useLtRorRtL();
 
@@ -222,8 +225,16 @@ lycheeStore.load();
 const videoElement = ref<HTMLVideoElement | null>(null);
 
 const { slideshow_timeout } = storeToRefs(lycheeStore);
-const { is_full_screen, is_login_open, is_upload_visible, list_upload_files, is_slideshow_active, is_photo_edit_open, are_details_open } =
-	storeToRefs(togglableStore);
+const {
+	is_full_screen,
+	is_login_open,
+	is_upload_visible,
+	list_upload_files,
+	upload_config,
+	is_slideshow_active,
+	is_photo_edit_open,
+	are_details_open,
+} = storeToRefs(togglableStore);
 
 const {
 	selectedPhoto,
@@ -234,6 +245,9 @@ const {
 } = useSelection(photosStore, albumsStore, togglableStore);
 
 const { photoRoute } = usePhotoRoute(router);
+
+const is_download_photo_visible = ref(false);
+const downloadPhotoIds = ref<string[]>([]);
 
 function onIntersectionObserver([entry]: IntersectionObserverEntry[]) {
 	if (entry.isIntersecting) {
@@ -305,6 +319,11 @@ function goBack() {
 	}
 }
 
+async function onLoggedIn() {
+	await refresh();
+	advisoryCheck();
+}
+
 async function refresh() {
 	await timelineStore.load();
 	if (timelineStore.isTimelineEnabled !== true) {
@@ -312,7 +331,6 @@ async function refresh() {
 		router.push({ name: "gallery" });
 	}
 	await Promise.allSettled([layoutStore.load(), userStore.load(), timelineStore.loadDates()]);
-	advisoryCheck();
 	await timelineStore.initialLoad(props.date ?? "", props.photoId);
 	await nextTick();
 	scrollToDate(props.date ?? "");
@@ -357,8 +375,22 @@ const photoCallbacks = {
 	toggleCopyTo: toggleCopy,
 	toggleMove: toggleMove,
 	toggleDelete: toggleDelete,
-	toggleDownload: () => {},
+	toggleDownload: () => {
+		downloadPhotoIds.value = [...selectedPhotosIds.value];
+		is_download_photo_visible.value = true;
+	},
 	toggleApplyRenamer: () => {},
+	toggleScanFaces: () => {},
+	toggleApprove: () => {
+		ModerationService.approve(selectedPhotosIds.value).then(() => {
+			selectedPhotosIds.value.forEach((photoId) => {
+				const photo = photosStore.photos.find((p) => p.id === photoId);
+				if (photo) {
+					photo.is_validated = true;
+				}
+			});
+		});
+	},
 };
 
 const {
@@ -376,8 +408,18 @@ const {
 );
 
 const can_upload = computed(() => timelineStore.rootRights?.can_upload === true && photoStore.isLoaded === false);
-const { onPaste, dragEnd, dropUpload } = useMouseEvents(can_upload, is_upload_visible, list_upload_files);
+const timeline_parent_id = ref<string | null>(null);
+const timeline_existing_albums = ref<{ id: string; title: string }[]>([]);
+const { onPaste, dragEnd, dropUpload } = useMouseEvents(
+	can_upload,
+	is_upload_visible,
+	list_upload_files,
+	timeline_parent_id,
+	timeline_existing_albums,
+	upload_config,
+);
 
+togglableStore.loadUploadConfig();
 window.addEventListener("paste", onPaste);
 window.addEventListener("dragover", dragEnd);
 window.addEventListener("drop", dropUpload);

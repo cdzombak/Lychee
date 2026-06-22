@@ -219,8 +219,22 @@ const photosStore = usePhotosStore();
 const layoutStore = useLayoutStore();
 const catalogStore = useCatalogStore();
 
+/**
+ * Read the ?page=N query parameter from the current route.
+ * Returns 1 (first page) when the param is absent or invalid.
+ */
+function getStartPage(): number {
+	const p = route.query.page;
+	if (typeof p === "string") {
+		const parsed = parseInt(p, 10);
+		return isNaN(parsed) || parsed < 1 ? 1 : parsed;
+	}
+	return 1;
+}
+
 async function load() {
-	await Promise.allSettled([layoutStore.load(), lycheeStore.load(), userStore.load(), albumStore.load()]);
+	const startPage = getStartPage();
+	await Promise.allSettled([layoutStore.load(), lycheeStore.load(), userStore.load(), albumStore.load(startPage, photoId.value)]);
 	catalogStore.albumId = albumId.value;
 	catalogStore.load();
 	orderManagement.load();
@@ -256,6 +270,7 @@ const {
 	is_slideshow_active,
 	is_upload_visible,
 	list_upload_files,
+	upload_config,
 	is_create_album_visible,
 	is_album_edit_open,
 	is_import_from_link_open,
@@ -455,12 +470,22 @@ onKeyStroke("Escape", () => {
 
 // We prevent the drag mechanism when a photo is loaded.
 const can_upload = computed(() => (albumStore.rights?.can_upload ?? false) && photoStore.isLoaded === false);
-const { onPaste, dragEnd, dropUpload } = useMouseEvents(can_upload, is_upload_visible, list_upload_files);
+const album_parent_id = computed(() => albumId.value ?? null);
+const album_existing_albums = computed(() => albumsStore.albums.map((a) => ({ id: a.id, title: a.title })));
+const { onPaste, dragEnd, dropUpload } = useMouseEvents(
+	can_upload,
+	is_upload_visible,
+	list_upload_files,
+	album_parent_id,
+	album_existing_albums,
+	upload_config,
+);
 
 onMounted(() => {
 	// Reset the slideshow.
 	is_slideshow_active.value = false;
 
+	togglableStore.loadUploadConfig();
 	window.addEventListener("paste", onPaste);
 	window.addEventListener("dragover", dragEnd);
 	window.addEventListener("drop", dropUpload);
@@ -470,8 +495,23 @@ onMounted(async () => {
 	albumId.value = props.albumId;
 	photoId.value = props.photoId;
 
+	// For direct-access URLs (e.g. /album/xxx/photo/yyy?page=2), remember which
+	// photo to scroll back to so that closing the photo panel restores the
+	// correct thumbnail position.
+	if (photoId.value !== undefined) {
+		togglableStore.rememberScrollThumb(photoId.value);
+	}
+
 	await load();
-	setScroll();
+
+	// Only restore scroll position when no photo is open.
+	// When a photo IS open, scroll_photo_id must remain set so the route watcher
+	// can use it to scroll the album back to the correct thumbnail once the user
+	// closes the photo. Calling setScroll() here while the photo is visible would
+	// consume (reset) scroll_photo_id prematurely.
+	if (photoId.value === undefined) {
+		setScroll();
+	}
 
 	// if #upload is in the URL, open the upload modal
 	if (window.location.hash === "#upload") {
@@ -518,6 +558,12 @@ watch(
 			photoStore.load();
 
 			// TODO: Consider loading the next page if the photo is getting close to the end of the currently loaded photos.
+
+			// When going back from a photo to the album (photoId becomes undefined),
+			// scroll the album panel to the previously viewed photo thumbnail.
+			if (photoId.value === undefined) {
+				setScroll();
+			}
 			return;
 		}
 

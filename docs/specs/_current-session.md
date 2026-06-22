@@ -1,82 +1,40 @@
 # Current Session
 
-_Last updated: 2026-03-03_
+_Last updated: 2026-06-12_
 
 ## Active Features
 
-**Feature 024 – CLI Sync File-List Support**
-- Status: Planning (spec, plan, tasks complete)
-- Priority: P2
-- License: Open
-- Started: 2026-03-03
-- Dependencies: None
+None currently in progress for Part A of Feature 042.
 
 ## Session Summary
 
-Feature 024 (CLI Sync File-List Support) specification, plan, and tasks created per GitHub issue #1231. The `lychee:sync` artisan command currently rejects individual file paths with "Given path is not a directory". This feature extends the command to accept both directories and individual file paths in a single invocation.
+### Feature 042 Part A – Webshop Order Item Display — Complete
 
-### Feature 024: CLI Sync File-List Support
+**Status:** All I1–I6 tasks complete. PHPStan 0 errors. php-cs-fixer clean. npm format/check/lint clean. 4 backend tests passing.
 
-**Problem:**
-Users want to run commands like:
-```bash
-php artisan lychee:sync $(find /storage/NAS/photos/ -type f -mtime -1) \
-  --import_via_symlink=1 --skip_duplicates=1
-```
-Currently this fails because the `lychee:sync` command only accepts directory paths, not individual file paths.
+**What was built:**
 
-**Key Design Decisions:**
-- Accept both file and directory paths in the existing `{dir*}` (renamed to `{paths*}`) positional argument.
-- File paths bypass the `BuildTree` pipe and are queued directly via `ImportImageJob`.
-- Mixed invocations (some dirs, some files) are supported; each path is processed independently.
-- `skip_duplicates` applies to file-list mode; `delete_missing_*` flags are inactive for file paths (with a notice).
-- No new external dependencies; no HTTP API changes.
+- **`OrderItemResource`** (`app/Http/Resources/Shop/OrderItemResource.php`): added `album_title: ?string` and `thumb_url: ?string` constructor params; `fromModel()` populates from `$item->album?->title` and `$item->photo?->size_variants->getSizeVariant(SizeVariantType::THUMB)?->url`.
+- **`OrderResource::fromModel()`** (`app/Http/Resources/Shop/OrderResource.php`): unconditionally eager-loads `items.album` and `items.photo.size_variants` (filtered to SMALL, SMALL2X, THUMB, THUMB2X, PLACEHOLDER types). The existing `items.size_variant` load for CLOSED orders is retained.
+- **Backend tests** (`tests/Webshop/OrderManagement/OrderItemDisplayTest.php`): 4 tests covering the happy path, absent album, absent photo, and missing THUMB variant.
+- **i18n** (`lang/php_en.json` + 22 other lang files): added `webshop.orderDownload.unknownAlbum` key ("Unknown album").
+- **TypeScript types** (`resources/js/lychee.d.ts`): added `album_title: string | null` and `thumb_url: string | null` to `OrderItemResource`.
+- **`OrderDownload.vue`** (`resources/js/views/webshop/OrderDownload.vue`): added `<img>` (with `loading="lazy"`) or `<i class="pi pi-image">` placeholder before the title block; added album title line below the photo title `RouterLink`.
 
-**Implementation Phases:**
-- I1 (Tests first): Write failing tests for S-024-02 through S-024-08 (~60 min)
-- I2 (DTO extension): Add `file_list` to `ImportDTO` (~30 min)
-- I3 (Command layer): Classify paths in `Sync::validatePaths()` (~60 min)
-- I4 (Import layer): Add `Exec::doFiles()` for direct file import (~60 min)
-- I5 (Duplicate detection & flag guard): skip_duplicates + delete_missing notice (~45 min)
-- I6 (Quality gates): php-cs-fixer, phpstan, docs (~30 min)
-
-**Total: 6 increments (~5.25 hours)**
-
-**Deliverables:**
-1. [spec.md](docs/specs/4-architecture/features/024-sync-file-list/spec.md)
-2. [plan.md](docs/specs/4-architecture/features/024-sync-file-list/plan.md)
-3. [tasks.md](docs/specs/4-architecture/features/024-sync-file-list/tasks.md)
+**Key implementation note:** `PhotoFactory::without_size_variants()` mutates factory state before the closure is bound; the closure captures the pre-clone `$this` so the flag has no effect. Worked around in the test by deleting the THUMB `SizeVariant` row directly after photo creation.
 
 ## Next Steps
 
-1. Run analysis gate checklist.
-2. Begin implementation with I1: write failing feature tests.
+1. Implement Part B of Feature 042 (I7–I10): admin maintenance photo title links (`PhotoTitleLink.vue`, `DuplicateLine.vue`, `Moderation.vue`). Tasks T-042-16 to T-042-20 in [tasks.md](4-architecture/features/042-webshop-order-item-display/tasks.md).
+2. After Part B completes, move Feature 042 to "Completed" in roadmap with final completion date.
 
 ## Open Questions
 
-None - requirements are clear from issue #1231 and existing codebase analysis.
+None.
 
-## References
+## Key Artefacts
 
-**Feature 024:**
-- Feature spec: [024-sync-file-list/spec.md](docs/specs/4-architecture/features/024-sync-file-list/spec.md)
-- Implementation plan: [024-sync-file-list/plan.md](docs/specs/4-architecture/features/024-sync-file-list/plan.md)
-- Task checklist: [024-sync-file-list/tasks.md](docs/specs/4-architecture/features/024-sync-file-list/tasks.md)
-- GitHub issue: https://github.com/LycheeOrg/Lychee/issues/1231
-
-**Common:**
-- Roadmap: [roadmap.md](docs/specs/4-architecture/roadmap.md)
-- Open questions: [open-questions.md](docs/specs/4-architecture/open-questions.md)
-
----
-
-**Session Context for Handoff:**
-
-Feature 024 (CLI Sync File-List Support) fully planned with 6 increments (~5.25 hours total). This is an open-licensed feature:
-1. `lychee:sync` positional argument accepts files and directories.
-2. File paths bypass `BuildTree` pipe; queued directly via `ImportImageJob`.
-3. Mixed invocations (dirs + files) supported in a single call.
-4. `skip_duplicates` applies to file-list mode; `delete_missing_*` inactive for file paths.
-5. No new dependencies; no HTTP API changes.
-
-Ready to begin I1: write failing feature tests.
+- Spec: [042-webshop-order-item-display/spec.md](4-architecture/features/042-webshop-order-item-display/spec.md)
+- Plan: [042-webshop-order-item-display/plan.md](4-architecture/features/042-webshop-order-item-display/plan.md)
+- Tasks: [042-webshop-order-item-display/tasks.md](4-architecture/features/042-webshop-order-item-display/tasks.md)
+- Roadmap: [roadmap.md](4-architecture/roadmap.md)

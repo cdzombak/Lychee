@@ -73,6 +73,8 @@ declare namespace App.Enum {
 	export type DbDriverType = "mysql" | "pgsql" | "sqlite";
 	export type DefaultAlbumProtectionType = "private" | "public" | "inherit" | "public_hidden";
 	export type DownloadVariantType = "RAW" | "LIVEPHOTOVIDEO" | "ORIGINAL" | "MEDIUM2X" | "MEDIUM" | "SMALL2X" | "SMALL" | "THUMB2X" | "THUMB";
+	export type FacePermissionMode = "public" | "private" | "privacy-preserving" | "restricted";
+	export type FaceScanStatus = "pending" | "completed" | "failed";
 	export type FileStatus = "uploading" | "processing" | "ready" | "skipped" | "done" | "error";
 	export type FlowStrategy = "auto" | "opt-in";
 	export type ImageOverlayType = "none" | "desc" | "date" | "exif";
@@ -113,7 +115,7 @@ declare namespace App.Enum {
 		| "CC-BY-NC-SA-3.0"
 		| "CC-BY-NC-SA-4.0";
 	export type LiveMetricsAccess = "logged-in users" | "admin";
-	export type MapProviders = "Wikimedia" | "OpenStreetMap.org" | "OpenStreetMap.de" | "OpenStreetMap.fr" | "RRZE";
+	export type MapProviders = "OpenStreetMap.org" | "OpenStreetMap.de" | "OpenStreetMap.fr" | "RRZE";
 	export type MessageType = "info" | "warning" | "error";
 	export type MetricsAccess = "public" | "logged-in users" | "owner" | "admin";
 	export type MetricsAction = "visit" | "favourite" | "download" | "shared";
@@ -137,7 +139,7 @@ declare namespace App.Enum {
 	export type PhotoLayoutType = "square" | "justified" | "masonry" | "grid";
 	export type PhotoThumbInfoType = "title" | "description";
 	export type PhotoWebhookEvent = "photo.add" | "photo.move" | "photo.delete";
-	export type PurchasableLicenseType = "personal" | "commercial" | "extended";
+	export type PurchasableLicenseType = "personal" | "commercial" | "extended" | "print";
 	export type PurchasableSizeVariantType = "medium" | "medium2x" | "original" | "full";
 	export type RenamerModeType = "first" | "all" | "regex" | "trim" | "strtolower" | "strtoupper" | "ucwords" | "ucfirst";
 	export type SeverityType = "emergency" | "alert" | "critical" | "error" | "warning" | "notice" | "info" | "debug";
@@ -169,6 +171,7 @@ declare namespace App.Enum {
 	export type UpdateStatus = 0 | 1 | 2 | 3;
 	export type UserGroupRole = "member" | "admin";
 	export type UserSharedAlbumsVisibility = "default" | "show" | "separate" | "separate_shared_only" | "hide";
+	export type UserUploadTrustLevel = "check" | "monitor" | "trusted";
 	export type VersionChannelType = "release" | "git" | "tag";
 	export type VisibilityType = "never" | "always" | "hover";
 	export type WatermarkPosition = "top-left" | "top" | "top-right" | "left" | "center" | "right" | "bottom-left" | "bottom" | "bottom-right";
@@ -176,6 +179,36 @@ declare namespace App.Enum {
 	export type WebhookPayloadFormat = "json" | "query_string";
 }
 declare namespace App.Http.Resources.Admin {
+	export type BulkAlbumIdsResource = {
+		ids: Array<string>;
+		capped: boolean;
+	};
+	export type BulkAlbumResource = {
+		id: string;
+		title: string;
+		owner_id: number;
+		owner_name: string;
+		description: string | null;
+		copyright: string | null;
+		license: App.Enum.LicenseType;
+		photo_layout: App.Enum.PhotoLayoutType | null;
+		photo_sorting_col: App.Enum.ColumnSortingPhotoType | null;
+		photo_sorting_order: App.Enum.OrderSortingType | null;
+		album_sorting_col: App.Enum.ColumnSortingAlbumType | null;
+		album_sorting_order: App.Enum.OrderSortingType | null;
+		album_thumb_aspect_ratio: App.Enum.AspectRatioType | null;
+		album_timeline: App.Enum.TimelineAlbumGranularity | null;
+		photo_timeline: App.Enum.TimelinePhotoGranularity | null;
+		is_nsfw: boolean;
+		_lft: number;
+		_rgt: number;
+		is_public: boolean;
+		is_link_required: boolean;
+		grants_full_photo_access: boolean;
+		grants_download: boolean;
+		grants_upload: boolean;
+		created_at: string;
+	};
 	export type ImportDirectoryResource = {
 		directory: string;
 		status: boolean;
@@ -197,6 +230,13 @@ declare namespace App.Http.Resources.Admin {
 		results: App.Http.Resources.Admin.ImportDirectoryResource[];
 		job_count: number;
 	};
+	export type PaginatedBulkAlbumResource = {
+		data: App.Http.Resources.Admin.BulkAlbumResource[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
 }
 declare namespace App.Http.Resources.Collections {
 	export type ContactMessageCollectionResource = {
@@ -207,6 +247,34 @@ declare namespace App.Http.Resources.Collections {
 	};
 	export type PaginatedAlbumsResource = {
 		data: App.Http.Resources.Models.ThumbAlbumResource[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
+	export type PaginatedClustersResource = {
+		data: App.Http.Resources.Models.ClusterPreviewResource[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
+	export type PaginatedFaceResource = {
+		data: App.Http.Resources.Models.FaceResource[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
+	export type PaginatedModerationResource = {
+		photos: App.Http.Resources.Models.ModerationResource[];
+		current_page: number;
+		last_page: number;
+		per_page: number;
+		total: number;
+	};
+	export type PaginatedPersonsResource = {
+		data: App.Http.Resources.Models.PersonResource[];
 		current_page: number;
 		last_page: number;
 		per_page: number;
@@ -270,6 +338,10 @@ declare namespace App.Http.Resources.Diagnostics {
 		from: string;
 		details: string[];
 	};
+	export type Errors = {
+		_note: string;
+		errors: App.Http.Resources.Diagnostics.ErrorLine[];
+	};
 	export type Permissions = {
 		left: string;
 		right: string;
@@ -327,6 +399,9 @@ declare namespace App.Http.Resources.Editable {
 		stage: App.Enum.FileStatus;
 		chunk_number: number;
 		total_chunks: number;
+		expected_id: string | null;
+		title: string | null;
+		description: string | null;
 	};
 }
 declare namespace App.Http.Resources.Embed {
@@ -460,6 +535,7 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		is_desktop_dock_full_transparency_enabled: boolean;
 		is_mobile_dock_full_transparency_enabled: boolean;
 		is_photo_details_always_open: boolean;
+		is_face_overlay_visible: boolean;
 		display_thumb_album_overlay: App.Enum.VisibilityType;
 		display_thumb_photo_overlay: App.Enum.VisibilityType;
 		album_subtitle_type: App.Enum.ThumbAlbumSubtitleType;
@@ -476,11 +552,13 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		is_small2x_download_enabled: boolean;
 		is_medium_download_enabled: boolean;
 		is_medium2x_download_enabled: boolean;
+		is_download_archive_chunked: boolean;
 		clockwork_url: string | null;
 		slideshow_timeout: number;
 		is_slideshow_enabled: boolean;
 		is_timeline_left_border_visible: boolean;
 		title: string;
+		site_logo: string;
 		dropbox_api_key: string;
 		is_se_enabled: boolean;
 		is_pro_enabled: boolean;
@@ -488,16 +566,19 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		is_se_info_hidden: boolean;
 		is_se_expired: boolean;
 		is_live_metrics_enabled: boolean;
+		is_white_label_enabled: boolean;
 		is_basic_auth_enabled: boolean;
 		is_webauthn_enabled: boolean;
 		is_registration_enabled: boolean;
 		is_scroll_to_navigate_photos_enabled: boolean;
 		is_swipe_vertically_to_go_back_enabled: boolean;
+		disable_swipe_effect: boolean;
 		is_rating_show_avg_in_details_enabled: boolean;
 		is_rating_show_avg_in_photo_view_enabled: boolean;
 		rating_photo_view_mode: App.Enum.VisibilityType;
 		is_rating_show_avg_in_album_view_enabled: boolean;
 		rating_album_view_mode: App.Enum.VisibilityType;
+		is_embed_enabled: boolean;
 		default_homepage: string;
 		is_timeline_page_enabled: boolean;
 		is_contact_form_enabled: boolean;
@@ -512,6 +593,7 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		is_album_enhanced_display_enabled: boolean;
 		album_header_size: App.Enum.AlbumHeaderSize;
 		is_album_header_landing_title_enabled: boolean;
+		use_admin_dashboard: boolean;
 	};
 	export type LandingPageResource = {
 		landing_page_enable: boolean;
@@ -521,6 +603,8 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		landing_title: string;
 		site_owner: string;
 		site_title: string;
+		landing_logo: string;
+		landing_header_logo: string;
 		footer: App.Http.Resources.GalleryConfigs.FooterConfig;
 	};
 	export type MapProviderData = {
@@ -560,6 +644,13 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		upload_processing_limit: number;
 		upload_chunk_size: number;
 		can_watermark_optout: boolean;
+		close_upload_on_success: boolean;
+		folder_upload_enabled: boolean;
+		folder_upload_max_depth: number;
+	};
+	export type ZipChunkData = {
+		total_chunks: number;
+		total_photos: number;
 	};
 }
 declare namespace App.Http.Resources.Models {
@@ -577,10 +668,33 @@ declare namespace App.Http.Resources.Models {
 		grants_edit: boolean;
 		grants_delete: boolean;
 	};
+	export type AdminStatsResource = {
+		photos_count: number;
+		albums_count: number;
+		users_count: number;
+		storage_bytes: number;
+		queued_jobs: number;
+		failed_jobs_24h: number;
+		last_successful_job_at: string | null;
+		cached_at: string;
+		errors: Array<string>;
+	};
+	export type AdminUpdateStatusResource = {
+		enabled: boolean;
+		update_status: number | null;
+		has_update: boolean;
+		current_version: string | null;
+		latest_version: string | null;
+	};
 	export type AlbumStatisticsResource = {
 		visit_count: number;
 		download_count: number;
 		shared_count: number;
+	};
+	export type ClusterPreviewResource = {
+		cluster_label: number;
+		face_count: number;
+		sample_crop_urls: string[];
 	};
 	export type ColourPaletteResource = {
 		colour_1: string;
@@ -613,6 +727,28 @@ declare namespace App.Http.Resources.Models {
 		message: string;
 		is_read: boolean;
 		created_at: string;
+	};
+	export type FaceResource = {
+		id: string;
+		photo_id: string;
+		person_id: string | null;
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		confidence: number;
+		laplacian_variance: number;
+		is_dismissed: boolean;
+		cluster_label: number | null;
+		crop_url: string | null;
+		person_name: string | null;
+		suggestions: Array<App.Http.Resources.Models.FaceSuggestionResource>;
+	};
+	export type FaceSuggestionResource = {
+		suggested_face_id: string;
+		crop_url: string | null;
+		person_name: string | null;
+		confidence: number;
 	};
 	export type HeadAbstractAlbumResource = {
 		config: App.Http.Resources.GalleryConfigs.AlbumConfig;
@@ -685,9 +821,33 @@ declare namespace App.Http.Resources.Models {
 		title: string;
 		url: string | null;
 	};
+	export type ModerationResource = {
+		photo_id: string;
+		title: string;
+		thumb_url: string | null;
+		owner_username: string;
+		album_id: string | null;
+		album_title: string | null;
+		created_at: string;
+	};
+	export type PersonResource = {
+		id: string;
+		name: string;
+		user_id: number | null;
+		is_searchable: boolean;
+		representative_face_id: string | null;
+		face_count: number;
+		photo_count: number;
+		representative_crop_url: string | null;
+	};
 	export type PhotoAlbumResource = {
 		id: string;
 		title: string;
+	};
+	export type PhotoFacesResource = {
+		faces: App.Http.Resources.Models.FaceResource[];
+		hidden_face_count: number;
+		rights: App.Http.Resources.Rights.PhotoRightsResource;
 	};
 	export type PhotoRatingResource = {
 		rating_user: number;
@@ -721,6 +881,8 @@ declare namespace App.Http.Resources.Models {
 		palette: App.Http.Resources.Models.ColourPaletteResource | null;
 		statistics: App.Http.Resources.Models.PhotoStatisticsResource | null;
 		rating: App.Http.Resources.Models.PhotoRatingResource | null;
+		face_count: number;
+		is_validated: boolean;
 	};
 	export type PhotoStatisticsResource = {
 		visit_count: number;
@@ -747,6 +909,13 @@ declare namespace App.Http.Resources.Models {
 		is_enabled: boolean;
 		is_photo_rule: boolean;
 		is_album_rule: boolean;
+	};
+	export type SecurityAdvisoryResource = {
+		cve_id: string | null;
+		ghsa_id: string;
+		summary: string;
+		cvss_score: number | null;
+		cvss_vector: string | null;
 	};
 	export type SizeVariantResource = {
 		type: App.Enum.SizeVariantType;
@@ -816,6 +985,7 @@ declare namespace App.Http.Resources.Models {
 		may_upload: boolean;
 		may_edit_own_settings: boolean;
 		is_owner: boolean;
+		upload_trust_level: App.Enum.UserUploadTrustLevel;
 		quota_kb: number | null;
 		description: string | null;
 		note: string | null;
@@ -832,6 +1002,7 @@ declare namespace App.Http.Resources.Models {
 		username: string | null;
 		email: string | null;
 		is_ldap: boolean;
+		may_administrate: boolean;
 		shared_albums_visibility: App.Enum.UserSharedAlbumsVisibility;
 	};
 	export type WebAuthnResource = {
@@ -856,13 +1027,6 @@ declare namespace App.Http.Resources.Models {
 		size_variant_types: Array<number> | null;
 		created_at: string;
 		updated_at: string;
-	};
-	export type SecurityAdvisoryResource = {
-		cve_id: string | null;
-		ghsa_id: string;
-		summary: string;
-		cvss_score: number | null;
-		cvss_vector: string | null;
 	};
 }
 declare namespace App.Http.Resources.Models.Duplicates {
@@ -973,6 +1137,10 @@ declare namespace App.Http.Resources.Rights {
 		can_pasword_protect: boolean;
 		can_import_from_server: boolean;
 		can_make_purchasable: boolean;
+		can_view_album_people: boolean;
+		can_trigger_scan: boolean;
+		can_assign_face: boolean;
+		can_batch_face_ops: boolean;
 	};
 	export type GlobalRightsResource = {
 		root_album: App.Http.Resources.Rights.RootAlbumRightsResource;
@@ -990,6 +1158,9 @@ declare namespace App.Http.Resources.Rights {
 		is_mod_renamer_enabled: boolean;
 		is_mod_webshop_enabled: boolean;
 		is_mod_webhook_enabled: boolean;
+		is_ai_vision_enabled: boolean;
+		is_face_overlay_enabled: boolean;
+		is_face_recognition_warning_enabled: boolean;
 		is_contact_enabled: boolean;
 		messages_count: number;
 	};
@@ -997,6 +1168,10 @@ declare namespace App.Http.Resources.Rights {
 		can_edit: boolean;
 		can_download: boolean;
 		can_access_full_photo: boolean;
+		can_view_face_overlays: boolean;
+		can_dismiss_face: boolean;
+		can_assign_face: boolean;
+		can_trigger_scan: boolean;
 	};
 	export type RootAlbumRightsResource = {
 		can_edit: boolean;
@@ -1060,6 +1235,10 @@ declare namespace App.Http.Resources.Shop {
 		children_purchasables: App.Http.Resources.Shop.PurchasableResource[];
 		photo_purchasables: App.Http.Resources.Shop.PurchasableResource[];
 	};
+	export type CatalogueSizesResource = {
+		print_sizes: Array<App.Http.Resources.Shop.PurchasablePrintSizeResource>;
+		pixel_sizes: Array<App.Http.Resources.Shop.PurchasablePixelSizeResource>;
+	};
 	export type CheckoutOptionResource = {
 		currency: string;
 		allow_guest_checkout: boolean;
@@ -1095,6 +1274,8 @@ declare namespace App.Http.Resources.Shop {
 		photo_title: string | null;
 		photo_url: string | null;
 		prices: App.Http.Resources.Shop.PriceResource[] | null;
+		print_sizes: App.Http.Resources.Shop.PurchasablePrintSizeResource[];
+		pixel_sizes: App.Http.Resources.Shop.PurchasablePixelSizeResource[];
 		owner_notes: string | null;
 		description: string | null;
 		is_active: boolean;
@@ -1111,6 +1292,17 @@ declare namespace App.Http.Resources.Shop {
 		size_variant_type: App.Enum.PurchasableSizeVariantType;
 		item_notes: string | null;
 		content_url: string | null;
+		is_print: boolean;
+		print_size_id: number | null;
+		print_width: number | null;
+		print_height: number | null;
+		print_unit: string | null;
+		print_paper_type: string | null;
+		pixel_size_id: number | null;
+		pixel_width: number | null;
+		pixel_height: number | null;
+		album_title: string | null;
+		thumb_url: string | null;
 	};
 	export type OrderResource = {
 		id: number;
@@ -1126,10 +1318,53 @@ declare namespace App.Http.Resources.Shop {
 		comment: string | null;
 		items: App.Http.Resources.Shop.OrderItemResource[] | null;
 		can_process_payment: boolean;
+		shipping_street_name: string | null;
+		shipping_street_number: string | null;
+		shipping_additional_info: string | null;
+		shipping_city: string | null;
+		shipping_post_code: string | null;
+		shipping_country: string | null;
+	};
+	export type PixelSizeResource = {
+		id: number;
+		label: string;
+		width: number;
+		height: number;
+		is_active: boolean;
 	};
 	export type PriceResource = {
 		size_variant: App.Enum.PurchasableSizeVariantType;
 		license_type: App.Enum.PurchasableLicenseType;
+		price: string;
+		price_cents: number;
+	};
+	export type PrintSizeResource = {
+		id: number;
+		label: string;
+		width: number;
+		height: number;
+		unit: string;
+		paper_type: string | null;
+		is_active: boolean;
+	};
+	export type PurchasablePixelSizeResource = {
+		id: number;
+		pixel_size_id: number;
+		label: string;
+		width: number;
+		height: number;
+		price: string;
+		price_cents: number;
+		license_type: App.Enum.PurchasableLicenseType;
+	};
+	export type PurchasablePrintSizeResource = {
+		id: number;
+		print_size_id: number;
+		label: string;
+		width: number;
+		height: number;
+		unit: string;
+		paper_type: string | null;
 		price: string;
 		price_cents: number;
 	};

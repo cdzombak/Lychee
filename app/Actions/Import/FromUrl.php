@@ -10,6 +10,8 @@ namespace App\Actions\Import;
 
 use App\Actions\Photo\Create;
 use App\DTO\ImportMode;
+use App\DTO\UrlValidatedDTO;
+use App\Enum\UserUploadTrustLevel;
 use App\Exceptions\Handler;
 use App\Exceptions\MassImportException;
 use App\Image\Files\DownloadedFile;
@@ -18,6 +20,7 @@ use App\Models\Photo;
 use App\Repositories\ConfigManager;
 use App\Services\Image\FileExtensionService;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Safe\Exceptions\InfoException;
 use function Safe\ini_get;
 use function Safe\parse_url;
@@ -30,9 +33,9 @@ class FromUrl
 	 *
 	 * TODO: Instead of returning a collection of photos and throwing a potential {@link MassImportException}, we should use a streamed response like in {@link FromServer}
 	 *
-	 * @param string[]   $urls
-	 * @param Album|null $album
-	 * @param int        $intended_owner_id
+	 * @param UrlValidatedDTO[] $urls
+	 * @param Album|null        $album
+	 * @param int               $intended_owner_id
 	 *
 	 * @return Collection<int,Photo> the collection of imported photos
 	 *
@@ -43,19 +46,30 @@ class FromUrl
 		$config_manager = resolve(ConfigManager::class);
 		$result = new Collection();
 		$exceptions = [];
+
+		$user = Auth::user();
+		if ($user?->may_administrate === true) {
+			$upload_trust_level = UserUploadTrustLevel::TRUSTED;
+		} elseif ($user !== null) {
+			$upload_trust_level = $user->upload_trust_level;
+		} else {
+			$upload_trust_level = $config_manager->getValueAsEnum('guest_upload_trust_level', UserUploadTrustLevel::class)
+				?? UserUploadTrustLevel::CHECK;
+		}
+
 		$create = new Create(
 			import_mode: new ImportMode(
 				delete_imported: true,
 				skip_duplicates: $config_manager->getValueAsBool('skip_duplicates'),
 				shall_rename_photo_title: $config_manager->getValueAsBool('renamer_photo_title_enabled'),
 			),
-			intended_owner_id: $intended_owner_id
+			intended_owner_id: $intended_owner_id,
+			upload_trust_level: $upload_trust_level,
 		);
 
 		$file_extension_service = resolve(FileExtensionService::class);
 		foreach ($urls as $url) {
 			try {
-				// Reset the execution timeout for every iteration.
 				try {
 					set_time_limit((int) ini_get('max_execution_time'));
 				} catch (InfoException) {
@@ -64,7 +78,7 @@ class FromUrl
 
 				// If the component parameter is specified, this function returns a string (or int in case of PHP_URL_PORT)
 				/** @var string $path */
-				$path = parse_url($url, PHP_URL_PATH);
+				$path = parse_url($url->url, PHP_URL_PATH);
 				$extension = '.' . pathinfo($path, PATHINFO_EXTENSION);
 				if ($extension !== '.') {
 					// Validate photo extension even when `$create->add()` will do later.

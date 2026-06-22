@@ -56,7 +56,7 @@ Route::get('/Album::albums', [Gallery\AlbumChildrenController::class, 'get'])->m
 Route::get('/Album::photos', [Gallery\AlbumPhotosController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
 Route::get('/Album::tags', [Gallery\AlbumTagsController::class, 'get'])->middleware(['login_required:album', 'cache_control']);
 Route::get('/Album::getTargetListAlbums', [Gallery\AlbumController::class, 'getTargetListAlbums'])->middleware(['login_required:album', 'cache_control']);
-Route::post('/Album::unlock', [Gallery\AlbumController::class, 'unlock']);
+Route::post('/Album::unlock', [Gallery\AlbumController::class, 'unlock'])->middleware(['throttle:10,1']);
 Route::post('/Album', [Gallery\AlbumController::class, 'createAlbum']);
 Route::patch('/Album', [Gallery\AlbumController::class, 'updateAlbum']);
 Route::patch('/Album::rename', [Gallery\AlbumController::class, 'rename']);
@@ -77,7 +77,9 @@ Route::post('/Album::watermark', [Gallery\AlbumController::class, 'watermarkAlbu
 
 Route::post('/TagAlbum', [Gallery\AlbumController::class, 'createTagAlbum']);
 Route::patch('/TagAlbum', [Gallery\AlbumController::class, 'updateTagAlbum']);
-Route::get('/Zip', [Gallery\AlbumController::class, 'getArchive'])
+Route::get('/Zip/chunks', [Gallery\ZipController::class, 'getChunksCount'])
+	->name('download-chunks');
+Route::get('/Zip', [Gallery\ZipController::class, 'getArchive'])
 	->name('download')
 	->withoutMiddleware(['content_type:json', 'accept_content_type:json'])
 	->middleware(['accept_content_type:any']);
@@ -246,6 +248,8 @@ Route::delete('/Oauth', [OauthController::class, 'clear']);
 /**
  * DIAGNOSTICS.
  */
+Route::get('/Admin/Stats', [Admin\AdminDashboardController::class, 'stats']);
+Route::get('/Admin/UpdateStatus', [Admin\AdminUpdateStatusController::class, 'show']);
 Route::get('/Diagnostics', [Admin\DiagnosticsController::class, 'errors']);
 Route::get('/Diagnostics::info', [Admin\DiagnosticsController::class, 'info']);
 Route::get('/Diagnostics::space', [Admin\DiagnosticsController::class, 'space']);
@@ -263,6 +267,15 @@ Route::get('/Security/Advisories', [Admin\SecurityAdvisoriesController::class, '
 Route::get('/Jobs', [Admin\JobsController::class, 'list']);
 
 /**
+ * BULK ALBUM EDIT.
+ */
+Route::get('/BulkAlbumEdit', [Admin\BulkAlbumController::class, 'index']);
+Route::get('/BulkAlbumEdit::ids', [Admin\BulkAlbumController::class, 'ids']);
+Route::patch('/BulkAlbumEdit', [Admin\BulkAlbumController::class, 'patch']);
+Route::post('/BulkAlbumEdit::setOwner', [Admin\BulkAlbumController::class, 'setOwner']);
+Route::delete('/BulkAlbumEdit', [Admin\BulkAlbumController::class, 'destroy']);
+
+/**
  * WEBHOOKS.
  */
 Route::get('/Webhook', [Admin\WebhookController::class, 'index']);
@@ -271,6 +284,13 @@ Route::get('/Webhook/{webhook}', [Admin\WebhookController::class, 'show']);
 Route::put('/Webhook/{webhook}', [Admin\WebhookController::class, 'update']);
 Route::patch('/Webhook/{webhook}', [Admin\WebhookController::class, 'patch']);
 Route::delete('/Webhook/{webhook}', [Admin\WebhookController::class, 'destroy']);
+
+/**
+ * MODERATION.
+ */
+Route::get('/Moderation', [Admin\ModerationController::class, 'list']);
+Route::get('/Moderation::photo', [Admin\ModerationController::class, 'photo']);
+Route::post('/Moderation::approve', [Admin\ModerationController::class, 'approve']);
 
 /**
  * SETTINGS.
@@ -360,3 +380,68 @@ Route::put('/Renamer', [RenamerController::class, 'update'])->middleware(['suppo
 Route::delete('/Renamer', [RenamerController::class, 'destroy'])->middleware(['support:se']);
 Route::post('/Renamer::test', [RenamerController::class, 'test'])->middleware(['support:se']);
 Route::post('/Renamer::preview', [RenamerController::class, 'preview'])->middleware(['support:se']);
+
+Route::middleware(['feature:ai-vision', 'feature:v8'])->group(function (): void {
+	/**
+	 * AI VISION — PEOPLE.
+	 */
+	Route::get('/People', [AiVision\PeopleController::class, 'index']);
+	Route::get('/Person/{id}', [AiVision\PeopleController::class, 'show']);
+	Route::post('/Person', [AiVision\PeopleController::class, 'store']);
+	Route::patch('/Person/{id}', [AiVision\PeopleController::class, 'update']);
+	Route::delete('/Person/{id}', [AiVision\PeopleController::class, 'destroy']);
+	Route::post('/Person/{id}/claim', [AiVision\PersonClaimController::class, 'claim']);
+	Route::delete('/Person/{id}/claim', [AiVision\PersonClaimController::class, 'unclaim']);
+	Route::post('/Person/{id}/merge', [AiVision\PersonClaimController::class, 'merge']);
+	Route::post('/Person/claim-by-selfie', [AiVision\SelfieClaimController::class, 'claimBySelfie'])
+		->middleware(['throttle:5,1'])
+		->withoutMiddleware(['content_type:json']);
+	Route::get('/Person/{id}/photos', [AiVision\PersonPhotosController::class, 'index']);
+
+	/**
+	 * AI VISION — FACES.
+	 */
+	Route::post('/Face/{id}/assign', [AiVision\FaceController::class, 'assign']);
+	Route::post('/Face/batch', [AiVision\FaceController::class, 'batch']);
+	Route::patch('/Face/{id}', [AiVision\FaceController::class, 'toggleDismissed']);
+	Route::delete('/Face/dismissed', [AiVision\FaceController::class, 'destroyDismissed']);
+	Route::get('/Photo/{id}/faces', [AiVision\PhotoFacesController::class, 'show']);
+	Route::get('/Face/maintenance', [AiVision\FaceMaintenanceController::class, 'index']);
+	Route::post('/Face/maintenance/batch-dismiss', [AiVision\FaceMaintenanceController::class, 'batchDismiss']);
+
+	/**
+	 * AI VISION — FACE DETECTION.
+	 */
+	Route::post('/FaceDetection/scan', [AiVision\FaceDetectionController::class, 'scan']);
+	Route::post('/FaceDetection/results', [AiVision\FaceDetectionController::class, 'results'])->withoutMiddleware(['auth']);
+	Route::post('/FaceDetection/bulk-scan', [AiVision\FaceDetectionController::class, 'bulkScan']);
+	Route::post('/FaceDetection/cluster-results', [AiVision\FaceDetectionController::class, 'clusterResults'])->withoutMiddleware(['auth']);
+
+	/**
+	 * AI VISION — CLUSTER REVIEW.
+	 */
+	Route::get('/FaceDetection/clusters', [AiVision\FaceClusterController::class, 'index']);
+	Route::get('/FaceDetection/clusters/{label}/faces', [AiVision\FaceClusterController::class, 'faces']);
+	Route::post('/FaceDetection/clusters/{label}/assign', [AiVision\FaceClusterController::class, 'assign']);
+	Route::post('/FaceDetection/clusters/{label}/dismiss', [AiVision\FaceClusterController::class, 'dismiss']);
+	Route::post('/FaceDetection/clusters/{label}/uncluster', [AiVision\FaceClusterController::class, 'uncluster']);
+
+	/**
+	 * AI VISION — MAINTENANCE.
+	 */
+	Route::get('/Maintenance::bulkScanFaces', [Admin\Maintenance\BulkScanFaces::class, 'check']);
+	Route::post('/Maintenance::bulkScanFaces', [Admin\Maintenance\BulkScanFaces::class, 'do']);
+	Route::get('/Maintenance::runFaceClustering', [Admin\Maintenance\RunFaceClustering::class, 'check']);
+	Route::post('/Maintenance::runFaceClustering', [Admin\Maintenance\RunFaceClustering::class, 'do']);
+	Route::get('/Maintenance::destroyDismissedFaces', [Admin\Maintenance\DestroyDismissedFaces::class, 'check']);
+	Route::post('/Maintenance::destroyDismissedFaces', [Admin\Maintenance\DestroyDismissedFaces::class, 'do']);
+	Route::get('/Maintenance::syncFaceEmbeddings', [Admin\Maintenance\SyncFaceEmbeddings::class, 'check']);
+	Route::post('/Maintenance::syncFaceEmbeddings', [Admin\Maintenance\SyncFaceEmbeddings::class, 'do']);
+	Route::get('/Maintenance::resetFaceScanStatus', [Admin\Maintenance\ResetFaceScanStatus::class, 'check']);
+	Route::post('/Maintenance::resetFaceScanStatus', [Admin\Maintenance\ResetFaceScanStatus::class, 'do']);
+
+	/**
+	 * AI VISION — ALBUM PEOPLE.
+	 */
+	Route::get('/Album/{album_id}/people', [AiVision\AlbumPeopleController::class, 'index']);
+});

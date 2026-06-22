@@ -27,11 +27,16 @@ use App\Metadata\Versions\InstalledVersion;
 use App\Metadata\Versions\Remote\GitCommits;
 use App\Metadata\Versions\Remote\GitTags;
 use App\Models\Configs;
+use App\Models\Face;
+use App\Models\Photo;
+use App\Observers\FaceObserver;
+use App\Observers\PhotoObserver;
 use App\Policies\AlbumQueryPolicy;
 use App\Policies\PhotoQueryPolicy;
 use App\Policies\SettingsPolicy;
 use App\Repositories\ConfigManager;
 use App\Services\MoneyService;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Events\QueryExecuted;
@@ -41,13 +46,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Octane\Events\RequestTerminated;
 use Laravel\Octane\Facades\Octane;
+use LycheeVerify\Contract\VerifyFactory;
 use LycheeVerify\Contract\VerifyInterface;
+use LycheeVerify\DefaultVerifyFactory;
 use LycheeVerify\Verify;
 use Opcodes\LogViewer\Facades\LogViewer;
 use Safe\Exceptions\StreamException;
@@ -111,6 +119,8 @@ class AppServiceProvider extends ServiceProvider
 		$this->registerHttpAndResponseConfiguration();
 		$this->registerStreamFilters();
 		$this->registerOctaneSettings();
+		$this->registerThrottleQueues();
+		$this->registerObservers();
 	}
 
 	/**
@@ -181,6 +191,11 @@ class AppServiceProvider extends ServiceProvider
 		$this->app->bind(
 			VerifyInterface::class,
 			Verify::class
+		);
+
+		$this->app->bind(
+			VerifyFactory::class,
+			DefaultVerifyFactory::class
 		);
 	}
 
@@ -440,5 +455,18 @@ class AppServiceProvider extends ServiceProvider
 		if (gc_enabled()) {
 			gc_collect_cycles();
 		}
+	}
+
+	private function registerThrottleQueues(): void
+	{
+		RateLimiter::for('geo-queue', function ($job) {
+			return Limit::perSecond(config('features.location_decoding_requests_per_second', 1));
+		});
+	}
+
+	private function registerObservers(): void
+	{
+		Photo::observe(PhotoObserver::class);
+		Face::observe(FaceObserver::class);
 	}
 }

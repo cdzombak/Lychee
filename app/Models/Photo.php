@@ -13,6 +13,7 @@ use App\Casts\DateTimeWithTimezoneCast;
 use App\Casts\MustNotSetCast;
 use App\Constants\PhotoAlbum as PA;
 use App\Contracts\Models\HasUTCBasedTimes;
+use App\Enum\FaceScanStatus;
 use App\Enum\LicenseType;
 use App\Enum\SmartAlbumType;
 use App\Enum\StorageDiskType;
@@ -71,6 +72,7 @@ use function Safe\preg_match;
  * @property Carbon|null           $initial_taken_at
  * @property string|null           $initial_taken_at_orig_tz
  * @property bool                  $is_highlighted
+ * @property bool                  $is_validated
  * @property string|null           $rating_avg
  * @property string|null           $live_photo_short_path
  * @property string|null           $live_photo_url
@@ -165,11 +167,14 @@ class Photo extends Model implements HasUTCBasedTimes
 		'taken_at_mod' => 'datetime',
 		'owner_id' => 'integer',
 		'is_highlighted' => 'boolean',
+		'is_validated' => 'boolean',
 		'latitude' => 'float',
 		'longitude' => 'float',
 		'altitude' => 'float',
 		'img_direction' => 'float',
 		'rating_avg' => 'decimal:4',
+		'face_scan_status' => FaceScanStatus::class,
+		'face_count' => 'integer',
 	];
 
 	/**
@@ -186,6 +191,22 @@ class Photo extends Model implements HasUTCBasedTimes
 	public function newEloquentBuilder($query): PhotoBuilder
 	{
 		return new PhotoBuilder($query);
+	}
+
+	/**
+	 * Pre-allocate an ID for this photo before it is saved.
+	 *
+	 * This bypasses the {@link HasRandomIDAndLegacyTimeBasedID::setAttribute()} guard by
+	 * writing directly to the trait's protected property instead.
+	 * {@link HasRandomIDAndLegacyTimeBasedID::generateKey()} will consume this value on
+	 * the first INSERT attempt and then clear it so that a DB-collision retry generates
+	 * a fresh random ID rather than repeating the same value.
+	 *
+	 * @param string $id a 24-char Base64url string
+	 */
+	public function preallocateId(string $id): void
+	{
+		$this->pre_allocated_key = $id;
 	}
 
 	/**
@@ -270,6 +291,16 @@ class Photo extends Model implements HasUTCBasedTimes
 	public function palette(): HasOne
 	{
 		return $this->hasOne(Palette::class, 'photo_id', 'id');
+	}
+
+	/**
+	 * Return the faces detected in this photo.
+	 *
+	 * @return HasMany<Face,$this>
+	 */
+	public function faces(): HasMany
+	{
+		return $this->hasMany(Face::class, 'photo_id', 'id');
 	}
 
 	/**

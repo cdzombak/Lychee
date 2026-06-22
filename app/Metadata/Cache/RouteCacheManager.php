@@ -14,7 +14,6 @@ use App\Facades\Helpers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Route;
 
 final readonly class RouteCacheManager
 {
@@ -43,6 +42,7 @@ final readonly class RouteCacheManager
 			'api/v2/Album::tags' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true, extra: [RequestAttribute::ALBUM_ID_ATTRIBUTE]),
 			'api/v2/Album::getTargetListAlbums' => false, // TODO: cache me later.
 			'api/v2/Photo/{photo_id}/albums' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true),
+			'api/v2/Photo/{photo_id}' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true),
 			'api/v2/Albums' => new RouteCacheConfig(tag: CacheTag::GALLERY, user_dependant: true),
 			'api/v2/Auth::config' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: true),
 			'api/v2/Auth::rights' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: true),
@@ -103,8 +103,13 @@ final readonly class RouteCacheManager
 			'api/v2/Photo::random' => false,
 
 			// We don't care about those, they are rarely loaded.
+			'api/v2/Moderation' => false,
+			'api/v2/Moderation::photo' => false,
 			'api/v2/Webhook' => false,
 			'api/v2/Webhook/{webhook}' => false,
+
+			'api/v2/BulkAlbumEdit' => false,
+			'api/v2/BulkAlbumEdit::ids' => false,
 
 			// Ideally we should cache the search results, unfortunately it is not clear how to handle the pagination and the parts of the query.
 			// Furthermore the result of the serach depends of the user. Making the caching strategy more complex.
@@ -128,6 +133,8 @@ final readonly class RouteCacheManager
 			'api/v2/Users::count' => new RouteCacheConfig(tag: CacheTag::USERS, user_dependant: true),
 			'api/v2/Version' => false,
 			'api/v2/ChangeLogs' => false,
+			'api/v2/Admin/Stats' => false,
+			'api/v2/Admin/UpdateStatus' => false,
 
 			'api/v2/Import' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: true),
 			'api/v2/Import::browse' => false, // This will return a different result each time depending on the directory requested.
@@ -137,6 +144,7 @@ final readonly class RouteCacheManager
 
 			// This is returning a stream, we do not cache it.
 			'api/v2/Zip' => false,
+			'api/v2/Zip/chunks' => false,
 
 			// We shall take care of that later.
 			'api/v2/Tags' => false,
@@ -155,6 +163,9 @@ final readonly class RouteCacheManager
 			'api/v2/Shop/Checkout/Options' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: false),
 			'api/v2/Shop/Management/Options' => new RouteCacheConfig(tag: CacheTag::SETTINGS, user_dependant: true),
 			'api/v2/Shop/Management/List' => false,
+			'api/v2/Shop/Management/PixelSize' => false,
+			'api/v2/Shop/Management/PrintSize' => false,
+			'api/v2/Shop/Catalogue/Purchasable/{purchasable_id}/Sizes' => false,
 			'api/v2/Shop/Order/List' => false,
 			'api/v2/Shop/Order/{order_id}' => false,
 
@@ -163,6 +174,23 @@ final readonly class RouteCacheManager
 
 			// No need to cache this.
 			'api/v2/Security/Advisories' => false,
+
+			// AI Vision — People & Faces: do not cache, user/content-dependent.
+			'api/v2/People' => false,
+			'api/v2/Person/{id}' => false,
+			'api/v2/Person/{id}/photos' => false,
+			'api/v2/Photo/{id}/faces' => false,
+			'api/v2/Face/maintenance' => false,
+			'api/v2/FaceDetection/clusters' => false,
+			'api/v2/FaceDetection/clusters/{label}/faces' => false,
+			'api/v2/Album/{album_id}/people' => false,
+
+			// AI Vision — Maintenance: never cache.
+			'api/v2/Maintenance::bulkScanFaces' => false,
+			'api/v2/Maintenance::runFaceClustering' => false,
+			'api/v2/Maintenance::destroyDismissedFaces' => false,
+			'api/v2/Maintenance::syncFaceEmbeddings' => false,
+			'api/v2/Maintenance::resetFaceScanStatus' => false,
 		];
 	}
 

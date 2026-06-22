@@ -9,6 +9,7 @@
 			@open-search="emits('openSearch')"
 			@go-back="emits('goBack')"
 			@show-selected="albumCallbacks.copyHighlighted()"
+			@open-context-menu="openContextMenuFromHeader"
 		/>
 		<template v-if="albumStore.album && albumStore.config && userStore.isLoaded">
 			<div id="galleryView" class="relative flex flex-wrap content-start w-full justify-start overflow-y-auto h-full select-none">
@@ -37,6 +38,7 @@
 					@toggle-apply-renamer="toggleApplyRenamer"
 					@toggle-watermark-confirm="toggleWatermarkConfirm"
 					@toggle-download-album="toggleDownloadAlbumFromHero"
+					@toggle-scan-faces="toggleScanFacesFromHero"
 				/>
 				<template v-if="is_se_enabled && userStore.isLoggedIn">
 					<AlbumStatistics
@@ -58,6 +60,7 @@
 						:selected-albums="selectedAlbumsIds"
 						:is-timeline="albumStore.config.is_album_timeline_enabled"
 						@clicked="albumSelect"
+						@selected="albumSelect"
 						@contexted="contextMenuAlbumOpen"
 					/>
 					<!-- Pagination for albums -->
@@ -119,6 +122,7 @@
 			/>
 			<WatermarkConfirmDialog v-model:visible="is_watermark_confirm_visible" :album-id="albumStore.album.id" @watermarked="emits('refresh')" />
 			<DownloadAlbum v-model:visible="is_download_album_visible" :album-ids="downloadAlbumIds" />
+			<DownloadAlbum v-model:visible="is_download_photo_visible" :photo-ids="downloadPhotoIds" :from-id="downloadFromId" />
 
 			<!-- Dialogs -->
 			<ContextMenu ref="menu" :model="Menu" :class="Menu.length === 0 ? 'hidden' : ''">
@@ -153,6 +157,8 @@ import ContextMenu from "primevue/contextmenu";
 import { useContextMenu } from "@/composables/contextMenus/contextMenu";
 import PhotoService from "@/services/photo-service";
 import AlbumService from "@/services/album-service";
+import FaceDetectionService from "@/services/face-detection-service";
+import ModerationService from "@/services/moderation-service";
 import { AlbumThumbConfig } from "@/components/gallery/albumModule/thumbs/AlbumThumb.vue";
 import { useGalleryModals } from "@/composables/modalsTriggers/galleryModals";
 import Button from "primevue/button";
@@ -242,6 +248,14 @@ function photoClick(photoId: string, _e: MouseEvent) {
 	router.push(photoRoute(photoId));
 }
 
+function openContextMenuFromHeader(e: MouseEvent): void {
+	if (selectedPhotosIds.value.length > 0) {
+		contextMenuPhotoOpen(selectedPhotosIds.value[0], e);
+	} else if (selectedAlbumsIds.value.length > 0) {
+		contextMenuAlbumOpen(e, selectedAlbumsIds.value[0]);
+	}
+}
+
 function goToPhotosPage(page: number) {
 	albumStore.loadPhotos(page, false);
 }
@@ -259,11 +273,33 @@ function toggleStatistics() {
 
 const is_download_album_visible = ref(false);
 const downloadAlbumIds = ref<string[]>([]);
+const is_download_photo_visible = ref(false);
+const downloadPhotoIds = ref<string[]>([]);
+const downloadFromId = ref<string | null>(null);
 
 function toggleDownloadAlbumFromHero() {
 	if (albumStore.album === undefined) return;
 	downloadAlbumIds.value = [albumStore.album.id];
 	is_download_album_visible.value = true;
+}
+
+function toggleScanFacesFromHero() {
+	if (albumStore.album === undefined) return;
+	FaceDetectionService.scanAlbum(albumStore.album.id)
+		.then(() => {
+			toast.add({
+				severity: "success",
+				detail: trans("people.scan_success"),
+				life: 3000,
+			});
+		})
+		.catch((e) => {
+			toast.add({
+				severity: "error",
+				detail: e.response?.data?.message || trans("toasts.error"),
+				life: 3000,
+			});
+		});
 }
 
 function toggleDownloadAlbumFromSelection() {
@@ -351,9 +387,38 @@ const photoCallbacks = {
 	toggleMove: toggleMove,
 	toggleDelete: toggleDelete,
 	toggleDownload: () => {
-		PhotoService.download(selectedPhotosIds.value, getParentId());
+		downloadPhotoIds.value = [...selectedPhotosIds.value];
+		downloadFromId.value = getParentId() ?? null;
+		is_download_photo_visible.value = true;
 	},
 	toggleApplyRenamer: toggleApplyRenamer,
+	toggleScanFaces: () => {
+		FaceDetectionService.scanPhotos(selectedPhotosIds.value)
+			.then(() => {
+				toast.add({
+					severity: "success",
+					detail: trans("people.scan_success"),
+					life: 3000,
+				});
+			})
+			.catch((e) => {
+				toast.add({
+					severity: "error",
+					detail: e.response?.data?.message || trans("toasts.error"),
+					life: 3000,
+				});
+			});
+	},
+	toggleApprove: () => {
+		ModerationService.approve(selectedPhotosIds.value).then(() => {
+			selectedPhotosIds.value.forEach((photoId) => {
+				const photo = photosStore.photos.find((p) => p.id === photoId);
+				if (photo) {
+					photo.is_validated = true;
+				}
+			});
+		});
+	},
 };
 
 function togglePin() {
@@ -392,6 +457,24 @@ const albumCallbacks = {
 	},
 	togglePin: togglePin,
 	toggleApplyRenamer: toggleApplyRenamer,
+	toggleScanFaces: () => {
+		if (albumStore.album === undefined) return;
+		FaceDetectionService.scanAlbum(selectedAlbum.value!.id)
+			.then(() => {
+				toast.add({
+					severity: "success",
+					detail: trans("people.scan_success"),
+					life: 3000,
+				});
+			})
+			.catch((e) => {
+				toast.add({
+					severity: "error",
+					detail: e.response?.data?.message || trans("toasts.error"),
+					life: 3000,
+				});
+			});
+	},
 	copyHighlighted: () => {
 		const highlighted = photosStore.photos.filter((p) => p.is_highlighted);
 		const selectedNames = highlighted

@@ -12,6 +12,7 @@ use App\Actions\Photo\Create;
 use App\Contracts\Models\AbstractAlbum;
 use App\DTO\ImportMode;
 use App\Enum\JobStatus;
+use App\Enum\UserUploadTrustLevel;
 use App\Exceptions\OwnerRequiredException;
 use App\Factories\AlbumFactory;
 use App\Image\Files\ProcessableJobFile;
@@ -49,8 +50,12 @@ class ProcessImageJob implements ShouldQueue
 	public string $original_base_name;
 	public ?string $album_id;
 	public int $user_id;
+	public UserUploadTrustLevel $upload_trust_level;
 	public ?int $file_last_modified_time;
 	public ?bool $apply_watermark;
+	public ?string $expected_id;
+	public ?string $title;
+	public ?string $description;
 
 	/**
 	 * Create a new job instance.
@@ -60,6 +65,9 @@ class ProcessImageJob implements ShouldQueue
 		string|AbstractAlbum|null $abstract_album,
 		?int $file_last_modified_time,
 		?bool $apply_watermark = null,
+		?string $expected_id = null,
+		?string $title = null,
+		?string $description = null,
 	) {
 		$this->file_path = $file->getPath();
 		$this->original_base_name = $file->getOriginalBasename();
@@ -76,7 +84,17 @@ class ProcessImageJob implements ShouldQueue
 
 		$this->album_id = $album?->get_id();
 		$album_name = $album?->get_title() ?? __('gallery.smart_album.unsorted');
-		$user_id = Auth::user()?->id;
+		$user = Auth::user();
+		$user_id = $user?->id;
+		// Resolve trust level now, while the HTTP session is still available.
+		if ($user?->may_administrate === true) {
+			$this->upload_trust_level = UserUploadTrustLevel::TRUSTED;
+		} elseif ($user !== null) {
+			$this->upload_trust_level = $user->upload_trust_level;
+		} else {
+			$this->upload_trust_level = resolve(ConfigManager::class)->getValueAsEnum('guest_upload_trust_level', UserUploadTrustLevel::class)
+				?? UserUploadTrustLevel::CHECK;
+		}
 		if ($user_id === null && ($album === null || $album instanceof BaseSmartAlbum)) {
 			throw new OwnerRequiredException();
 		}
@@ -92,6 +110,10 @@ class ProcessImageJob implements ShouldQueue
 		} else {
 			$this->apply_watermark = $apply_watermark;
 		}
+
+		$this->expected_id = $expected_id;
+		$this->title = $title;
+		$this->description = $description;
 
 		// Set up our new history record.
 		$this->history = new JobHistory();
@@ -125,7 +147,11 @@ class ProcessImageJob implements ShouldQueue
 				skip_duplicates: $config_manager->getValueAsBool('skip_duplicates'),
 				shall_rename_photo_title: $config_manager->getValueAsBool('renamer_photo_title_enabled'),
 			),
-			intended_owner_id: $this->user_id
+			intended_owner_id: $this->user_id,
+			upload_trust_level: $this->upload_trust_level,
+			title: $this->title,
+			description: $this->description,
+			preallocated_id: $this->expected_id,
 		);
 
 		$album = null;

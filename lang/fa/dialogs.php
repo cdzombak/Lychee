@@ -1,4 +1,5 @@
 <?php
+
 return [
     'button' => [
         /*
@@ -56,7 +57,8 @@ return [
         'move' => 'انتقال عکس',
         'delete' => 'حذف عکس',
         'edit' => 'ویرایش اطلاعات',
-        'show_hide_meta' => 'نمایش اطلاعات',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'ما آن را مخفی نگه می‌داریم.',
         'button_hidden' => 'ما دکمه را در هدر مخفی می‌کنیم.',
     ],
@@ -112,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => 'تکمیل شد',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'بارگذاری شده:',
         'release' => 'برای بارگذاری فایل را رها کنید!',
         'select' => 'برای انتخاب فایل‌ها برای بارگذاری اینجا کلیک کنید',

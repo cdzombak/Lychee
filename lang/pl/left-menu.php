@@ -24,5 +24,7 @@ return [
     'support' => 'Wsparcie',
     'contact' => 'Contact',
     'messages' => 'Messages',
+    'people' => 'People',
     'webhooks' => 'Webhooks',
+    'shopSizes' => 'Size Catalogue',
 ];

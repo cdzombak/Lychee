@@ -1,4 +1,5 @@
 <?php
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -32,6 +33,8 @@ return [
     'live_video' => 'جزء الفيديو من الصورة الحية',
     'download_raw' => 'Download RAW',
     'download_album' => 'اختر دقة الصورة لأرشيف ZIP للألبوم. إذا لم تكن الصورة تحتوي على النوع المحدد، سيتم استخدام النسخة الأصلية.',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => 'تاريخ الكاميرا',
     'album_reserved' => 'جميع الحقوق محفوظة',
     'map' => [
@@ -137,6 +140,8 @@ return [
         'header_photos' => 'الصور',
         'show_highlighted' => 'Filter highlighted images',
         'copy_highlighted_names' => 'Copy highlighted photo names to clipboard',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => 'لا يوجد شيء هنا',
         'upload' => 'رفع الصور',
         'tabs' => [
@@ -314,6 +319,10 @@ return [
         'merge_all' => 'دمج المحدد',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => 'رفع صورة',
         'take_photo' => 'التقاط صورة',
         'import_link' => 'استيراد من الرابط',

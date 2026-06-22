@@ -33,6 +33,8 @@ return [
     'live_video' => '实况照片视频部分',
     'download_raw' => 'Download RAW',
     'download_album' => '选择相册ZIP压缩包的图片分辨率。如果照片没有所选的版本，将使用原始版本。',
+    'downloading_part' => 'Downloading part :current / :total',
+    'download_error' => 'Download failed',
     'camera_data' => '相机日期',
     'album_reserved' => '所有权利保留',
     'map' => [
@@ -138,6 +140,8 @@ return [
         'header_photos' => '照片',
         'show_highlighted' => 'Filter highlighted images',
         'copy_highlighted_names' => 'Copy highlighted photo names to clipboard',
+        'toggle_touch_select' => 'Toggle selection mode',
+        'photo_actions' => 'Photo actions',
         'no_results' => '这里什么都没有',
         'upload' => '上传照片',
         'tabs' => [
@@ -195,7 +199,6 @@ return [
             'tags_required' => '标签为必填项。',
             'all_tags_must_match' => '所有标签必须匹配。',
         ],
-
     ],
     'photo' => [
         'actions' => [
@@ -316,6 +319,10 @@ return [
         'merge_all' => '合并所选',
         'apply_renamer' => 'Apply Renamer',
         'apply_renamer_all' => 'Apply Renamer to Selected',
+        'scan_faces' => 'Scan for Faces',
+        'scan_faces_all' => 'Scan Selected for Faces',
+        'approve' => 'Approve',
+        'approve_all' => 'Approve Selected',
         'upload_photo' => '上传照片',
         'take_photo' => '拍照',
         'import_link' => '从链接导入',

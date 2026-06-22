@@ -119,22 +119,27 @@ const AlbumService = {
 		page: number = 1,
 		tag_ids: number[] | null = null,
 		tag_logic: string = "OR",
+		person_id: string | null = null,
 	): Promise<AxiosResponse<App.Http.Resources.Collections.PaginatedPhotosResource>> {
 		const requester = axios as unknown as AxiosCacheInstance;
-		// const params: Record<string, string | number | number[]> = { album_id: album_id, page: page };
 
 		let param = "";
-		// Add tag filter params if provided
 		if (tag_ids && tag_ids.length > 0) {
 			param += `&${tag_ids.map((v) => `tag_ids[]=${v}`).join("&")}`;
 			param += `&tag_logic=${tag_logic}`;
 		}
+		if (person_id) {
+			param += `&person_id=${encodeURIComponent(person_id)}`;
+		}
 
-		// Cache key includes tag filter for proper cache isolation
-		const cacheKey =
-			tag_ids && tag_ids.length > 0
-				? `album_photos_${album_id}_page${page}_tags${tag_ids.join(",")}_${tag_logic}`
-				: `album_photos_${album_id}_page${page}`;
+		// Cache key includes active filters for proper cache isolation
+		let cacheKey = `album_photos_${album_id}_page${page}`;
+		if (tag_ids && tag_ids.length > 0) {
+			cacheKey += `_tags${tag_ids.join(",")}_${tag_logic}`;
+		}
+		if (person_id) {
+			cacheKey += `_person${person_id}`;
+		}
 
 		return requester.get(`${Constants.getApiUrl()}Album::photos?album_id=${album_id}&page=${page}${param}`, {
 			data: {},
@@ -212,6 +217,36 @@ const AlbumService = {
 
 	download(album_ids: string[], variant: App.Enum.DownloadVariantType = "ORIGINAL"): void {
 		location.href = `${Constants.getApiUrl()}Zip?album_ids=${album_ids.join(",")}&variant=${variant}`;
+	},
+
+	getChunkCount(
+		album_ids: string[],
+		variant: App.Enum.DownloadVariantType,
+	): Promise<AxiosResponse<App.Http.Resources.GalleryConfigs.ZipChunkData>> {
+		return axios.get(`${Constants.getApiUrl()}Zip/chunks`, { params: { album_ids: album_ids.join(","), variant }, data: {} });
+	},
+
+	downloadChunk(album_ids: string[], variant: App.Enum.DownloadVariantType, chunk: number): Promise<void> {
+		return axios
+			.get(`${Constants.getApiUrl()}Zip`, { params: { album_ids: album_ids.join(","), variant, chunk }, responseType: "blob" })
+			.then(function (response) {
+				const url = URL.createObjectURL(response.data as Blob);
+				const a = document.createElement("a");
+				const disposition = response.headers["content-disposition"] as string | undefined;
+				let filename = "archive.zip";
+				if (disposition) {
+					const match = disposition.match(/filename\*?=(?:UTF-8'')?([^;]+)/i);
+					if (match) {
+						filename = decodeURIComponent(match[1].replace(/['"]/g, ""));
+					}
+				}
+				a.href = url;
+				a.download = filename;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+			});
 	},
 
 	uploadTrack(album_id: string, file: Blob): Promise<AxiosResponse> {

@@ -1,4 +1,5 @@
 <?php
+
 return [
     'button' => [
         /*
@@ -57,6 +58,7 @@ return [
         'delete' => 'Delete the photo',
         'edit' => 'Edit information',
         'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'We will keep it hidden.',
         'button_hidden' => 'We will hide the button in the header.',
     ],
@@ -112,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => 'Completed',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'Uploaded:',
         'release' => 'Release file to upload!',
         'select' => 'Click here to select files to upload',

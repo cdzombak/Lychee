@@ -34,13 +34,13 @@ export const albumSortingColumnsOptions: SelectOption<App.Enum.ColumnSortingAlbu
 	{ value: "max_taken_at", label: "gallery.sort.album_select_5" },
 ];
 
-export const aspectRationOptions: SelectOption<App.Enum.AspectRatioType>[] = [
+export const aspectRatioOptions: SelectOption<App.Enum.AspectRatioType>[] = [
 	{ value: "5/4", label: "aspect_ratio.5by4" },
 	{ value: "3/2", label: "aspect_ratio.3by2" },
 	{ value: "1/1", label: "aspect_ratio.1by1" },
 	{ value: "2/3", label: "aspect_ratio.2by3" },
 	{ value: "4/5", label: "aspect_ratio.4by5" },
-	{ value: "16/9", label: "aspect_ratio.1byx9" },
+	{ value: "16/9", label: "aspect_ratio.16by9" },
 ];
 
 export const licenseOptions: SelectOption<App.Enum.LicenseType>[] = [
@@ -94,7 +94,6 @@ export const defaultAlbumProtectionOptions: SelectOption<string>[] = [
 ];
 
 export const mapProvidersOptions: SelectOption<App.Enum.MapProviders>[] = [
-	{ value: "Wikimedia", label: "Wikimedia" },
 	{ value: "OpenStreetMap.org", label: "OpenStreetMap.org" },
 	{ value: "OpenStreetMap.de", label: "OpenStreetMap.de" },
 	{ value: "OpenStreetMap.fr", label: "OpenStreetMap.fr" },
@@ -299,7 +298,7 @@ export const SelectBuilders = {
 	},
 
 	buildAspectRatio(value: string | App.Enum.AspectRatioType | undefined): SelectOption<App.Enum.AspectRatioType> | undefined {
-		return aspectRationOptions.find((option) => option.value === value) || undefined;
+		return aspectRatioOptions.find((option) => option.value === value) || undefined;
 	},
 
 	buildLicense(value: string | App.Enum.LicenseType | undefined): SelectOption<App.Enum.LicenseType> | undefined {

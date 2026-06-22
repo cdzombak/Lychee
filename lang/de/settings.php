@@ -93,4 +93,10 @@ return [
         'modules' => 'Module',
         'advanced' => 'Fortgeschrittene',
     ],
+    'config' => [
+        'use_admin_dashboard' => [
+            'label' => 'Admin-Dashboard verwenden',
+            'help' => 'Ersetzen Sie das verschachtelte Admin-Untermenü durch einen einzelnen Link zur neuen Admin-Dashboard-Seite.',
+        ],
+    ],
 ];

@@ -1,4 +1,5 @@
 import { Uploadable } from "@/composables/album/uploadEvents";
+import UploadService from "@/services/upload-service";
 import { defineStore } from "pinia";
 
 export type TogglablesStateStore = ReturnType<typeof useTogglablesStateStore>;
@@ -14,6 +15,7 @@ export const useTogglablesStateStore = defineStore("togglables-store", {
 		// upload
 		is_upload_visible: false,
 		list_upload_files: [] as Uploadable[],
+		upload_config: undefined as App.Http.Resources.GalleryConfigs.UploadConfig | undefined,
 
 		// create albums
 		is_create_album_visible: false,
@@ -57,12 +59,24 @@ export const useTogglablesStateStore = defineStore("togglables-store", {
 		selectedPhotosIds: [] as string[],
 		selectedAlbumsIds: [] as string[],
 
+		// Touch multi-select mode (mobile)
+		is_touch_select_mode: false,
+
 		// Selections via Click and Drag
 		isDragging: false,
 		nonHoverSelectablePhotosIdx: [] as string[], // contains photos ids that are currently hoved but not selected
 		nonHoverSelectableAlbumsIdx: [] as string[], // contains albums ids that are currently hoved but not selected
 	}),
 	actions: {
+		loadUploadConfig() {
+			if (this.upload_config !== undefined) {
+				return;
+			}
+			UploadService.getSetUp().then((response) => {
+				this.upload_config = response.data;
+			});
+		},
+
 		toggleFullScreen() {
 			this.is_full_screen = !this.is_full_screen;
 		},
@@ -98,6 +112,14 @@ export const useTogglablesStateStore = defineStore("togglables-store", {
 			this.scroll_photo_id = photo_id;
 		},
 
+		toggleTouchSelectMode() {
+			this.is_touch_select_mode = !this.is_touch_select_mode;
+			if (!this.is_touch_select_mode) {
+				this.selectedPhotosIds = [];
+				this.selectedAlbumsIds = [];
+			}
+		},
+
 		recoverAndResetScrollThumb(thumbElem: HTMLElement) {
 			if (thumbElem) {
 				// check if thumbElem is actually out of view:
@@ -110,7 +132,7 @@ export const useTogglablesStateStore = defineStore("togglables-store", {
 
 				// only scroll it into view if it's currently invisible:
 				if (!isVisible) {
-					thumbElem.scrollIntoView({ behavior: "smooth", block: "nearest" });
+					thumbElem.scrollIntoView({ behavior: "smooth", block: "center" });
 				}
 			}
 

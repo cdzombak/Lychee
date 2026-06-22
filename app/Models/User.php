@@ -10,6 +10,7 @@ namespace App\Models;
 
 use App\Constants\AccessPermissionConstants as APC;
 use App\Enum\UserSharedAlbumsVisibility;
+use App\Enum\UserUploadTrustLevel;
 use App\Exceptions\ModelDBException;
 use App\Exceptions\UnauthenticatedException;
 use App\Models\Builders\UserBuilder;
@@ -21,6 +22,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\DatabaseNotification;
@@ -54,6 +56,7 @@ use function Safe\mb_convert_encoding;
  * @property string|null                                           $token
  * @property string|null                                           $remember_token
  * @property UserSharedAlbumsVisibility                            $shared_albums_visibility
+ * @property UserUploadTrustLevel                                  $upload_trust_level
  * @property Collection<int,BaseAlbumImpl>                         $albums
  * @property Collection<int,OauthCredential>                       $oauthCredentials
  * @property DatabaseNotificationCollection|DatabaseNotification[] $notifications
@@ -123,6 +126,7 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
 		'may_edit_own_settings' => 'boolean',
 		'quota_kb' => 'integer',
 		'shared_albums_visibility' => UserSharedAlbumsVisibility::class,
+		'upload_trust_level' => UserUploadTrustLevel::class,
 	];
 
 	protected $hidden = [];
@@ -179,6 +183,16 @@ class User extends Authenticatable implements WebAuthnAuthenticatable
 	public function oauthCredentials(): HasMany
 	{
 		return $this->hasMany(OauthCredential::class, 'user_id', 'id');
+	}
+
+	/**
+	 * Return the Person linked to this user (1-1).
+	 *
+	 * @return HasOne<Person,$this>
+	 */
+	public function person(): HasOne
+	{
+		return $this->hasOne(Person::class, 'user_id', 'id');
 	}
 
 	/**

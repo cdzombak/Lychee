@@ -1,4 +1,5 @@
 <?php
+
 return [
     'button' => [
         /*
@@ -56,7 +57,8 @@ return [
         'move' => 'Переместить фотографию',
         'delete' => 'Удалить фотографию',
         'edit' => 'Редактировать информацию',
-        'show_hide_meta' => 'Показать информацию',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'Мы оставим это скрытым.',
         'button_hidden' => 'Мы скроем кнопку в шапке.',
     ],
@@ -112,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => 'Завершено',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'Загружено:',
         'release' => 'Отпустите файл для загрузки!',
         'select' => 'Нажмите здесь, чтобы выбрать файлы для загрузки',

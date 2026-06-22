@@ -37,7 +37,6 @@ class DefaultConfig
 				'filter', // Required by dependencies
 				'gd',
 				'json', // Required by Laravel
-				'ldap', // Required by dependencies
 				'libxml', // Required by dependencies
 				'mbstring', // Required by Laravel
 				'openssl', // Required by Laravel
@@ -138,6 +137,10 @@ class DefaultConfig
 				if (config('database.default') === $db_possibility[0]) {
 					$this->config['requirements']['php'][] = $db_possibility[1];
 				}
+			}
+
+			if (config('features.use-system-temp-dir') === false) {
+				$this->config['permissions']['storage/tmp/uploads_parts/'] = 'file_exists|is_readable|is_writable|is_executable';
 			}
 			// @codeCoverageIgnoreStart
 		} catch (BindingResolutionException|ContainerExceptionInterface $e) {

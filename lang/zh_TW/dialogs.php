@@ -1,4 +1,5 @@
 <?php
+
 return [
     'button' => [
         /*
@@ -56,7 +57,8 @@ return [
         'move' => '移動相片',
         'delete' => '刪除相片',
         'edit' => '編輯資訊',
-        'show_hide_meta' => '顯示資訊',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => '我們將使其隱藏。',
         'button_hidden' => '我們將在標題中隱藏按鈕。',
     ],
@@ -112,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => '完全的',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => '已上傳：',
         'release' => '發布文件上傳！',
         'select' => '點擊此處選擇要上傳的文件',

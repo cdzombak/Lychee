@@ -57,7 +57,8 @@ return [
         'move' => 'Премести снимката',
         'delete' => 'Изтрий снимката',
         'edit' => 'Редактирай информацията',
-        'show_hide_meta' => 'Покажи информация',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'Ще го запазим скрито.',
         'button_hidden' => 'Бутонът ще бъде скрит от заглавната лента.',
     ],
@@ -113,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => 'Завършено',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'Качени:',
         'release' => 'Пуснете файла за качване!',
         'select' => 'Кликнете тук, за да изберете файлове за качване',

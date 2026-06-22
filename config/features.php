@@ -94,6 +94,15 @@ return [
 
 	/*
 	 |--------------------------------------------------------------------------
+	 | Enable the v8
+	 |--------------------------------------------------------------------------
+	 |
+	 | This value determines whether the v8 features are enabled.
+	 */
+	'v8' => (bool) env('V8_ENABLED', false),
+
+	/*
+	 |--------------------------------------------------------------------------
 	 | Require the API requests to have the header "content-type: application/json"
 	 | or "content-type: multipart/form-data" depending on the type.
 	 |
@@ -163,6 +172,18 @@ return [
 
 	/*
 	 |--------------------------------------------------------------------------
+	 | Location Decoding Rate Limit
+	 |--------------------------------------------------------------------------
+	 |
+	 | Controls how many reverse-geocoding requests per second Lychee may send
+	 | to the Nominatim service. Nominatim's usage policy requires at most 1
+	 | request per second; raise this only if you are running your own instance.
+	 | Set via LOCATION_DECODING_REQUESTS_PER_SECOND (default: 1).
+	 */
+	'location_decoding_requests_per_second' => max(1, (int) env('LOCATION_DECODING_REQUESTS_PER_SECOND', 1)),
+
+	/*
+	 |--------------------------------------------------------------------------
 	 | Enable Vulnerability Check
 	 |--------------------------------------------------------------------------
 	 |
@@ -176,6 +197,18 @@ return [
 
 	/*
 	 |--------------------------------------------------------------------------
+	 | Enable Update Check
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, admins can query whether the current installation is
+	 | up-to-date from the admin dashboard. The endpoint also returns the latest
+	 | available release version when it can be determined.
+	 | Enabled by default - set UPDATE_CHECK_ENABLED=false to opt out.
+	 */
+	'update-check' => (bool) env('UPDATE_CHECK_ENABLED', true),
+
+	/*
+	 |--------------------------------------------------------------------------
 	 | Populate Request object macros while testing
 	 |--------------------------------------------------------------------------
 	 |
@@ -185,4 +218,77 @@ return [
 	 | missing macros and test failures.
 	 */
 	'populate-request-macros' => (bool) env('POPULATE_REQUEST_MACROS', false),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | Enable AI Vision / Assisted Vision
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, users can use facial recognition and AI-powered features
+	 | such as face detection, person management, and photo clustering.
+	 | Requires ai_vision_enabled to be true in the database configs table
+	 | AND this feature flag to be enabled.
+	 */
+	'ai-vision' => (bool) env('AI_VISION_ENABLED', true),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | AI Vision service integration.
+	 |--------------------------------------------------------------------------
+	 |
+	 | Infrastructure keys for the external AI Vision (facial recognition) service.
+	 | These are NOT stored in the configs table to avoid exposing the service URL
+	 | or shared API key through the admin settings UI.
+	 */
+	'ai-vision-service' => [
+		'face-url' => env('AI_VISION_FACE_URL', ''),
+		'face-api-key' => env('AI_VISION_FACE_API_KEY', ''),
+		'face-rescan-iou-threshold' => (float) env('AI_VISION_FACE_RESCAN_IOU_THRESHOLD', 0.3),
+		'face-stuck-scan-threshold-minutes' => (int) env('AI_VISION_FACE_STUCK_SCAN_THRESHOLD_MINUTES', 720),
+	],
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | White Label
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, hides the Lychee name, links, and generator metadata
+	 | from the UI (footer, meta tag, misconfiguration warning).
+	 | Requires a Lychee Supporter Edition licence to take effect.
+	 | Set WHITE_LABEL_ENABLED=true in .env to activate.
+	 */
+	'white_label_enabled' => (bool) env('WHITE_LABEL_ENABLED', false),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | Use fopen for URL imports instead of curl
+	 |--------------------------------------------------------------------------
+	 | curl mitigates issues with Time of Check to Time of Use (TOCTOU) attacks, but it may not be available in all environments.
+	 | Set USE_FOPEN_FOR_URL_IMPORTS=true in .env to use fopen instead of curl for URL imports.
+	 */
+	'use_fopen_for_url_imports' => (bool) env('USE_FOPEN_FOR_URL_IMPORTS', false),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | Use system temp directory for uploads
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, Lychee uses PHP's sys_get_temp_dir() for temporary upload
+	 | files. On shared hosting where that directory is not readable/writable,
+	 | set USE_SYSTEM_TEMP_DIR=false to use storage/tmp/uploads_parts instead.
+	 */
+	'use-system-temp-dir' => (bool) env('USE_SYSTEM_TEMP_DIR', true),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | Enable Request Caching
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, admins can configure Redis-backed response caching from
+	 | the settings panel (cache_enabled, cache_ttl, cache_event_logging).
+	 | Disabled by default — set ENABLE_REQUEST_CACHING=true to activate.
+	 | Note: caching is only active when cache_enabled is also set to 1 in
+	 | the database settings.
+	 */
+	'enable-request-caching' => (bool) env('ENABLE_REQUEST_CACHING', false),
 ];

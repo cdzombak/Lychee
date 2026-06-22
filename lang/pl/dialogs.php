@@ -1,4 +1,5 @@
 <?php
+
 return [
     'button' => [
         /*
@@ -56,7 +57,8 @@ return [
         'move' => 'Przenieś zdjęcie',
         'delete' => 'Usuń zdjęcie',
         'edit' => 'Edytuj informacje',
-        'show_hide_meta' => 'Pokaż informacje',
+        'show_hide_meta' => 'Show information',
+        'toggle_face_overlay' => 'Toggle face overlay',
         'keep_hidden' => 'Będziemy to ukrywać.',
         'button_hidden' => 'We will hide the button in the header.',
     ],
@@ -112,6 +114,8 @@ return [
     ],
     'upload' => [
         'completed' => 'Zakończono',
+        'completed_with_errors' => 'Completed — :errors upload(s) failed',
+        'completed_with_warnings' => 'Completed — :warnings upload(s) with warnings',
         'uploaded' => 'Przesłano:',
         'release' => 'Zwolnij plik do przesłania !',
         'select' => 'Kliknij tutaj, aby wybrać pliki do przesłania',

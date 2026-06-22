@@ -34,6 +34,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		is_desktop_dock_full_transparency_enabled: false,
 		is_mobile_dock_full_transparency_enabled: false,
 		is_photo_details_always_open: false,
+		is_face_overlay_visible: true,
 
 		// keybinding help
 		show_keybinding_help_popup: false,
@@ -55,6 +56,8 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		album_header_size: "half_screen" as App.Enum.AlbumHeaderSize,
 		is_album_header_landing_title_enabled: false,
 
+		use_admin_dashboard: true,
+
 		// Download settings
 		is_raw_download_enabled: false,
 		is_thumb_download_enabled: false,
@@ -63,6 +66,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		is_small2x_download_enabled: false,
 		is_medium_download_enabled: false,
 		is_medium2x_download_enabled: false,
+		is_download_archive_chunked: false,
 
 		// menu stuff
 		clockwork_url: "" as null | string,
@@ -72,9 +76,11 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 
 		// Site title & Dropbox API key
 		title: "gallery.title",
+		site_logo: "",
 		dropbox_api_key: "disabled",
 		default_homepage: "gallery",
 		is_timeline_page_enabled: false,
+		is_embed_enabled: true,
 
 		// Login options
 		is_basic_auth_enabled: true,
@@ -87,6 +93,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		is_se_info_hidden: false,
 		is_se_expired: false,
 		is_live_metrics_enabled: false,
+		is_white_label_enabled: false,
 
 		// Settings toggles
 		is_old_style: false,
@@ -99,6 +106,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		// Gesture settings
 		is_scroll_to_navigate_photos_enabled: true,
 		is_swipe_vertically_to_go_back_enabled: true,
+		disable_swipe_effect: false,
 
 		// Rating settings
 		is_rating_show_avg_in_details_enabled: false,
@@ -173,6 +181,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.is_timeline_left_border_visible = data.is_timeline_left_border_visible;
 
 					this.title = data.title;
+					this.site_logo = data.site_logo;
 					this.dropbox_api_key = data.dropbox_api_key;
 
 					this.is_basic_auth_enabled = data.is_basic_auth_enabled;
@@ -184,6 +193,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.is_se_info_hidden = data.is_se_info_hidden;
 					this.is_se_expired = data.is_se_expired;
 					this.is_live_metrics_enabled = data.is_live_metrics_enabled;
+					this.is_white_label_enabled = data.is_white_label_enabled;
 					this.number_albums_per_row_mobile = data.number_albums_per_row_mobile;
 					this.photo_thumb_info = data.photo_thumb_info;
 					this.is_photo_thumb_tags_enabled = data.is_photo_thumb_tags_enabled;
@@ -196,11 +206,13 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.is_small2x_download_enabled = data.is_small2x_download_enabled;
 					this.is_medium_download_enabled = data.is_medium_download_enabled;
 					this.is_medium2x_download_enabled = data.is_medium2x_download_enabled;
+					this.is_download_archive_chunked = data.is_download_archive_chunked;
 					this.photo_previous_next_size = data.photo_previous_next_size;
 					this.is_details_links_enabled = data.is_details_links_enabled;
 					this.is_desktop_dock_full_transparency_enabled = data.is_desktop_dock_full_transparency_enabled;
 					this.is_mobile_dock_full_transparency_enabled = data.is_mobile_dock_full_transparency_enabled;
 					this.is_photo_details_always_open = data.is_photo_details_always_open;
+					this.is_face_overlay_visible = data.is_face_overlay_visible;
 					const togglableStore = useTogglablesStateStore();
 					// Initialize the details togglable according to the always open config
 					togglableStore.are_details_open = data.is_photo_details_always_open;
@@ -209,6 +221,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 
 					this.is_scroll_to_navigate_photos_enabled = data.is_scroll_to_navigate_photos_enabled;
 					this.is_swipe_vertically_to_go_back_enabled = data.is_swipe_vertically_to_go_back_enabled;
+					this.disable_swipe_effect = data.disable_swipe_effect;
 
 					this.is_rating_show_avg_in_details_enabled = data.is_rating_show_avg_in_details_enabled;
 					this.is_rating_show_avg_in_photo_view_enabled = data.is_rating_show_avg_in_photo_view_enabled;
@@ -218,6 +231,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 
 					this.default_homepage = data.default_homepage;
 					this.is_timeline_page_enabled = data.is_timeline_page_enabled;
+					this.is_embed_enabled = data.is_embed_enabled;
 
 					this.photos_pagination_mode = data.photos_pagination_mode;
 					this.albums_pagination_mode = data.albums_pagination_mode;
@@ -227,6 +241,7 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.albums_infinite_scroll_threshold = data.albums_infinite_scroll_threshold;
 
 					this.default_album_protection = data.default_album_protection;
+					this.use_admin_dashboard = data.use_admin_dashboard;
 				})
 				.catch((error) => {
 					// In this specific case, even though it has been possibly disabled, we really need to see the error.

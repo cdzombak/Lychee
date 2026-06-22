@@ -191,6 +191,7 @@
 			}
 		"
 	/>
+	<DownloadAlbum v-model:visible="is_download_album_visible" :album-ids="downloadAlbumIds" />
 </template>
 <script setup lang="ts">
 import AlbumThumbPanel from "@/components/gallery/albumModule/AlbumThumbPanel.vue";
@@ -240,6 +241,7 @@ import { useAlbumStore } from "@/stores/AlbumState";
 import { usePhotoStore } from "@/stores/PhotoState";
 import { usePhotosStore } from "@/stores/PhotosState";
 import { useOrderManagementStore } from "@/stores/OrderManagement";
+import DownloadAlbum from "@/components/modals/DownloadAlbum.vue";
 import Tabs from "primevue/tabs";
 import TabList from "primevue/tablist";
 import Tab from "primevue/tab";
@@ -266,6 +268,7 @@ photoStore.reset();
 
 async function refresh() {
 	await Promise.allSettled([lycheeStore.load(), userStore.refresh()]);
+	AlbumService.clearAlbums();
 	albumsStore.load(router);
 	orderManagementStore.refresh();
 }
@@ -285,6 +288,7 @@ const {
 	is_login_open,
 	is_upload_visible,
 	list_upload_files,
+	upload_config,
 	is_webauthn_open,
 	is_import_from_server_open,
 	is_keybindings_help_open,
@@ -321,6 +325,9 @@ function togglePin() {
 	});
 }
 
+const is_download_album_visible = ref(false);
+const downloadAlbumIds = ref<string[]>([]);
+
 const albumCallbacks = {
 	setAsCover: () => {},
 	toggleRename: toggleRename,
@@ -329,9 +336,11 @@ const albumCallbacks = {
 	togglePin: togglePin,
 	toggleDelete: toggleDelete,
 	toggleDownload: () => {
-		AlbumService.download(selectedAlbumsIds.value);
+		downloadAlbumIds.value = selectedAlbumsIds.value;
+		is_download_album_visible.value = true;
 	},
 	toggleApplyRenamer: () => {},
+	toggleScanFaces: () => {},
 };
 
 const {
@@ -364,6 +373,8 @@ onKeyStroke("l", () => !shouldIgnoreKeystroke() && !userStore.isLoggedIn && (is_
 onKeyStroke("k", () => !shouldIgnoreKeystroke() && !userStore.isLoggedIn && (is_webauthn_open.value = true));
 
 const can_upload = computed(() => albumsStore.rootRights?.can_upload === true);
+const root_parent_id = ref<string | null>(null);
+const root_existing_albums = computed(() => albumsStore.albums.map((a) => ({ id: a.id, title: a.title })));
 
 // Shared albums visibility mode handling
 const sharedAlbumsVisibilityMode = computed(() => albumsStore.rootConfig?.shared_albums_visibility_mode ?? "show");
@@ -408,9 +419,17 @@ const shouldShowTabs = computed(() => {
 	return isSeparateMode && displaySharedAlbums.value.length > 0;
 });
 
-const { onPaste, dragEnd, dropUpload } = useMouseEvents(can_upload, is_upload_visible, list_upload_files);
+const { onPaste, dragEnd, dropUpload } = useMouseEvents(
+	can_upload,
+	is_upload_visible,
+	list_upload_files,
+	root_parent_id,
+	root_existing_albums,
+	upload_config,
+);
 
 onMounted(() => {
+	togglableStore.loadUploadConfig();
 	window.addEventListener("paste", onPaste);
 	window.addEventListener("dragover", dragEnd);
 	window.addEventListener("drop", dropUpload);
