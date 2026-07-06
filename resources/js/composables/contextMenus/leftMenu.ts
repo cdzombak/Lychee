@@ -143,12 +143,6 @@ export function useLeftMenu(
 				access: initData.value.modules.is_contact_enabled && !canSeeAdmin.value,
 			},
 			{
-				label: "Shop Photo Prints",
-				icon: "pi pi-shopping-cart",
-				url: "https://photography.dzombak.com",
-				access: true,
-			},
-			{
 				label: "dzombak.com",
 				access: true,
 				items: [
