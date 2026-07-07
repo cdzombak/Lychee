@@ -43,13 +43,14 @@ class Generate
 	}
 
 	/**
-	 * @param T $data
+	 * @param T        $data       the row supplying the item's photo/album/user fields
+	 * @param string[] $categories album titles to list on the item as `<category>`
 	 *
 	 * @return FeedItem
 	 *
 	 * @throws BindingResolutionException
 	 */
-	private function toFeedItem(object $data): FeedItem
+	private function toFeedItem(object $data, array $categories): FeedItem
 	{
 		$page_link = route('gallery', ['albumId' => $data->album_id, 'photoId' => $data->id]);
 		$feed_item = [
@@ -64,7 +65,7 @@ class Generate
 			'authorName' => ($data->display_name !== null && $data->display_name !== '')
 				? $data->display_name
 				: $data->username,
-			'category' => [$data->album_title],
+			'category' => $categories,
 		];
 
 		return FeedItem::create($feed_item);
@@ -125,6 +126,16 @@ class Generate
 			->toBase() // We use toBase() to avoid the use of the Eloquent casts etc.
 			->get();
 
-		return $photos->map(fn (object $p) => $this->toFeedItem($p));
+		// When enabled, a photo that belongs to several albums is emitted as a
+		// single item that lists every one of its albums as a `<category>`,
+		// instead of one item per album.
+		if ($this->config_manager->getValueAsBool('rss_photos_appear_once')) {
+			return $photos
+				->groupBy('id')
+				->map(fn (Collection $rows) => $this->toFeedItem($rows->first(), $rows->pluck('album_title')->all()))
+				->values();
+		}
+
+		return $photos->map(fn (object $p) => $this->toFeedItem($p, [$p->album_title]));
 	}
 }

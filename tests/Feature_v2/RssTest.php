@@ -105,4 +105,46 @@ class RssTest extends BaseApiWithDataTest
 			Configs::set('rss_enable', $init_config_value);
 		}
 	}
+
+	/**
+	 * With `rss_photos_appear_once` enabled, a photo that belongs to several
+	 * albums must appear exactly once in the whole feed, but that single item
+	 * must list every album it belongs to as a `<category>`.
+	 */
+	public function testRSSPhotoInMultipleAlbumsAppearsOnceWhenConfigured(): void
+	{
+		$config_manager = resolve(ConfigManager::class);
+		$init_rss_enable = $config_manager->getValue('rss_enable');
+		$init_appear_once = $config_manager->getValue('rss_photos_appear_once');
+
+		try {
+			Configs::set('rss_enable', '1');
+			Configs::set('rss_photos_appear_once', '1');
+
+			// One photo, two album memberships.
+			$photo = Photo::factory()
+				->owned_by($this->admin)
+				->in($this->album1)
+				->create();
+			$photo->albums()->attach($this->album2->id);
+
+			$response = $this->actingAs($this->admin)->get('/feed');
+			$this->assertOk($response);
+			$content = $response->getContent();
+
+			// Each feed item ends its `<guid>` with the photo id; the photo must
+			// be present in exactly one item across the whole feed.
+			$this->assertSame(1, substr_count($content, $photo->id . '</guid>'), 'photo should appear exactly once in the feed');
+
+			// That single item must still carry both albums as categories, so no
+			// album membership is lost by collapsing to one item.
+			$this->assertStringContainsString('<category>' . $this->album1->title . '</category>', $content, 'feed should list album1 as a category');
+			$this->assertStringContainsString('<category>' . $this->album2->title . '</category>', $content, 'feed should list album2 as a category');
+		} catch (\Exception $e) {
+			$this->assertTrue(false, 'Exception occurred: ' . $e->getMessage());
+		} finally {
+			Configs::set('rss_enable', $init_rss_enable);
+			Configs::set('rss_photos_appear_once', $init_appear_once);
+		}
+	}
 }
