@@ -8,6 +8,7 @@
 
 namespace App\Models;
 
+use App\DTO\EffectiveAccessPermission;
 use App\Exceptions\InvalidPropertyException;
 use App\ModelFunctions\HasAbstractAlbumProperties;
 use App\Models\Builders\TagAlbumBuilder;
@@ -18,11 +19,14 @@ use App\Relations\HasManyPhotosByTag;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 
 /**
  * App\Models\TagAlbum.
  *
+ * @property string|null         $cover_id
+ * @property Photo|null          $cover
  * @property Collection<int,Tag> $tags
  * @property bool                $is_and
  *
@@ -36,7 +40,7 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
  * @property int|null                          $shared_with_count
  * @property Collection<int, AccessPermission> $access_permissions
  * @property int|null                          $access_permissions_count
- * @property AccessPermission|null             $current_user_permissions
+ * @property EffectiveAccessPermission|null    $current_user_permissions
  * @property AccessPermission|null             $public_permissions
  * @property Collection<int, User>             $shared_with
  *
@@ -75,6 +79,7 @@ class TagAlbum extends BaseAlbum
 	 */
 	protected $attributes = [
 		'id' => null,
+		'cover_id' => null,
 		'is_and' => null,
 	];
 
@@ -106,6 +111,14 @@ class TagAlbum extends BaseAlbum
 	protected $appends = [
 		'thumb',
 	];
+
+	/**
+	 * @return HasOne<Photo,$this>
+	 */
+	public function cover(): HasOne
+	{
+		return $this->hasOne(Photo::class, 'id', 'cover_id');
+	}
 
 	/**
 	 * @phpstan-ignore method.childReturnType, method.childReturnType
@@ -141,6 +154,10 @@ class TagAlbum extends BaseAlbum
 	 */
 	protected function getThumbAttribute(): ?Thumb
 	{
+		if ($this->cover_id !== null) {
+			return Thumb::createFromPhoto($this->cover);
+		}
+
 		// Note, `photos()` already applies a "security filter" and
 		// only returns photos which are accessible by the current
 		// user

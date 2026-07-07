@@ -6,6 +6,10 @@ Track unresolved high- and medium-impact questions here. Remove each row as soon
 
 | Question ID | Feature | Priority | Summary | Status | Opened | Updated |
 |-------------|---------|----------|---------|--------|--------|---------|
+| ~~Q-049-01~~ | 049 – Nuxt UI Migration | High | Feature sizing — one long-running feature covering full PrimeVue removal (235 files) vs. split into a foundation feature plus follow-up features per area vs. foundation-only with rest deferred to backlog | Resolved (A – one feature, many grouped increments, tracked to full completion) | 2026-07-02 | 2026-07-02 |
+| ~~Q-049-02~~ | 049 – Nuxt UI Migration | High | Icon strategy — keep visual/icon parity via Iconify's `@iconify-json/prime` collection (mechanical swap) vs. adopt Nuxt UI's default Lucide icon set (visual redesign of ~107 distinct icons across ~134 files) | Resolved (A – icon parity via `@iconify-json/prime`) | 2026-07-02 | 2026-07-02 |
+| ~~Q-049-03~~ | 049 – Nuxt UI Migration | Medium | Ripple/focus-trap interaction parity — PrimeVue's `v-ripple` has no Nuxt UI/Reka UI equivalent; drop the ripple effect entirely vs. build a custom ripple directive to preserve current feel | Resolved (A – drop ripple, rely on Reka UI built-in focus-trap) | 2026-07-02 | 2026-07-02 |
+| ~~Q-049-04~~ | 049 – Nuxt UI Migration | High | Coexistence/cutover mechanism — in-place file-by-file migration in one bundle (ADR-0005 original) vs. dual-tree parallel implementation served via a feature flag, same URL paths, vs. path-prefix split (`/v8/*`) | Resolved (A – dual-tree + feature flag + same-path whole-app cutover) | 2026-07-02 | 2026-07-02 |
 | Q-043-06 | 043 | High | Album-level basket add for print/pixel sizes — scope unspecified | Open | 2026-05-31 | 2026-05-31 |
 | Q-043-07 | 043 | High | `{id}` type in `GET /api/v2/Shop/Catalogue/Purchasable/{id}/Sizes` — purchasable PK, photo_id, or album_id? | Open | 2026-05-31 | 2026-05-31 |
 | Q-043-08 | 043 | Medium | `canProcessPayment()` interaction — precedence of shipping-address guard vs existing email/FULL-size checks | Open | 2026-05-31 | 2026-05-31 |
@@ -18,7 +22,36 @@ Track unresolved high- and medium-impact questions here. Remove each row as soon
 | Q-043-15 | 043 | Low | Naming inconsistency: existing `CatalogController` vs new `CatalogueSizesController` | Open | 2026-05-31 | 2026-05-31 |
 | Q-043-16 | 043 | Low | Translation key placement: which new strings belong in `webshop.php` vs `dialogs.php`? | Open | 2026-05-31 | 2026-05-31 |
 | Q-043-17 | 043 | Medium | `is_print` must be exposed in basket GET response (via `OrderItemResource`) before frontend `hasPrints` computed can work — cross-increment dependency not captured in tasks | Open | 2026-05-31 | 2026-05-31 |
+| ~~Q-046-01~~ | 046 – Tag Album Cover | High | Should `cover_id` move from `albums` to `base_albums`, or be added only to `tag_albums`? | Resolved (B – add to `tag_albums` only) | 2026-06-28 | 2026-06-28 |
+| ~~Q-046-02~~ | 046 – Tag Album Cover | Medium | Front-end guard: replace `is_model_album` with `has_cover_support` flag, or widen check to include tag albums? | Resolved (B – check `is_model_album \|\| tagAlbum` in context menu) | 2026-06-28 | 2026-06-28 |
+| ~~Q-046-03~~ | 046 – Tag Album Cover | Medium | Should `cover()` relationship and eager-loading live on `BaseAlbumImpl` or remain per-model? | Resolved (N/A – per-model with eager-load on TagAlbum) | 2026-06-28 | 2026-06-28 |
 | Q-040-01 | 040 – Disable Request Caching | Medium | Analysis Gate never formally signed off: plan.md gate checklist has unchecked boxes yet I1–I4 tasks are marked complete; gate must be ticked before implementation is considered verified | Open | 2026-05-31 | 2026-05-31 |
+| ~~Q-048-01~~ | 048 – Fix Multi-Group Permissions | High | Should a direct user-level `AccessPermission` override group permissions, or merge with them, once group-vs-group merging is fixed? | Resolved (A – merge everything via boolean OR) | 2026-07-01 | 2026-07-01 |
+| ~~Q-047-01~~ | 047 – Person Smart Album | High | `AlbumPhotosController` + `GetAlbumPhotosRequest` + `AlbumHeadController` have hardcoded `TagAlbum` branches — PersonAlbum falls through to wrong code path or throws | Resolved (A – add PersonAlbum branches) | 2026-06-28 | 2026-06-28 |
+| ~~Q-047-02~~ | 047 – Person Smart Album | High | `Delete::do()` only checks `tag_albums` table for non-regular albums — PersonAlbums silently skipped then treated as regular Album (tree validation fails) | Resolved (A – add `deletePersonAlbums()`) | 2026-06-28 | 2026-06-28 |
+| ~~Q-047-03~~ | 047 – Person Smart Album | High | `EditableBaseAlbumResource` constructor and `fromModel()` accept `Album\|TagAlbum` only — PersonAlbum passed to it will cause a type error | Resolved (A – widen to `Album\|TagAlbum\|PersonAlbum`) | 2026-06-28 | 2026-06-28 |
+| ~~Q-047-04~~ | 047 – Person Smart Album | Medium | Frontend `smartAlbums` getter merges `tagAlbums` into smart albums section — spec assumes a separate "Person Albums" section but tag albums have no separate section either | Resolved (A – merge into `smartAlbums` getter) | 2026-06-28 | 2026-06-28 |
+| ~~Q-047-05~~ | 047 – Person Smart Album | Medium | Person ID visibility validation — non-admin user could reference non-searchable person IDs in create/update, leaking person names via `HeadPersonAlbumResource.show_persons` | Resolved (B – validate existence only; filter in head resource) | 2026-06-28 | 2026-06-28 |
+| ~~Q-047-06~~ | 047 – Person Smart Album | Medium | Person deletion leaves orphaned PersonAlbum with zero persons — album shows zero photos with no indication of why | Resolved (B modified – cleanup job triggered in delete code path + listener) | 2026-06-28 | 2026-06-28 |
+| ~~Q-045-13~~ | 045 – NSFW Moderation | High | Photo-Album is many-to-many — spec assumes `album_id` FK on photos but photos use a `photo_album` pivot table. "Direct parent album" is ambiguous when a photo is in multiple albums. | Resolved (A – mark all associated albums) | 2026-06-22 | 2026-06-22 |
+| ~~Q-045-14~~ | 045 – NSFW Moderation | High | Block action hard-delete mechanism — spec says "permanently removed" but doesn't specify whether to reuse the existing `Delete` action (handles pivot cleanup, purchasable cleanup, events) or use a simpler raw delete. | Resolved (A – reuse Delete with dedicated force-delete method) | 2026-06-22 | 2026-06-22 |
+| ~~Q-045-15~~ | 045 – NSFW Moderation | Medium | CSRF exemption for `POST /api/v2/NsfwDetection/results` callback — face detection callback is listed in `VerifyCsrfToken::$except` but the spec/plan don't mention adding the NSFW callback. | Resolved (not an issue — follows face detection pattern, add to CSRF exclusions) | 2026-06-22 | 2026-06-22 |
+| ~~Q-045-16~~ | 045 – NSFW Moderation | High | `ModerationController::approve()` is a bulk update — adding per-photo sensitive-detection checks and album-marking job dispatch requires loading detections per photo and iterating, breaking the current chunked `whereIn` pattern. | Resolved (B – hybrid: bulk update then post-process NSFW subset) | 2026-06-22 | 2026-06-22 |
+| ~~Q-045-17~~ | 045 – NSFW Moderation | Medium | `NsfwBlockFindingAction` enum inconsistency — DO-045-03 and the matrix list `APPROVE` as a valid value, but the spec DSL `values` array only lists `[BLOCK, MODERATE]`. The enum needs `APPROVE` to support `nsfw_trust_block_action`. | Resolved (fix spec DSL to include APPROVE) | 2026-06-22 | 2026-06-22 |
+| ~~Q-045-18~~ | 045 – NSFW Moderation | Medium | Pipe execution ordering — `AutoScanFacesOnUpload` calls `$next()` first (photo is persisted), then dispatches the scan job. Spec doesn't clarify whether `AutoScanNsfwOnUpload` should follow the same pattern or run before `$next()`. Hide-on-scan `is_validated = false` must be set before persistence. | Resolved (B – set values before `$next()`, dispatch after) | 2026-06-22 | 2026-06-22 |
+| ~~Q-045-19~~ | 045 – NSFW Moderation | Medium | `nsfw_detections` FK cascade policy not specified — the `faces` table uses `cascadeOnDelete` on `photo_id`. Should `nsfw_detections` follow the same pattern? Spec says "cascade-deleted with the photo" but only in prose, not in migration requirements. | Resolved (update PhotosToBeDeletedDTO + cascadeOnDelete FK) | 2026-06-22 | 2026-06-22 |
+| ~~Q-045-01~~ | 045 – NSFW Moderation | High | Callback stores `owner_id` on detection — how does the controller resolve the uploading user from the callback payload? | Resolved (B – snapshot trust level on photo) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-02~~ | 045 – NSFW Moderation | High | "Block" action semantics — should blocked photos be soft-deleted, hidden via `is_validated`, or use a dedicated visibility flag? | Resolved (Custom – single `nsfw_status` enum + `is_validated`; no `blocked` value, block = hard-delete) | 2026-06-21 | 2026-06-22 |
+| ~~Q-045-03~~ | 045 – NSFW Moderation | High | Sensitive action on unsorted photos (no album) — should it create a "Sensitive" album, mark as moderation instead, or skip? | Resolved (Custom – configurable: skip or fall back to moderate) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-04~~ | 045 – NSFW Moderation | High | User context in upload pipe — `StandaloneDTO` may not carry the uploading user's trust level; how to resolve it? | Resolved (subsumed by Q-045-01 → B; pipe reads `$state->upload_trust_level` from DTO — uploader's level, not owner's) | 2026-06-21 | 2026-06-22 |
+| ~~Q-045-05~~ | 045 – NSFW Moderation | Medium | Should the NSFW service share the same base URL as the face detection service, or use a completely separate URL? | Resolved (A – separate URL + API key) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-06~~ | 045 – NSFW Moderation | Medium | Detection log granularity — store every individual detection, or only summary flags on the photo? | Resolved (A modified – block/review/sensitive only, not all_detected) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-07~~ | 045 – NSFW Moderation | Medium | Per-album or per-user preset override — should this be supported in v1, or deferred? | Resolved (A – deferred) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-08~~ | 045 – NSFW Moderation | Medium | Multiple albums — if a photo belongs to multiple albums and `sensitive` action fires, which albums get `is_nsfw = true`? | Resolved (A – direct album only) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-09~~ | 045 – NSFW Moderation | Medium | Bulk scan scope — should bulk scan re-scan photos that previously completed, or only `nsfw_status IS NULL`? | Resolved (B – NULL+failed default, force for all) | 2026-06-21 | 2026-06-22 |
+| ~~Q-045-10~~ | 045 – NSFW Moderation | Medium | Moderation page integration — should NSFW-blocked photos appear in the existing Moderation view, or require a separate filter/tab? | Resolved (B – add NSFW badge in Moderation view) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-11~~ | 045 – NSFW Moderation | Low | Config category naming — should NSFW config keys use existing `mod-nsfw` category or a new one? | Resolved (Custom – use `ai` category) | 2026-06-21 | 2026-06-21 |
+| ~~Q-045-12~~ | 045 – NSFW Moderation | Medium | SE (Supporter Edition) gating — should NSFW detection endpoints require SE license? | Resolved (Custom – simple SE, not pro) | 2026-06-21 | 2026-06-21 |
 | ~~Q-044-01~~ | 044 – Folder Drop | High | `Timeline.vue` also calls `useMouseEvents` — extending the signature breaks it | Resolved (B+A) | 2026-06-13 | 2026-06-13 |
 | ~~Q-044-02~~ | 044 – Folder Drop | High | `setup` (UploadConfig) ownership — architectural resolution required | Resolved (A – TogglablesStateStore) | 2026-06-13 | 2026-06-13 |
 | ~~Q-044-03~~ | 044 – Folder Drop | Medium | `UploadPanel.uploadCompleted()` clears route-level cache only | Resolved (B – clear all album_ids) | 2026-06-13 | 2026-06-13 |
@@ -27,9 +60,311 @@ Track unresolved high- and medium-impact questions here. Remove each row as soon
 | ~~Q-044-06~~ | 044 – Folder Drop | Low | Plan.md "Out of scope" contradicts spec on recursive sub-folder processing | Resolved (implement recursive sub-albums) | 2026-06-13 | 2026-06-13 |
 | ~~Q-044-07~~ | 044 – Folder Drop | Low | `UploadPanel` internal drop zone bypasses `folderDrop.ts` | Resolved (A – out of scope, document boundary) | 2026-06-13 | 2026-06-13 |
 
-_No active questions._
-
 ## Question Details
+
+### ~~Q-049-01~~ · Feature sizing — how much of the PrimeVue → Nuxt UI migration does this feature cover? ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (one feature, many grouped increments, tracked to full completion)
+**Feature:** 049 – Migration to Nuxt UI
+**Priority:** High
+**Opened:** 2026-07-02
+**Resolved:** 2026-07-02
+
+**Resolution:** Feature 049 plans and tracks the entire PrimeVue removal to completion under one roadmap entry, with increments grouped by layer (foundation/theme → app shell → form primitives → gallery/content components → admin/DataTable views → icons → directive cleanup → dependency removal). PrimeVue and Nuxt UI coexist during implementation; the final increment removes `primevue`, `@primeuix/themes`, `tailwindcss-primeui`, and `primeicons` from `package.json`. Encoded in plan.md's Increment Map. Recorded in **ADR-0005**.
+
+**Spec impact:** Goals, Non-Goals, and the full Increment Map in plan.md; ADR-0005.
+
+**Context:** 235 of 286 `.vue`/`.ts` files under `resources/js/` import from `primevue/*` directly (~82%). The single largest cost is not component swaps but Tailwind utility classes generated by `tailwindcss-primeui` (`bg-primary-*`, `surface-*`, `text-muted-color`, etc.) used in 197 files, plus a ~500-line custom theme preset (`resources/js/style/preset.ts`) with no Nuxt UI equivalent, plus 36-42 files using PrimeVue's `pt`/`dt` pass-through styling APIs that have no mechanical translation. This is comparable in scale to the largest features already planned in this repo (e.g. Feature 026 at 76 tasks/9 increments, Feature 030 at 43 tasks/19 increments) but touches far more files at once.
+
+**Options:**
+
+**Option A (Recommended) — One feature, many grouped increments, tracked to full completion.** Plan the entire PrimeVue removal as Feature 049 with increments grouped by layer (foundation/theme → app shell → form primitives → gallery/content components → admin/DataTable views → icons → directive cleanup → dependency removal). Executed across multiple sessions under one roadmap entry, matching how the biggest existing features here are structured. PrimeVue and Nuxt UI necessarily coexist mid-migration (unavoidable for any incremental strangler-fig approach), with a final increment removing `primevue`/`@primeuix/themes`/`tailwindcss-primeui`/`primeicons` from `package.json`.
+- *Pros:* Single spec/plan/tasks stay the source of truth for the whole effort; no risk of the migration stalling half-done across disconnected features; roadmap reflects true completion state.
+- *Cons:* Very large tasks.md (likely 60-100+ tasks); PrimeVue/Nuxt UI coexist for the whole duration of implementation.
+
+**Option B — Split into a foundation feature plus follow-up features per area.** Feature 049 covers only install + theme parity + app shell (`App.vue`, `LeftMenu.vue`, Toast/Confirm infrastructure). Separate follow-up features (050+) cover gallery components, forms/admin, DataTable views, icon migration, and final PrimeVue removal.
+- *Pros:* Each feature stays reviewable/small; clearer checkpoints.
+- *Cons:* More roadmap/spec overhead (5+ feature dirs for one logical migration); "no half-finished implementations" guardrail is harder to honor since each intermediate feature leaves the app in a mixed-library state indefinitely until the next feature is scheduled; cross-feature dependency tracking overhead.
+
+**Option C — Foundation-only in 049, rest deferred to backlog with no committed follow-up.** Same initial scope as Option B but no committed timeline/feature IDs for the remaining component families; they sit in the Backlog table until prioritized.
+- *Pros:* Lowest immediate commitment; unblocks starting the migration without committing to the full scope now.
+- *Cons:* Highest risk of a permanently half-migrated app (two UI libraries, two icon sets, two theme systems shipped indefinitely) — conflicts with the "no half-finished implementations" guardrail; PrimeVue's ~500-line preset and Nuxt UI's design tokens would both need long-term maintenance.
+
+---
+
+### ~~Q-049-02~~ · Icon strategy — parity via Iconify's `prime` collection, or a visual redesign onto Nuxt UI's default icon set? ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (icon parity via `@iconify-json/prime`)
+**Feature:** 049 – Migration to Nuxt UI
+**Priority:** High
+**Opened:** 2026-07-02
+**Resolved:** 2026-07-02
+
+**Resolution:** Add `@iconify-json/prime` as a dev dependency. Replace `<i class="pi pi-xxx">` and PrimeVue `icon="pi pi-xxx"` props with Nuxt UI's `<UIcon name="i-prime-xxx">` / `icon="i-prime-xxx"` across the ~139 files that author `pi pi-*` strings, keeping every icon visually identical. `PiMiniIcon.vue` is repointed to `<UIcon>` as the choke point for menu/nav iconography. A visual icon refresh (Lucide or otherwise) is explicitly out of scope for this feature and may be proposed later as an independent design-driven feature. Recorded in **ADR-0005**.
+
+**Spec impact:** FR-049-15, NFR-049-01 visual-parity requirement in spec.md; Increment Map I3 in plan.md; ADR-0005.
+
+**Context:** `primeicons` (`pi pi-*`) appears 562 times across 139 files. Nuxt UI's `<UIcon>`/`<UButton icon=...>` expects an Iconify collection name (e.g. `i-lucide-check`) rather than a font-icon class. A published Iconify collection `@iconify-json/prime` exists on npm (v1.2.5, mirrors PrimeIcons 1:1, prefix `prime`) confirmed via `npm view`. A single choke-point wrapper (`resources/js/components/icons/PiMiniIcon.vue`) already exists that could be repointed to `<UIcon>`, reducing (but not eliminating — raw `pi pi-*` strings are still authored directly in ~139 files and in menu-config data objects) the surface that needs touching.
+
+**Options:**
+
+**Option A (Recommended) — Icon parity via `@iconify-json/prime`.** Add the `prime` Iconify collection as a dev dependency, swap `<i class="pi pi-xxx">`/`icon="pi pi-xxx"` for Nuxt UI's `<UIcon name="i-prime-xxx">`/`icon="i-prime-xxx"` syntax across the 139 files, keeping every icon visually identical. Decouples the library swap from any visual/design-language decision.
+- *Pros:* Mechanical, low-risk, reviewable diff per file; no per-icon design decisions; a visual icon refresh (if wanted) becomes an independent, optional follow-up feature later.
+- *Cons:* Ships Nuxt UI without adopting its default (Lucide) icon aesthetic; app keeps PrimeIcons' visual language indefinitely unless revisited.
+
+**Option B — Adopt Lucide (Nuxt UI's default) as part of this feature.** Remap all ~107 distinct icon names used in the app to their closest Lucide equivalents.
+- *Pros:* Fully embraces Nuxt UI's default design language in one pass; avoids a second icon-set dependency.
+- *Cons:* Bundles a subjective visual-design pass (choosing 107 icon replacements) into what is otherwise a mechanical library migration, inflating review surface and risk of visual regressions/inconsistency; harder to scope into ≤90-minute increments since each icon choice needs judgment, not just a name swap.
+
+---
+
+### ~~Q-049-03~~ · Ripple / focus-trap interaction parity ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (drop ripple entirely; rely on Reka UI's built-in focus-trap)
+**Feature:** 049 – Migration to Nuxt UI
+**Priority:** Medium
+**Opened:** 2026-07-02
+**Resolved:** 2026-07-02
+
+**Resolution:** Drop the ripple click effect entirely — remove `v-ripple` directive usages and the global `ripple: true` PrimeVue config with no replacement. Remove `v-focustrap` usages as each host component migrates to a Reka-UI-backed Nuxt UI primitive (e.g. `<UModal>`), since Reka UI traps focus internally without a manually-applied directive. Recorded in **ADR-0005**.
+
+**Spec impact:** FR-049-17, NFR-049-05 in spec.md; Increment Map I40 in plan.md; ADR-0005.
+
+**Context:** PrimeVue's `v-ripple` (Material-style click ripple, enabled globally via `ripple: true` plus manual `v-ripple` in `menus/LeftMenu.vue`) and `v-focustrap` directives have no equivalent in Nuxt UI/Reka UI. Reka UI's own Dialog/Modal primitives handle focus-trapping internally (built into the primitive, not a manually-applied directive), so `v-focustrap` call sites are structurally replaced (not ported) once the underlying component becomes a `<UModal>`. Ripple has no automatic replacement — Nuxt UI's design language does not use ripple effects at all.
+
+**Options:**
+
+**Option A (Recommended) — Drop the ripple effect entirely; rely on Reka UI's built-in focus-trap.** Accept Nuxt UI's flatter, non-Material interaction style (hover/active state transitions instead of ripple). Remove `v-ripple` directive usages and the global `ripple: true` config; remove `v-focustrap` usages as each host component migrates to a Reka-UI-backed primitive.
+- *Pros:* Zero custom code to build/maintain; matches the visual language Nuxt UI ships with elsewhere; no risk of a hand-rolled ripple directive fighting Tailwind Variants' animation classes.
+- *Cons:* Small, visible interaction-feel change on buttons/menu items (loss of the ripple click feedback).
+
+**Option B — Build a custom ripple directive to preserve the current feel.** Port PrimeVue's ripple behavior as a small standalone Vue directive reused across `<UButton>` and other clickable primitives.
+- *Pros:* Preserves the exact current interaction feel.
+- *Cons:* New custom code to maintain indefinitely for a purely cosmetic effect; must be re-verified against every Nuxt UI component's internal DOM structure (which can change across Nuxt UI versions) since ripple directives typically need to know the click target's box geometry.
+
+---
+
+### ~~Q-049-04~~ · Coexistence/cutover mechanism — in-place migration, dual-tree feature flag, or path-prefix split? ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (dual-tree parallel implementation + feature flag + same-path whole-app cutover)
+**Feature:** 049 – Migration to Nuxt UI
+**Priority:** High
+**Opened:** 2026-07-02
+**Resolved:** 2026-07-02
+
+**Resolution:** Instead of ADR-0005's original in-place, file-by-file, single-bundle migration, build the Nuxt UI implementation as a parallel tree (`resources/js/v8/**`, mirroring `views/`, `components/`, `menus/`), served from a second Vite entry (`resources/js/app-v8.ts`), selected per HTTP request by a new Laravel feature flag (`Features::active('nuxt_ui')`, `config/features.php`) branching `resources/views/vueapp.blade.php`'s `@vite([...])` include. Both bundles register identical route paths via a new shared, component-free manifest (`resources/js/router/paths.ts`), so both UIs are reachable at the same URLs. Non-UI-coupled code (stores, services, most composables, types, utils) is shared, not duplicated. Cutover flips the flag once every route has a working `v8/` implementation (a coverage gate), then v7 + PrimeVue are deleted. Recorded in **ADR-0006** (amends ADR-0005's Decision item 1; Q-049-01/02/03 resolutions are unaffected).
+
+**Spec impact:** Overview, Goals, Non-Goals, FR-049-01/03/04/05/18 (revised), new FR-049-22/23/24, NFR-049-07 (revised) in spec.md; plan.md's Increment Map (new I0, revised target paths throughout, revised cutover increment); ADR-0006.
+
+**Context:** Raised after ADR-0005 was already accepted: the user asked whether PrimeVue (v7) and Nuxt UI (v8) could run as two complete, independently toggleable frontends rather than one app mid-migration, then clarified both must be reachable under the *same* URL paths (not a `/v8/*` prefix or subdomain) so bookmarks/deep links/external integrations are unaffected by which UI is active. The codebase already has a precedent for exactly this class of server-side toggle: `Features::active('legacy_v4_redirect')` already branches behavior in `vueapp.blade.php`.
+
+**Options:**
+
+**Option A (Recommended) — Dual tree + feature flag + same-path whole-app cutover.** Described in the Resolution above.
+- *Pros:* Zero production risk during the build-out (v7 untouched until cutover); instant, zero-deploy rollback; PrimeVue and Nuxt UI are never both mounted in the same document (eliminates, not just mitigates, the coexistence risk ADR-0005 flagged); enables a real full-app dogfood/beta period before cutover; same-path guarantee preserves all existing links/integrations.
+- *Cons:* Duplicates the full ~235-file UI surface rather than converting it in place; no incremental production value until the route-parity coverage gate is met (all value lands at cutover); new architectural surface (`router/paths.ts`, two app shells, two icon wrappers); both bundles are built/type-checked together for the whole window, raising CI cost throughout rather than just transitionally; cutover is all-or-nothing per environment (no partial-route production rollout).
+
+**Option B — Path-prefix split (e.g. `/v8/*` routes or a separate subdomain).** Serve Nuxt UI at a distinct URL namespace instead of branching the same paths.
+- *Pros:* Simpler routing (no need for a shared component-free path manifest); trivially supports both UIs being live simultaneously for different users/testers without a flag at all.
+- *Cons:* Rejected — the user explicitly wants both UIs under the *same* paths so bookmarks, deep links, and third-party integrations aren't affected by which UI is active; a prefix split would relocate the entire app to a different URL structure per variant.
+
+**Option C — ADR-0005's original mechanism (in-place, file-by-file, single-bundle transitional coexistence).** Kept as the superseded baseline.
+- *Pros:* Every completed increment immediately improves the one real running app; no duplicated files; smaller total build/CI footprint throughout.
+- *Cons:* Superseded per explicit user request for two parallel, toggleable UIs; production users see a part-migrated app for the full multi-session duration; PrimeVue/Nuxt UI coexist in the same document during the transition (real, if mitigated, risk of double CSS-reset/focus-ring conflicts).
+
+---
+
+### ~~Q-048-01~~ · Direct user-level `AccessPermission` — override group grants, or merge with them? ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (merge direct-user row + every matching group row via boolean OR)
+**Feature:** 048 – Fix Multi-Group Permissions
+**Priority:** High
+**Opened:** 2026-07-01
+**Resolved:** 2026-07-01
+
+**Resolution:** `current_user_permissions()` collects every `AccessPermission` row matching the current user — the direct `user_id` row (if any) plus every row whose `user_group_id` is one of the user's group ids — and returns a single synthetic, non-persisted `AccessPermission` whose 5 boolean grant flags are the logical OR across all collected rows. There is no precedence between a direct-user row and group rows; the most permissive applicable grant always wins, consistent with the existing public+current-user OR pattern in `AlbumPolicy` and the group-OR semantics already used in `canDeleteById`/`canEditById`.
+
+**Spec impact:** Captured in FR-048-01 and NFR-048-01 below.
+
+---
+
+### ~~Q-047-01~~ · `AlbumPhotosController`, `GetAlbumPhotosRequest`, and `AlbumHeadController` don't handle PersonAlbum ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (add PersonAlbum branches alongside TagAlbum in all affected classes)  
+**Feature:** 047 – Person Smart Album  
+**Priority:** High  
+**Opened:** 2026-06-28  
+**Resolved:** 2026-06-28
+
+**Resolution:** Add `PersonAlbum` handling to: (a) `AlbumFactory::findBaseAlbumOrFail` — third query for `PersonAlbum`; (b) `AlbumFactory::findBaseAlbumsOrFail` — same; (c) `GetAlbumPhotosRequest::processValidatedValues` — `PersonAlbum::find()` fallback after `TagAlbum::find()`; (d) `AlbumPhotosController::get()` — `elseif ($album instanceof PersonAlbum)` branch identical to the TagAlbum branch; (e) `AlbumHeadController::get()` — PersonAlbum case in `match(true)`.
+
+**Spec impact:** I2/T-047-04 expanded to include `AlbumFactory::findBaseAlbumsOrFail`. I6/T-047-12 expanded to include `AlbumHeadController`. New tasks T-047-04b (`GetAlbumPhotosRequest`) and T-047-04c (`AlbumPhotosController`) added to I2.
+
+---
+
+### ~~Q-047-02~~ · `Delete::do()` only checks `tag_albums` table — PersonAlbums silently mishandled ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (add `deletePersonAlbums()` mirroring `deleteTagAlbums()`)  
+**Feature:** 047 – Person Smart Album  
+**Priority:** High  
+**Opened:** 2026-06-28  
+**Resolved:** 2026-06-28
+
+**Resolution:** Mirror the `deleteTagAlbums()` pattern: at the start of `Delete::do()`, query `DB::table('person_albums')` to find person album IDs, call a new `deletePersonAlbums()` method (cleans up purchasables, live_metrics, access_permissions, statistics, person_albums, base_albums), then remove those IDs from the remaining set before processing regular albums.
+
+**Spec impact:** FR-047-06 updated to note Delete action modification. New task T-047-09b added for `Delete::do()` update.
+
+---
+
+### ~~Q-047-03~~ · `EditableBaseAlbumResource` constructor accepts `Album|TagAlbum` only — PersonAlbum causes type error ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (widen to `Album|TagAlbum|PersonAlbum`, add `persons` field)  
+**Feature:** 047 – Person Smart Album  
+**Priority:** High  
+**Opened:** 2026-06-28  
+**Resolved:** 2026-06-28
+
+**Resolution:** Change the constructor and `fromModel()` signature to `Album|TagAlbum|PersonAlbum`. Add an `if ($album instanceof PersonAlbum)` branch that sets `$this->persons` (new field: array of `{id, name}`) and `$this->is_and`. Keep the existing `tags` field for TagAlbum backward compatibility.
+
+**Spec impact:** DO-047-01 updated: `EditableBaseAlbumResource` gains `persons` field. I6/T-047-11 expanded. TypeScript types updated in I11/T-047-28.
+
+---
+
+### ~~Q-047-04~~ · Frontend: tag albums are merged into smart albums section — spec assumes a separate "Person Albums" section ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (merge person albums into `smartAlbums` getter, same as tag albums)  
+**Feature:** 047 – Person Smart Album  
+**Priority:** Medium  
+**Opened:** 2026-06-28  
+**Resolved:** 2026-06-28
+
+**Resolution:** Add `personAlbums` to `AlbumsState`, concatenate `baseSmartAlbums`, `tagAlbums`, and `personAlbums` in the `smartAlbums` getter. Person Albums appear in the "Smart Albums" section alongside smart and tag albums, consistent with how tag albums are currently displayed.
+
+**Spec impact:** FR-047-04 updated: "Person Albums appear in the root album listing within the Smart Albums section" (not a dedicated section). UI-047-04 updated. I12/T-047-30 simplified.
+
+---
+
+### ~~Q-047-05~~ · Person ID visibility validation — non-admin may reference non-searchable persons ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (validate existence only; filter persons in head resource)  
+**Feature:** 047 – Person Smart Album  
+**Priority:** Medium  
+**Opened:** 2026-06-28  
+**Resolved:** 2026-06-28
+
+**Resolution:** Keep `exists:persons,id` in the request validation. In `HeadPersonAlbumResource` and `EditableBaseAlbumResource`, filter `show_persons` / `persons` to only include persons visible to the current user (using the `Person::searchable()` scope). The album still functions — photo resolution via faces is unaffected — but invisible person names are redacted from API responses. This also handles the case where a person becomes non-searchable after album creation.
+
+**Spec impact:** FR-047-12 updated: `show_persons` is filtered by visibility. I6/T-047-11 notes expanded for visibility filtering in both resources.
+
+---
+
+### ~~Q-047-06~~ · Person deletion leaves orphaned PersonAlbum with zero persons ✅ RESOLVED
+
+**Status:** Resolved — **Option B modified** (cleanup job triggered in delete code path + listener)  
+**Feature:** 047 – Person Smart Album  
+**Priority:** Medium  
+**Opened:** 2026-06-28  
+**Resolved:** 2026-06-28
+
+**Resolution:** When a Person is deleted, dispatch a `CleanupOrphanedPersonAlbumsJob` that queries `person_albums` whose ID no longer appears in `person_albums_persons` (zero persons remaining) and deletes them via the existing `Delete` action. The job is triggered in two ways: (1) explicitly dispatched in the `PeopleController::destroy()` code path (not via observer), and (2) registered as an event listener so other deletion paths (merge, CLI) also trigger cleanup. This avoids orphaned albums accumulating while keeping the cleanup logic centralized in a job rather than inline in the controller.
+
+**Spec impact:** New FR-047-13 for orphan cleanup. New DO-047-05 for `CleanupOrphanedPersonAlbumsJob`. New task T-047-09c in I4. Test added in I9.
+
+---
+
+### ~~Q-045-13~~ · Photo-Album many-to-many breaks "direct parent album" assumption in sensitive action ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (mark all associated albums)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Priority:** High  
+**Opened:** 2026-06-22  
+**Resolved:** 2026-06-22
+
+**Resolution:** `ApplyNsfwAlbumSensitivityJob` iterates all of the photo's associated albums (`$photo->albums`) and, for each album, checks `is_recursive_nsfw` before marking. The "no album" fallback fires when `$photo->albums->isEmpty()`. The spec language "direct parent album" and `album_id` FK references must be updated to reflect the many-to-many model. Q-045-08 resolution is superseded — all associated albums are now marked, not just one.
+
+**Spec impact:** FR-045-06, FR-045-17, Appendix "Album marking rules" updated: replace "direct parent album" / `album_id` with "all associated albums" / `$photo->albums`. FR-045-15 "unsorted" condition updated from `album_id IS NULL` to `$photo->albums->isEmpty()`.
+
+---
+
+### ~~Q-045-14~~ · Block action hard-delete mechanism ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (reuse Delete with dedicated force-delete method)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Priority:** High  
+**Opened:** 2026-06-22  
+**Resolved:** 2026-06-22
+
+**Resolution:** Add a `forceDeletePhoto(string $photo_id)` method to `Actions\Photo\Delete` (or a new dedicated action) that: (1) removes all `photo_album` pivot entries, (2) cleans up purchasables, (3) fires `PhotoWillBeDeleted`/`PhotoDeleted` events, (4) delegates to `PhotosToBeDeletedDTO` for size variant file cleanup and record deletion — bypassing the album-context requirement of `Delete::do()`. This reuses the existing file cleanup, event dispatch, and purchasable cleanup infrastructure. Block-delete removes the photo from **all** albums unconditionally.
+
+**Spec impact:** FR-045-04 updated to note block-delete removes photo from all albums. I2/I3 plan steps reference the new method.
+
+---
+
+### ~~Q-045-15~~ · CSRF exemption for NSFW callback endpoint ✅ RESOLVED
+
+**Status:** Resolved — not an issue (follows face detection pattern)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Priority:** Medium  
+**Opened:** 2026-06-22  
+**Resolved:** 2026-06-22
+
+**Resolution:** Add `'/api/v2/NsfwDetection/results'` to `VerifyCsrfToken::$except`, matching the existing face detection callback pattern. This is a standard implementation detail — not an architectural question — and should be captured as a step in I5 tasks.
+
+---
+
+### ~~Q-045-16~~ · `ModerationController::approve()` needs per-photo logic for NSFW album marking ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (hybrid: bulk update then post-process NSFW subset)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Priority:** High  
+**Opened:** 2026-06-22  
+**Resolved:** 2026-06-22
+
+**Resolution:** Keep the existing bulk `Photo::whereIn('id', $chunk)->update(['is_validated' => true])` pattern for the common case. After the bulk update, separately query for photos among the approved IDs that had `nsfw_status = review`: update their `nsfw_status` to `visible`, and for those with sensitive detections (`is_sensitive = true`) where `nsfw_sensitive_album_action = mark_album`, dispatch `ApplyNsfwAlbumSensitivityJob`. This two-pass approach preserves performance for non-NSFW approvals while correctly handling the NSFW subset.
+
+**Spec impact:** I5 step 5 updated to describe the two-pass pattern.
+
+---
+
+### ~~Q-045-17~~ · `NsfwBlockFindingAction` enum — `APPROVE` case ✅ RESOLVED
+
+**Status:** Resolved — no action needed (spec is already consistent)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Priority:** Medium  
+**Opened:** 2026-06-22  
+**Resolved:** 2026-06-22
+
+**Resolution:** On re-inspection, the spec DSL already lists `values: [BLOCK, MODERATE, APPROVE]` for `NsfwBlockFindingAction` (line 415), matching DO-045-03 and the config key definition. No fix needed — the initial analysis was incorrect.
+
+---
+
+### ~~Q-045-18~~ · `AutoScanNsfwOnUpload` pipe execution ordering vs hide-on-scan ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (set values before `$next()`, dispatch after)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Priority:** Medium  
+**Opened:** 2026-06-22  
+**Resolved:** 2026-06-22
+
+**Resolution:** The pipe sets `$state->photo->upload_trust_level` and conditionally `$state->photo->is_validated = false` (for hide-on-scan) on the in-memory model **before** calling `$next()`. The pipeline persists the photo with these values already set — no visibility gap and no extra `save()` call. After `$next()` returns (photo persisted with ID), dispatch the scan job. This diverges from the `AutoScanFacesOnUpload` pattern (which calls `$next()` first) but is correct: face detection doesn't need to modify model attributes before persistence.
+
+**Spec impact:** I4 plan step 1 updated to specify the before-`$next()` pattern for attribute setting.
+
+---
+
+### ~~Q-045-19~~ · `nsfw_detections` FK cascade policy ✅ RESOLVED
+
+**Status:** Resolved — update `PhotosToBeDeletedDTO` + `cascadeOnDelete` FK  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Priority:** Medium  
+**Opened:** 2026-06-22  
+**Resolved:** 2026-06-22
+
+**Resolution:** Two-pronged approach matching how existing related tables are handled: (1) The migration uses `$table->foreign('photo_id')->references('id')->on('photos')->cascadeOnDelete()` on `nsfw_detections`, matching the `faces` table pattern. (2) `PhotosToBeDeletedDTO::forceDelete()` is updated to explicitly `DB::table('nsfw_detections')->whereIn('photo_id', $chunk->all())->delete()` alongside the existing `size_variants`, `statistics`, `palettes`, and `photo_album` cleanup — matching how that method handles related data rather than relying solely on DB cascades.
+
+**Spec impact:** I1 migration task notes updated to specify `cascadeOnDelete`. I2/I3 notes to include `PhotosToBeDeletedDTO` update.
+
+---
 
 ### ❓ Q-044-01 · `Timeline.vue` also calls `useMouseEvents` — signature change will break it
 
@@ -3281,3 +3616,175 @@ EXISTS (
 
 ---
 
+### ~~Q-045-01~~ · How does the callback controller resolve the uploading user from the callback payload? ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (snapshot trust level on photo at upload time)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** New `upload_trust_level` column on `photos` table, populated by the `AutoScanNsfwOnUpload` pipe at upload time from `$state->upload_trust_level` (the **uploader's** trust level from the pipeline DTO, not the photo owner's). This distinction matters because the uploader and owner may differ — when User A uploads to User B's album, `photo.owner_id` = B but the trust level should be A's. Callback reads the snapshotted value from the photo instead of querying the user's current trust level. Encoded in FR-045-07, FR-045-08, FR-045-14, T-045-05, T-045-13.
+
+**Question**  
+The NSFW callback endpoint receives `photo_id` but no user context. To apply trust-level-aware actions (FR-045-08: auto-approve moderation for trusted users), the controller needs to know who uploaded the photo. The `photos` table has an `owner_id` column (FK to `users.id`), but `owner_id` reflects the **album owner** (via `SetOwnership` pipe), not necessarily the uploader. Should the controller query `Photo::owner_id` to resolve the user's trust level, or should the uploading user's trust level be stored on the photo at upload time?
+
+---
+
+#### 🅰️ Option A – Look up `owner_id` at callback time _(rejected)_
+
+- **Idea:** When processing the callback, load `Photo` with `owner` relation, read `$photo->owner->upload_trust_level`. This is a single extra JOIN.
+- **Spec impact:** No new columns. T-045-15 controller logic includes `$photo->load('owner')`.
+- **Pros:**
+  - ✅ No schema changes — `owner_id` already exists on `photos`.
+  - ✅ Always reflects the user's current trust level.
+  - ✅ Simplest implementation.
+- **Cons:**
+  - ❌ **Critical flaw:** `owner_id` is the album owner, not the uploader. When User A uploads to User B's album, `owner_id = B` — this would apply B's trust level instead of A's.
+  - ❌ If trust level changed between upload and scan, the "current" level may not match intent at upload time.
+
+---
+
+#### 🅱️ Option B – Snapshot trust level on photo at upload time
+
+- **Idea:** Add `upload_trust_level` column to `photos` table, populated by the upload pipe. Callback reads this snapshot.
+- **Spec impact:** New column, new migration, pipe update.
+- **Pros:**
+  - ✅ Captures the trust level that was in effect when the upload occurred.
+- **Cons:**
+  - ❌ Extra column and migration.
+  - ❌ Stale data — if admin upgrades a user to trusted, already-pending scans still use the old level.
+
+---
+
+**Next action:** Resolved → Option B. Option A is flawed because `owner_id` is the album owner, not the uploader. The DTO already carries `$state->upload_trust_level` (the authenticated uploader's trust level), so no extra query is needed.
+
+---
+
+### ~~Q-045-02~~ · "Block" action semantics — what happens to blocked photos? ✅ RESOLVED
+
+**Status:** Resolved — **Custom** (single `nsfw_status` enum + `is_validated` combination)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** Single `nsfw_status` enum column on `photos` (nullable string; values: `pending`, `failed`, `review`, `visible`). Merges both scan tracking and visibility into one column. Used in combination with `is_validated`:
+- `null` = not yet scanned; `pending` = scan dispatched; `failed` = scan errored; `review` = held for moderation (`is_validated = false`); `visible` = scan completed with no action or admin-approved.
+- When `nsfw_status` is set to `review`, `is_validated` is also set to `false`.
+- Admin approval sets `nsfw_status = visible` and `is_validated = true`.
+- No `blocked` value — block actions hard-delete the photo (row, files, thumbnails permanently removed).
+This replaces both the originally proposed `nsfw_blocked` boolean and the separate `nsfw_scan_status` / `nsfw_visibility` columns. Encoded in FR-045-13, DO-045-06, T-045-05, T-045-07.
+
+---
+
+### ~~Q-045-03~~ · Sensitive action on unsorted photos (no album) ✅ RESOLVED
+
+**Status:** Resolved — **Custom** (configurable: skip or fall back to moderate)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** New config key `nsfw_sensitive_no_album_action` (string, category `AI Vision`) with two values:
+- `skip` — log warning ("Cannot mark album as sensitive: photo {id} has no album"), do not apply the sensitive action. Other actions (block, moderation) still apply if their conditions are met.
+- `moderate` — fall back to setting `nsfw_status = review` and `is_validated = false`. Ensures the photo is held for admin review even without an album to mark.
+
+Default value: `skip`. This gives the admin explicit control over the trade-off between silent inaction and implicit escalation. Encoded in FR-045-06, FR-045-15 (new), T-045-07 (config migration gains 8th key), T-045-10, S-045-18, S-045-23 (new).
+
+---
+
+### ~~Q-045-04~~ · User context in the upload pipe — how to resolve the uploader's trust level? ✅ RESOLVED
+
+**Status:** Resolved — subsumed by Q-045-01 → Option B  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** Since Q-045-01 resolved to snapshot `upload_trust_level` on the photo at upload time, the pipe reads `$state->upload_trust_level` from the pipeline DTO — this is the **uploader's** trust level, pre-resolved at dispatch time from the authenticated user. It does NOT use `$state->photo->owner` (which is the album owner, not the uploader). No extra query needed — the DTO already carries the uploader's trust level. Encoded in T-045-15.
+
+---
+
+### ~~Q-045-05~~ · NSFW service URL — same host as face detection or separate? ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (separate URL + API key)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** Two new env vars: `AI_VISION_NSFW_URL` and `AI_VISION_NSFW_API_KEY`, independent of face detection. Operators can run each service on different hosts/ports. Encoded in NFR-045-02, T-045-08.
+
+---
+
+### ~~Q-045-06~~ · Detection log granularity — every detection or summary only? ✅ RESOLVED
+
+**Status:** Resolved — **Option A (modified)** — store individual detections from `block_detected`, `review_detected`, `sensitive_detected` only; `all_detected` NOT persisted  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** Each entry in `block_detected`, `review_detected`, `sensitive_detected` creates a row in `nsfw_detections` with label, confidence, bbox, area, and tier. Items from `all_detected` that do not appear in any action array are not stored — they represent detections below all configured thresholds and are not actionable. The `NsfwDetectionTier` enum drops the `DETECTED` case (3 values: `BLOCK`, `REVIEW`, `SENSITIVE`). Encoded in FR-045-09, DO-045-07, T-045-03, T-045-06, T-045-10.
+
+---
+
+### ~~Q-045-07~~ · Per-album or per-user preset override — v1 or deferred? ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (deferred to follow-up)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** Global preset only in v1. Per-album/user overrides tracked in plan.md Follow-ups/Backlog. Already reflected in spec Non-Goals.
+
+---
+
+### ~~Q-045-08~~ · Multiple albums — which get marked sensitive? ✅ RESOLVED
+
+**Status:** Resolved — **Option A** (direct album only)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** Only the album referenced by `photo.album_id` is marked `is_nsfw = true`. Parent/ancestor albums are unaffected. Already reflected in FR-045-06 ("direct album").
+
+---
+
+### ~~Q-045-09~~ · Bulk scan scope — re-scan completed photos? ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (NULL + failed by default; `force` for completed)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** Default bulk scan targets `nsfw_scan_status IS NULL` or `failed`. Optional `force` boolean parameter re-scans `completed` photos as well. Enables preset changes to be applied retroactively. Encoded in FR-045-11, T-045-16, S-045-17, S-045-22.
+
+---
+
+### ~~Q-045-10~~ · Moderation page integration — existing view or separate? ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (add NSFW badge/tag in Moderation view)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** NSFW-blocked/review photos appear in the existing Moderation view (via `is_validated = false`) with a visible NSFW badge/tag showing the `nsfw_visibility` state (`blocked` or `review`). This lets admins immediately distinguish NSFW holds from manual moderation. Both `nsfw_visibility` and `is_validated` are exposed in the Moderation API response. Encoded in FR-045-13, new T-045-22.
+
+---
+
+### ~~Q-045-11~~ · Config category naming ✅ RESOLVED
+
+**Status:** Resolved — **Custom** (use `ai` category)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** All new NSFW detection config keys use category `AI Vision`, grouping them with other AI-powered features. The existing NSFW display/visibility keys (e.g., `hide_nsfw_in_smart_albums`) remain under `mod-nsfw`. Encoded in T-045-07, T-045-19.
+
+---
+
+### ~~Q-045-12~~ · SE (Supporter Edition) gating for NSFW detection ✅ RESOLVED
+
+**Status:** Resolved — **Custom** (simple SE gating, not pro tier)  
+**Feature:** 045 – NSFW Detection & Moderation  
+**Resolution:** All NSFW endpoints use the `support` middleware (basic SE), not `support:pro`. This makes NSFW detection available to all SE supporters, not just pro-tier. Encoded in NFR-045-05, T-045-17.
+
+---
+
+
+### ~~Q-046-01~~ · Move cover_id to base_albums vs add to tag_albums only ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (add to `tag_albums` only)
+**Feature:** F-046 – Tag Album Custom Cover
+**Priority:** High
+**Opened:** 2026-06-28
+**Resolved:** 2026-06-28
+
+**Resolution:** Option B chosen. `cover_id` is added to `tag_albums` only; `albums.cover_id` remains untouched. This avoids touching `HasAlbumThumb` which is tightly coupled to `Album` with its precomputed cover fields (`auto_cover_id_max_privilege`, `auto_cover_id_least_privilege`). Each model manages its own `cover()` relationship independently. Encoded in FR-046-01, FR-046-02.
+
+---
+
+### ~~Q-046-02~~ · Front-end guard mechanism for cover support ✅ RESOLVED
+
+**Status:** Resolved — **Option B** (check `is_model_album || tagAlbum` in context menu)
+**Feature:** F-046 – Tag Album Custom Cover
+**Priority:** Medium
+**Opened:** 2026-06-28
+**Resolved:** 2026-06-28
+
+**Resolution:** Option B chosen. No new `AlbumConfig` flag. The context menu guard block at `contextMenu.ts:126–148` is split: "Set as cover" uses `is_model_album || albumStore.tagAlbum !== undefined`; "Set as header" keeps the `is_model_album`-only guard. Encoded in FR-046-07, UI-046-03.
+
+---
+
+### ~~Q-046-03~~ · cover() relationship location and eager-loading strategy ✅ RESOLVED
+
+**Status:** Resolved — N/A (per-model with eager-load on TagAlbum)
+**Feature:** F-046 – Tag Album Custom Cover
+**Priority:** Medium
+**Opened:** 2026-06-28
+**Resolved:** 2026-06-28
+
+**Resolution:** Question no longer applies since `cover_id` stays per-model (Q-046-01 → B). `TagAlbum` defines its own `cover()` HasOne relationship and eager-loads it via `$with`. `Album` is unchanged. Encoded in FR-046-02, NFR-046-04.

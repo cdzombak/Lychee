@@ -77,6 +77,8 @@ Route::post('/Album::watermark', [Gallery\AlbumController::class, 'watermarkAlbu
 
 Route::post('/TagAlbum', [Gallery\AlbumController::class, 'createTagAlbum']);
 Route::patch('/TagAlbum', [Gallery\AlbumController::class, 'updateTagAlbum']);
+Route::post('/PersonAlbum', [Gallery\AlbumController::class, 'createPersonAlbum']);
+Route::patch('/PersonAlbum', [Gallery\AlbumController::class, 'updatePersonAlbum']);
 Route::get('/Zip/chunks', [Gallery\ZipController::class, 'getChunksCount'])
 	->name('download-chunks');
 Route::get('/Zip', [Gallery\ZipController::class, 'getArchive'])
@@ -408,6 +410,7 @@ Route::middleware(['feature:ai-vision', 'feature:v8'])->group(function (): void 
 	Route::get('/Photo/{id}/faces', [AiVision\PhotoFacesController::class, 'show']);
 	Route::get('/Face/maintenance', [AiVision\FaceMaintenanceController::class, 'index']);
 	Route::post('/Face/maintenance/batch-dismiss', [AiVision\FaceMaintenanceController::class, 'batchDismiss']);
+	Route::post('/Face/maintenance/batch-assign', [AiVision\FaceMaintenanceController::class, 'batchAssign']);
 
 	/**
 	 * AI VISION — FACE DETECTION.
@@ -425,6 +428,15 @@ Route::middleware(['feature:ai-vision', 'feature:v8'])->group(function (): void 
 	Route::post('/FaceDetection/clusters/{label}/assign', [AiVision\FaceClusterController::class, 'assign']);
 	Route::post('/FaceDetection/clusters/{label}/dismiss', [AiVision\FaceClusterController::class, 'dismiss']);
 	Route::post('/FaceDetection/clusters/{label}/uncluster', [AiVision\FaceClusterController::class, 'uncluster']);
+
+	/**
+	 * AI VISION — NSFW DETECTION.
+	 */
+	Route::get('/Photo/{id}/nsfw-detections', [AiVision\PhotoNsfwDetectionsController::class, 'show']);
+	Route::post('/NsfwDetection/results', [AiVision\NsfwDetectionController::class, 'results'])->withoutMiddleware(['auth']);
+	// TODO: Those should require admin no ???
+	Route::post('/NsfwDetection/bulk-scan', [AiVision\NsfwDetectionController::class, 'bulkScan'])->middleware(['support:se']);
+	Route::get('/NsfwDetection/config', [AiVision\NsfwConfigController::class, 'show'])->middleware(['support:se']);
 
 	/**
 	 * AI VISION — MAINTENANCE.

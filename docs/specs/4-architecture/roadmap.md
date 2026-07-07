@@ -6,7 +6,9 @@ High-level planning document for Lychee features and architectural initiatives.
 
 | Feature ID | Name | Status | Priority | Assignee | Started | Updated | Progress |
 |------------|------|--------|----------|----------|---------|---------|----------|
-| 030 | AI Vision Service | Planning | P1 | LycheeOrg | 2026-03-15 | 2026-03-15 | Spec, plan, tasks drafted. 43 tasks across 19 increments (I1–I3 Python service, I4–I12 PHP backend, I13–I18 frontend, I19 docs). Q-030-01 through Q-030-12 resolved. 13 new open questions (Q-030-13 through Q-030-25) — 6 high, 7 medium. I1–I3 can start; I8 blocked on Q-030-13; I10 blocked on Q-030-14, Q-030-15, Q-030-17. |
+| 049 | Migration to Nuxt UI | Planning | P2 | User | 2026-07-02 | 2026-07-03 | Spec/plan/tasks drafted; analysis gate passed. 48 tasks (T-049-00..45 incl. sub-tasks) across 15 phases. Builds Nuxt UI (`@nuxt/ui`, standalone Vue mode) as a **parallel tree** `resources/js/v8/**`, served by a second Vite entry (`app-v8.ts`) selected per-request by a `nuxt_ui` feature flag, at the **same routes** as the existing PrimeVue app (`resources/js/app.ts`, untouched until cutover) — supersedes the original in-place migration mechanism (Q-049-04, ADR-0006 amends ADR-0005). Icon parity via `@iconify-json/prime` (Q-049-02 A); ripple dropped entirely (Q-049-03 A); full scope tracked as one feature (Q-049-01 A). New v8-only seams: `useAppToast()`, `useConfirmDialog()`. Embed bundle out of scope. ADR-0005 + ADR-0006 recorded. |
+| 048 | Fix Multi-Group Permissions | Planning | P1 (bug fix) | LycheeOrg | 2026-07-01 | 2026-07-01 | Spec, plan, tasks drafted. 11 tasks across 7 increments. Fixes `BaseAlbumImpl::current_user_permissions()` using `Collection::first()` (order-dependent) instead of merging every matching `AccessPermission` row (direct-user + all groups) via boolean OR. Merged result returned as a new non-persistable DTO (`App\DTO\EffectiveAccessPermission`, `final readonly class`) instead of a synthetic `AccessPermission` model instance, so it cannot be mass-assigned/`save()`d by accident. Zero new DB queries (NFR-048-01). Q-048-01 resolved (Option A — merge everything, most-permissive-wins). ADR-0004 planned. |
+| 047 | Person Smart Album | Planning | P2 | LycheeOrg | 2026-06-28 | 2026-06-28 | Spec, plan, tasks drafted. 37 tasks across 14 increments. Mirrors TagAlbum pattern: PersonAlbum model, HasManyPhotosByPerson relation, AND/OR person matching, feature-gated by v8 + ai_vision_face_enabled. |
 
 ## Paused Features
 
@@ -18,6 +20,8 @@ High-level planning document for Lychee features and architectural initiatives.
 
 | Feature ID | Name | Completed | Notes |
 |------------|------|-----------|-------|
+| 046 | Tag Album Custom Cover | 2026-06-28 | Spec, plan, tasks drafted. All 3 questions resolved (Q-046-01 B, Q-046-02 B, Q-046-03 N/A). Add `cover_id` to `tag_albums` table (not `base_albums`). 5 increments planned (I1 migration, I2 models, I3 API, I4 frontend, I5 tests), 14 tasks. Includes `PhotosToBeDeletedDTO` cover nullification (FR-046-10). |
+| 045 | NSFW Detection & Moderation | 2026-06-21 | All 7 increments implemented (I1–I7). Backend: 7 enums, 3 migrations (12 config keys, 2 photo columns, nsfw_detections table), NsfwDetection model, NsfwDetectionService + NsfwActionService, DispatchNsfwScanJob + ApplyNsfwAlbumSensitivityJob, AutoScanNsfwOnUpload pipe, NsfwDetectionController + NsfwConfigController, callback/bulk-scan/config-proxy routes, CSRF exemption, ModerationController NSFW approval logic, Delete::forceDeletePhoto(). Frontend: NsfwConfig.vue admin page, MaintenanceBulkScanNsfw component, nsfw-detection-service.ts + nsfw-config-service.ts, Moderation NSFW badge, admin dashboard tile, translation keys. |
 | 044 | Folder Drag-and-Drop Album Creation | 2026-06-13 | Spec, plan, tasks drafted. 14 tasks across 5 increments (I0 type extension, I1 UploadPanel, I2 folderDrop composable, I3 uploadEvents, I4 view wiring). Frontend-only — no backend changes. |
 | 043 | Webshop Print & Pixel Sizes | 2026-05-31 | Spec stub created. Blocked on 5 open questions (Q-043-01 … Q-043-05): pricing model, license-type applicability, pixel fulfillment, catalogue scope, SE gating. |
 | 042 | Photo Display Enrichment | 2026-06-12 | Part A (I1–I6) complete: `album_title` + `thumb_url` on `OrderItemResource`, unconditional eager-load in `OrderResource`, thumbnail/album-title UI in `OrderDownload.vue`, 4 backend tests passing, PHPStan 0, php-cs-fixer clean. |
@@ -26,6 +30,7 @@ High-level planning document for Lychee features and architectural initiatives.
 | 037 | Admin Dashboard & `/admin/` URL Reorg | 2026-04-22 | Config migration (`use_admin_dashboard` toggle), `AdminStatsService` with 5-min cache, `GET /api/v2/Admin/Stats` endpoint, 9 admin views relocated to `views/admin/`, `AdminDashboard.vue` tile grid + stats panel + Refresh, left-menu collapse toggle, 22-locale i18n, 13 backend tests passing, TypeScript/PHPStan clean. |
 | 034 | Bulk Album Edit | 2026-04-12 | Spec, plan, tasks drafted. 25 tasks across 11 increments (I1 backend scaffold, I2-I6 REST endpoints, I7-I10 frontend, I11 quality gates). 4 open questions (Q-034-01 to Q-034-04; 1 high, 2 medium, 1 low). |
 | 032 | Security Advisories Check | 2026-04-06 | Spec, plan, tasks drafted. 18 tasks across 6 increments (I1 config/DTO, I2 fetch service, I3 diagnostic pipe, I4 REST endpoint, I5 frontend modal, I6 quality gates). All open questions resolved in spec. |
+| 030 | AI Vision Service | 2026-03-15 | Spec, plan, tasks drafted. 43 tasks across 19 increments. |
 | 029 | Camera Capture | 2026-03-18 | "Take Photo" in `+` add menu (album and root views). CameraCapture.vue modal: live video → canvas capture → JPEG preview → push to existing UploadPanel queue. Secure-context guard, mobile layout fixes, `Permissions-Policy: camera=(self)` header. No backend changes. |
 | 028 | Search UI Refactor | 2026-05-30 | Full refactor: simple input + collapsible advanced panel (17 fields: title, description, location, tags, date range, type, orientation, rating, EXIF fields). Token assembler/parser composable. No-debounce on-demand search. Auto-scroll to first result. vue-tsc clean, 74 PHP tests passed, PHPStan 0 errors. |
 | 026 | Album Photo Tag Filter | 2026-03-09 | Spec, plan, tasks complete. 76 tasks across 9 increments (~32h estimated). All open questions resolved. |
@@ -115,4 +120,4 @@ features/
 
 ---
 
-*Last updated: 2026-06-13 (Feature 044 spec/plan/tasks drafted — Folder Drag-and-Drop Album Creation)*
+*Last updated: 2026-07-02 (Feature 049 spec/plan/tasks drafted — Migration to Nuxt UI)*

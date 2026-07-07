@@ -8,6 +8,7 @@ export type Selectors = {
 	album?: Ref<
 		| App.Http.Resources.Models.HeadAlbumResource
 		| App.Http.Resources.Models.HeadTagAlbumResource
+		| App.Http.Resources.Models.HeadPersonAlbumResource
 		| App.Http.Resources.Models.HeadSmartAlbumResource
 		| undefined
 	>;
@@ -123,14 +124,17 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 			});
 		}
 
-		if (selectors.config?.value?.is_model_album === true && selectors.album !== undefined) {
-			const parent_album = selectors.album.value as App.Http.Resources.Models.HeadAlbumResource;
+		if (selectors.album !== undefined && (selectors.config?.value?.is_model_album === true || albumStore.tagAlbum !== undefined)) {
 			menuItems.push({
 				label: "gallery.menus.set_cover",
 				icon: "pi pi-id-card",
 				callback: photoCallbacks.setAsCover,
-				access: parent_album.rights.can_edit ?? false,
+				access: selectors.album.value?.rights.can_edit ?? false,
 			});
+		}
+
+		if (selectors.config?.value?.is_model_album === true && selectors.album !== undefined) {
+			const parent_album = selectors.album.value as App.Http.Resources.Models.HeadAlbumResource;
 			if (parent_album.header_id === selectedPhoto.id) {
 				menuItems.push({
 					label: "gallery.menus.remove_header",
@@ -172,7 +176,7 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					label: "gallery.menus.scan_faces",
 					icon: "pi pi-face-smile",
 					callback: photoCallbacks.toggleScanFaces,
-					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_ai_vision_enabled ?? false),
+					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_face_recognition_enabled ?? false),
 				},
 				{
 					is_divider: true,
@@ -200,7 +204,10 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					label: "gallery.menus.delete",
 					icon: "pi pi-trash",
 					callback: photoCallbacks.toggleDelete,
-					access: albumStore.tagAlbum === undefined && (selectors.album?.value?.rights.can_delete ?? false),
+					access:
+						albumStore.tagAlbum === undefined &&
+						albumStore.personAlbum === undefined &&
+						(selectors.album?.value?.rights.can_delete ?? false),
 				},
 				{
 					label: "gallery.menus.download",
@@ -273,7 +280,7 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					label: "gallery.menus.scan_faces_all",
 					icon: "pi pi-face-smile",
 					callback: photoCallbacks.toggleScanFaces,
-					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_ai_vision_enabled ?? false),
+					access: (albumStore.rights?.can_edit ?? false) && (leftMenuStore.initData?.modules.is_face_recognition_enabled ?? false),
 				},
 				{
 					is_divider: true,
@@ -295,7 +302,7 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					label: "gallery.menus.delete_all",
 					icon: "pi pi-trash",
 					callback: photoCallbacks.toggleDelete,
-					access: albumStore.tagAlbum === undefined && (albumStore.rights?.can_edit ?? false),
+					access: albumStore.tagAlbum === undefined && albumStore.personAlbum === undefined && (albumStore.rights?.can_edit ?? false),
 				},
 				{
 					label: "gallery.menus.download_all",
@@ -345,7 +352,7 @@ export function useContextMenu(selectors: Selectors, photoCallbacks: PhotoCallba
 					label: "gallery.menus.scan_faces",
 					icon: "pi pi-face-smile",
 					callback: albumCallbacks.toggleScanFaces,
-					access: (selectedAlbum.rights.can_edit ?? false) && (leftMenuStore.initData?.modules.is_ai_vision_enabled ?? false),
+					access: (selectedAlbum.rights.can_edit ?? false) && (leftMenuStore.initData?.modules.is_face_recognition_enabled ?? false),
 				},
 				{
 					label: "gallery.menus.merge",

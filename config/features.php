@@ -245,6 +245,8 @@ return [
 		'face-api-key' => env('AI_VISION_FACE_API_KEY', ''),
 		'face-rescan-iou-threshold' => (float) env('AI_VISION_FACE_RESCAN_IOU_THRESHOLD', 0.3),
 		'face-stuck-scan-threshold-minutes' => (int) env('AI_VISION_FACE_STUCK_SCAN_THRESHOLD_MINUTES', 720),
+		'nsfw-url' => env('AI_VISION_NSFW_URL', ''),
+		'nsfw-api-key' => env('AI_VISION_NSFW_API_KEY', ''),
 	],
 
 	/*
@@ -291,4 +293,16 @@ return [
 	 | the database settings.
 	 */
 	'enable-request-caching' => (bool) env('ENABLE_REQUEST_CACHING', false),
+
+	/*
+	 |--------------------------------------------------------------------------
+	 | Enable Nuxt UI front-end (v8)
+	 |--------------------------------------------------------------------------
+	 |
+	 | When enabled, serves the Nuxt-UI-based front-end bundle (app-v8.ts)
+	 | instead of the PrimeVue-based bundle (app.ts). See Feature 049
+	 | (Migration to Nuxt UI) for details. Disabled by default while the
+	 | v8 tree is being built out.
+	 */
+	'nuxt_ui' => (bool) env('NUXT_UI_ENABLED', false),
 ];

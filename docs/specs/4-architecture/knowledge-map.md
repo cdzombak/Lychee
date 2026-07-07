@@ -87,7 +87,7 @@ This document tracks modules, dependencies, and architectural relationships acro
 ### Frontend (Vue3/TypeScript)
 
 #### Components
-- **UI Components** (`resources/js/components/`) - PrimeVue-based interface elements
+- **UI Components** (`resources/js/v7/components/`) - PrimeVue-based interface elements (migrating to Nuxt UI, Feature 049 — see Frontend Dependencies below; parallel Nuxt UI tree lives at `resources/js/v8/components/`)
   - Gallery components (album, photo, flow, search modules)
     - **PhotoThumbPanelControl** - Layout selector with star rating filter (Feature 006)
       - 5 clickable stars for minimum rating threshold filter
@@ -100,9 +100,9 @@ This document tracks modules, dependencies, and architectural relationships acro
     - **SelfieClaimModal** - Upload a selfie to match and claim a Person profile (links Person ↔ User)
   - Maintenance components
     - **MaintenanceBulkScanFaces** - Card to trigger a bulk scan of all unscanned photos
-- **Views** (`resources/js/views/`) - Page-level Vue components
+- **Views** (`resources/js/v7/views/`) - Page-level Vue components (Nuxt UI twins at `resources/js/v8/views/`, Feature 049)
   - Gallery views: Albums, Album, Favourites, Flow, Frame, Map, Search
-  - Admin views (`resources/js/views/admin/`): AdminDashboard, Settings, Users, UserGroups, Purchasables, ContactMessages, Webhooks, Moderation, Maintenance, Jobs
+  - Admin views (`resources/js/v7/views/admin/`): AdminDashboard, Settings, Users, UserGroups, Purchasables, ContactMessages, Webhooks, Moderation, Maintenance, Jobs
   - Diagnostics remains at top-level (`views/Diagnostics.vue`)
   - People views: **People** (`/people`) — paginated PersonCard grid; **PersonDetail** (`/people/:personId`) — photos grid with edit/delete/merge actions
 - **Composables** (`resources/js/composables/`) - Reusable composition functions
@@ -147,7 +147,7 @@ This document tracks modules, dependencies, and architectural relationships acro
 ### Frontend Dependencies
 - **Vue3** - Progressive JavaScript framework (Composition API)
 - **TypeScript** - Type-safe JavaScript
-- **PrimeVue** - UI component library
+- **PrimeVue** - UI component library (235 of 286 frontend files, as of 2026-07-02). Being replaced by **Nuxt UI** (`@nuxt/ui`, standalone Vue mode) — see Feature 049 (`docs/specs/4-architecture/features/049-nuxt-ui-migration/`), spec/plan/tasks drafted, implementation not yet started. Update this entry to reference Nuxt UI once Feature 049's dependency-removal task (T-049-41) lands.
 - **Axios** - HTTP client
 
 ## Architectural Patterns
@@ -283,6 +283,23 @@ Shared volume architecture:
 ./lychee/uploads  ──►  lychee_api:/app/public/uploads  (read/write)
                   ──►  ai_vision:/data/photos           (read-only)
 ```
+
+### NSFW Detection Inter-Service Communication (Feature 045)
+Lychee uses the same **REST + webhook** pattern for NSFW content detection:
+
+1. **Scan trigger** — `AutoScanNsfwOnUpload` pipe snapshots `upload_trust_level` on the photo, dispatches `DispatchNsfwScanJob`
+2. **HTTP request** — Job sends `POST /api/nsfw/detect` to the NSFW classification service with `{photo_id, photo_path, preset?}`
+3. **Async callback** — Service POSTs results to `POST /api/v2/NsfwDetection/results` with detection arrays (`block_detected`, `review_detected`, `sensitive_detected`)
+4. **Action matrix** — `NsfwActionService` applies trust-tier × finding-tier matrix: block findings can hard-delete or moderate; review findings moderate or approve; sensitive findings mark albums as NSFW
+5. **Detection logging** — `NsfwDetection` rows stored with tier booleans (`is_block`, `is_review`, `is_sensitive`), deduplicated by photo+label+bbox
+
+Key modules:
+- **Enums**: `NsfwStatus`, `NsfwPreset`, `NsfwBlockFindingAction`, `NsfwSensitiveAlbumAction`, `NsfwSensitiveNoAlbumAction`, `NsfwDetectionLabel`
+- **Services**: `NsfwDetectionService` (HTTP client), `NsfwActionService` (action matrix)
+- **Jobs**: `DispatchNsfwScanJob`, `ApplyNsfwAlbumSensitivityJob`
+- **Controller**: `NsfwDetectionController` (callback + bulk scan), `NsfwConfigController` (config proxy)
+- **Pipe**: `AutoScanNsfwOnUpload` (upload pipeline integration)
+- **Model**: `NsfwDetection` (detection audit log)
 
 ## Cross-Module Contracts
 

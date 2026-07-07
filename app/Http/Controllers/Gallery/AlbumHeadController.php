@@ -8,6 +8,7 @@
 
 namespace App\Http\Controllers\Gallery;
 
+use App\Actions\Album\Breadcrumb;
 use App\Events\Metrics\AlbumVisit;
 use App\Exceptions\Internal\LycheeLogicException;
 use App\Http\Controllers\MetricsController;
@@ -16,10 +17,12 @@ use App\Http\Requests\Traits\HasVisitorIdTrait;
 use App\Http\Resources\GalleryConfigs\AlbumConfig;
 use App\Http\Resources\Models\HeadAbstractAlbumResource;
 use App\Http\Resources\Models\HeadAlbumResource;
+use App\Http\Resources\Models\HeadPersonAlbumResource;
 use App\Http\Resources\Models\HeadSmartAlbumResource;
 use App\Http\Resources\Models\HeadTagAlbumResource;
 use App\Models\Album;
 use App\Models\Extensions\BaseAlbum;
+use App\Models\PersonAlbum;
 use App\Models\TagAlbum;
 use App\SmartAlbums\BaseSmartAlbum;
 use Illuminate\Routing\Controller;
@@ -32,6 +35,11 @@ use Illuminate\Routing\Controller;
 class AlbumHeadController extends Controller
 {
 	use HasVisitorIdTrait;
+
+	public function __construct(
+		private readonly Breadcrumb $breadcrumb,
+	) {
+	}
 
 	/**
 	 * Provided an albumID, returns the album metadata without children/photos collections.
@@ -47,8 +55,9 @@ class AlbumHeadController extends Controller
 
 		$album_resource = match (true) {
 			$request->album() instanceof BaseSmartAlbum => new HeadSmartAlbumResource($request->album()),
+			$request->album() instanceof PersonAlbum => new HeadPersonAlbumResource($request->album()),
 			$request->album() instanceof TagAlbum => new HeadTagAlbumResource($request->album()),
-			$request->album() instanceof Album => new HeadAlbumResource($request->album()),
+			$request->album() instanceof Album => new HeadAlbumResource($request->album(), $config->is_breadcrumb_enabled ? $this->breadcrumb->do($request->album()) : []),
 			// @codeCoverageIgnoreStart
 			default => throw new LycheeLogicException('This should not happen'),
 			// @codeCoverageIgnoreEnd

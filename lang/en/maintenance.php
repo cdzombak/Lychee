@@ -129,6 +129,7 @@ return [
         'batch_reactivate_error' => 'Failed to reactivate selected faces.',
         'show_dismissed' => 'Show dismissed',
         'show_active' => 'Show active',
+        'show_unassigned' => 'Unassigned only',
         'select_all' => 'Select all',
         'deselect_all' => 'Deselect all',
         'selected_count' => ':count selected',
@@ -157,5 +158,11 @@ return [
         'description' => 'Found %d photos with a stuck-pending or failed face scan status. Resetting them will allow them to be re-scanned.',
         'action' => 'Reset All',
         'success' => 'Face scan statuses reset successfully.',
+    ],
+    'bulk-scan-nsfw' => [
+        'title' => 'Bulk NSFW Scan',
+        'description' => 'Scan all unscanned photos for NSFW content using the configured preset. Requires the NSFW classification service to be running.',
+        'button' => 'Scan All Unscanned',
+        'success' => 'NSFW scan dispatched successfully.',
     ],
 ];

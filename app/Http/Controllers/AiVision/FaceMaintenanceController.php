@@ -8,11 +8,13 @@
 
 namespace App\Http\Controllers\AiVision;
 
+use App\Factories\PersonFactory;
+use App\Http\Requests\Face\BatchAssignFacesRequest;
 use App\Http\Requests\Face\BatchDismissFacesRequest;
 use App\Http\Requests\Face\FaceMaintenanceIndexRequest;
 use App\Http\Resources\Collections\PaginatedFaceResource;
+use App\Jobs\RecomputePersonStatsJob;
 use App\Models\Face;
-use App\Models\Person;
 use Illuminate\Routing\Controller;
 
 /**
@@ -24,28 +26,18 @@ class FaceMaintenanceController extends Controller
 	 * Return a paginated list of all faces for admin quality review.
 	 *
 	 * GET /Face/maintenance
-	 *
-	 * Supports query params:
-	 *   sort_by  – 'confidence' (default) or 'laplacian_variance'
-	 *   sort_dir – 'asc' (default) or 'desc'
-	 *   page     – page number
-	 *   per_page – items per page (default 50)
 	 */
 	public function index(FaceMaintenanceIndexRequest $request): PaginatedFaceResource
 	{
-		$sort_by = in_array($request->query('sort_by'), ['confidence', 'laplacian_variance'], true)
-			? $request->query('sort_by')
-			: 'confidence';
+		$query = Face::with(['photo:id,title', 'person:id,name', 'suggestions'])
+			->where('is_dismissed', '=', $request->dismissed_only);
 
-		$sort_dir = $request->query('sort_dir') === 'desc' ? 'desc' : 'asc';
-		$dismissed_only = filter_var($request->query('dismissed_only', false), FILTER_VALIDATE_BOOLEAN) === true;
+		if ($request->unassigned_only) {
+			$query->whereNull('person_id');
+		}
 
-		$per_page = max(1, min(200, (int) ($request->query('per_page', 50))));
-
-		$paginated = Face::with(['photo:id,title', 'person:id,name', 'suggestions'])
-			->where('is_dismissed', '=', $dismissed_only)
-			->orderBy($sort_by, $sort_dir)
-			->paginate($per_page);
+		$paginated = $query->orderBy($request->sort_by, $request->sort_dir->value)
+			->paginate($request->per_page);
 
 		return new PaginatedFaceResource($paginated);
 	}
@@ -68,23 +60,34 @@ class FaceMaintenanceController extends Controller
 		$count = Face::whereIn('id', $request->face_ids)
 			->update(['is_dismissed' => true, 'person_id' => null]);
 
-		foreach ($affected_person_ids as $person_id) {
-			$person = Person::find($person_id);
-			if ($person === null) {
-				continue;
-			}
-
-			$person->face_count = Face::where('person_id', '=', $person_id)->where('is_dismissed', '=', false)->count();
-			if ($person->face_count === 0) {
-				$person->delete();
-				continue;
-			}
-
-			$person->photo_count = Face::where('person_id', '=', $person_id)->where('is_dismissed', '=', false)->distinct('photo_id')->count('photo_id');
-			$person->save();
-		}
+		RecomputePersonStatsJob::dispatchSync($affected_person_ids);
 
 		return ['dismissed_count' => $count];
+	}
+
+	/**
+	 * Batch-assign multiple faces to an existing person or a newly created one.
+	 *
+	 * POST /Face/maintenance/batch-assign
+	 *
+	 * @return array{assigned_count: int, person_id: string}
+	 */
+	public function batchAssign(BatchAssignFacesRequest $request, PersonFactory $person_factory): array
+	{
+		$person = $person_factory->findOrCreate($request->person_id, $request->new_person_name);
+
+		$old_person_ids = Face::whereIn('id', $request->face_ids)
+			->whereNotNull('person_id')
+			->where('person_id', '!=', $person->id)
+			->distinct()
+			->pluck('person_id')
+			->all();
+
+		$count = Face::whereIn('id', $request->face_ids)->update(['person_id' => $person->id]);
+
+		RecomputePersonStatsJob::dispatchSync([$person->id, ...$old_person_ids]);
+
+		return ['assigned_count' => $count, 'person_id' => $person->id];
 	}
 }
 
