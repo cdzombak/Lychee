@@ -126,6 +126,11 @@ class AlbumController extends Controller
 		$album->album_timeline = $request->album_timeline();
 		$album->photo_timeline = $request->photo_timeline();
 
+		if ($request->tagsProvided()) {
+			$tag_models = Tag::from($request->tags());
+			$album->tags()->sync($tag_models->pluck('id')->all());
+		}
+
 		$album = $set_header->do(
 			album: $album,
 			is_compact: $request->is_compact(),
@@ -225,7 +230,7 @@ class AlbumController extends Controller
 		BaseAlbum $album,
 		AlbumProtectionPolicy $protection_policy,
 		bool $shall_set_password,
-		?string $password,
+		#[\SensitiveParameter] ?string $password,
 		SetProtectionPolicy $set_protection_policy): AlbumProtectionPolicy
 	{
 		$set_protection_policy->do(

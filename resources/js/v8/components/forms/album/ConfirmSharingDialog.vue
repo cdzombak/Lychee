@@ -3,15 +3,14 @@
 		<template #body>
 			<p class="mb-4 text-center text-highlighted text-wrap" v-html="$t('sharing.propagate_help')"></p>
 			<p class="mb-8 text-center text-wrap" v-html="$t('sharing.propagate_default')"></p>
-			<div class="flex items-start w-full">
-				<UCheckbox v-model="shallOverride" input-id="shallOverride" />
-				<label for="shallOverride" class="ltr:ml-2 rtl:mr-2">
+			<UCheckbox v-model="shallOverride" class="w-full">
+				<template #label>
 					<span v-html="$t('sharing.propagate_overwrite')"></span><br />
 					<span class="text-warning">
-						<UIcon name="prime:exclamation-triangle" class="ltr:mr-2 rtl:ml-2" />{{ $t("sharing.propagate_warning") }}
+						<UIcon name="lucide:triangle-alert" class="ltr:mr-2 rtl:ml-2" />{{ $t("sharing.propagate_warning") }}
 					</span>
-				</label>
-			</div>
+				</template>
+			</UCheckbox>
 		</template>
 		<template #footer>
 			<UButton
@@ -26,7 +25,13 @@
 			>
 				{{ $t("dialogs.button.cancel") }}
 			</UButton>
-			<UButton icon="prime:forward" color="error" class="w-full justify-center font-bold" :label="$t('sharing.propagate')" @click="propagate" />
+			<UButton
+				icon="lucide:forward"
+				color="error"
+				class="w-full justify-center font-bold"
+				:label="$t('sharing.propagate')"
+				@click="propagate"
+			/>
 		</template>
 	</UModal>
 </template>

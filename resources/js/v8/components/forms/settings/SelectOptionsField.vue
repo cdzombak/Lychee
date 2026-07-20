@@ -3,7 +3,7 @@
 		<label
 			:class="{
 				'w-1/2 sm:w-full': true,
-				'text-primary-emphasis': props.config.require_se,
+				'text-primary': props.config.require_se,
 				'text-highlighted': !props.config.require_se,
 			}"
 			:for="props.config.key"
@@ -14,11 +14,12 @@
 			<USelectMenu
 				:id="props.config.key"
 				v-model="val"
-				class="border-none"
+				class="w-56 shrink-0 border-none sm:w-72"
 				label-key="label"
 				:items="props.options"
 				@update:model-value="update"
 			>
+				<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 				<template #item-label="{ item }">{{ $t(item.label) }}</template>
 			</USelectMenu>
 		</div>
@@ -32,11 +33,16 @@
 
 <script setup lang="ts" generic="T extends string">
 import { computed, ref, watch, type Ref } from "vue";
+import { trans } from "laravel-vue-i18n";
 import { SelectOption } from "@/config/constants";
 import ResetField from "@/v8/components/forms/settings/ResetField.vue";
 import { useTranslation } from "@/composables/useTranslation";
 
 const { tDoc, tDetails } = useTranslation();
+
+function selectedLabel(option: SelectOption<T> | undefined): string {
+	return option ? trans(option.label) : "";
+}
 
 type Props = {
 	config: App.Http.Resources.Models.ConfigResource;

@@ -29,7 +29,7 @@ class Create
 	 */
 	public function do(
 		string $username,
-		string $password,
+		#[\SensitiveParameter] string $password,
 		?string $email = null,
 		bool $may_upload = false,
 		bool $may_edit_own_settings = false,
@@ -42,8 +42,8 @@ class Create
 			throw new ConflictingPropertyException('Username already exists');
 		}
 		if ($quota_kb === 0) {
-			$default = $this->config_manager->getValueAsInt('default_user_quota');
-			$quota_kb = $default === 0 ? null : $default;
+			$default_bytes = $this->config_manager->getValueAsByteSize('default_user_quota');
+			$quota_kb = $default_bytes === 0 ? null : max(1, intdiv($default_bytes, 1024));
 		}
 		$user = new User();
 		$user->may_upload = $may_upload;

@@ -8,11 +8,12 @@
 		:user-list="allUsers"
 		@refresh="fetchUserGroups"
 	/>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("user-groups.title") }}</span>
-		<div></div>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("user-groups.title") }}
+	</UHeader>
 	<div class="max-w-3xl mx-auto p-4">
 		<div v-if="can_create_user_groups" class="w-full">
 			<p class="text-highlighted">{{ $t("user-groups.explanation") }}</p>
@@ -34,7 +35,7 @@
 				:key="`G${group.id}`"
 				:class="{
 					'text-left text-highlighted my-8 relative pt-4': true,
-					'border-t border-neutral-400': idx > 0,
+					'border-t border-accented': idx > 0,
 				}"
 			>
 				<div class="flex justify-between items-start">
@@ -48,7 +49,7 @@
 							variant="ghost"
 							color="primary"
 							:label="$t('user-groups.edit')"
-							icon="prime:pencil"
+							icon="lucide:pencil"
 							@click="edit(group)"
 						/>
 						<UButton
@@ -57,7 +58,7 @@
 							variant="ghost"
 							color="error"
 							:label="$t('user-groups.delete')"
-							icon="prime:trash"
+							icon="lucide:trash"
 							@click="confirmDelete(group)"
 						/>
 						<USelectMenu
@@ -74,15 +75,15 @@
 				<div v-if="group.members.length > 0" class="flex flex-wrap gap-y-1 gap-x-4 mt-3">
 					<span v-for="member in group.members" :key="`G${group.id}:${member.id}`" class="flex items-center hover:text-highlighted">
 						<button class="mr-1 cursor-pointer flex items-center gap-1" @click="editRole(group, member.id, member.role)">
-							<UIcon v-if="member.role === 'admin'" name="prime:crown" class="text-orange-400" />
+							<UIcon v-if="member.role === 'admin'" name="lucide:crown" class="text-orange-400" />
 							{{ member.username }}
 						</button>
 						<button
 							v-if="group.rights.can_manage"
-							class="border-neutral-400 rounded-full inline-flex items-center justify-center border p-0.5 text-3xs hover:border-error hover:text-error"
+							class="border-accented rounded-full inline-flex items-center justify-center border p-0.5 text-3xs hover:border-error hover:text-error"
 							@click="deleteMember(group, member)"
 						>
-							<UIcon name="prime:times" />
+							<UIcon name="lucide:x" />
 						</button>
 					</span>
 				</div>
@@ -90,7 +91,7 @@
 					{{ $t("user-groups.empty_group") }}
 				</div>
 				<div v-else class="flex items-center gap-2">
-					<UIcon name="prime:exclamation-triangle" class="text-orange-500" />
+					<UIcon name="lucide:triangle-alert" class="text-orange-500" />
 					{{ $t("user-groups.no_permission_members") }}
 				</div>
 			</div>

@@ -1,8 +1,10 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<GoBack @go-back="backToGallery" />
-		<span class="absolute left-1/2 -translate-x-1/2">{{ $t("webshop.checkout.checkout") }}</span>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<GoBack @go-back="backToGallery" />
+		</template>
+		{{ $t("webshop.checkout.checkout") }}
+	</UHeader>
 	<UCard class="border-0 md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mt-9 mx-auto w-full" :ui="{ header: 'hidden' }">
 		<UStepper v-if="options !== undefined" v-model="steps" :items="stepperItems" linear class="basis-200" />
 
@@ -14,7 +16,7 @@
 			<div class="flex pt-6 ltr:justify-end rtl:justify-start">
 				<UButton
 					:label="$t('webshop.checkout.next')"
-					:icon="ltr ? 'prime:arrow-right' : 'prime:arrow-left'"
+					:icon="ltr ? 'lucide:arrow-right' : 'lucide:arrow-left'"
 					:disabled="!isStepOneValid"
 					@click="next"
 				/>
@@ -28,20 +30,20 @@
 			</div>
 			<div class="flex pt-6 justify-between">
 				<template v-if="ltr">
-					<UButton :label="$t('webshop.checkout.back')" color="neutral" variant="soft" icon="prime:arrow-left" @click="goToInfo" />
+					<UButton :label="$t('webshop.checkout.back')" color="neutral" variant="soft" icon="lucide:arrow-left" @click="goToInfo" />
 					<UButton
 						:label="$t('webshop.checkout.next')"
-						icon="prime:arrow-right"
+						icon="lucide:arrow-right"
 						trailing
 						:disabled="!isStepTwoValid"
 						@click="processPayment"
 					/>
 				</template>
 				<template v-else>
-					<UButton :label="$t('webshop.checkout.back')" color="neutral" variant="soft" icon="prime:arrow-right" @click="goToInfo" />
+					<UButton :label="$t('webshop.checkout.back')" color="neutral" variant="soft" icon="lucide:arrow-right" @click="goToInfo" />
 					<UButton
 						:label="$t('webshop.checkout.next')"
-						icon="prime:arrow-left"
+						icon="lucide:arrow-left"
 						trailing
 						:disabled="!isStepTwoValid"
 						@click="processPayment"
@@ -54,7 +56,7 @@
 				<ThankYou v-if="['completed', 'closed'].includes(order?.status ?? '')" />
 				<CancelledFailed v-else />
 				<div class="flex pt-6 ltr:justify-end rtl:justify-start">
-					<UButton :label="$t('webshop.checkout.toTheGallery')" icon="prime:arrow-right" @click="backToGallery" />
+					<UButton :label="$t('webshop.checkout.toTheGallery')" icon="lucide:arrow-right" @click="backToGallery" />
 				</div>
 			</div>
 		</template>
@@ -70,7 +72,7 @@
 					{{ $t("webshop.checkout.offlineProcessingMessage") }}
 				</div>
 				<div class="flex pt-6 ltr:justify-end rtl:justify-start">
-					<UButton :label="$t('webshop.checkout.toTheGallery')" icon="prime:arrow-right" @click="backToGallery" />
+					<UButton :label="$t('webshop.checkout.toTheGallery')" icon="lucide:arrow-right" @click="backToGallery" />
 				</div>
 			</div>
 		</template>

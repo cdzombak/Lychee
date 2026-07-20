@@ -1,11 +1,12 @@
 <template>
 	<div class="h-svh overflow-y-auto">
 		<!-- Header -->
-		<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-			<OpenLeftMenu />
-			<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("renamer.title") }}</span>
-			<div></div>
-		</div>
+		<UHeader :toggle="false">
+			<template #left>
+				<OpenLeftMenu />
+			</template>
+			{{ $t("renamer.title") }}
+		</UHeader>
 
 		<!-- Content -->
 		<div v-if="rules !== undefined" class="text-highlighted max-w-5xl mx-auto p-4">
@@ -17,14 +18,8 @@
 							<UInput id="testInput" v-model="testInput" class="w-full" @input="debouncedTest" />
 						</UFormField>
 						<div class="grid grid-cols-2">
-							<div class="flex gap-2 items-center">
-								<USwitch v-model="is_photo" id="is_photo_toggle_test" />
-								<label class="text-highlighted" for="is_photo_toggle_test">{{ $t("renamer.apply_photo_rules") }}</label>
-							</div>
-							<div class="flex gap-2 items-center">
-								<USwitch v-model="is_album" id="is_album_toggle_test" />
-								<label class="text-highlighted" for="is_album_toggle_test">{{ $t("renamer.apply_album_rules") }}</label>
-							</div>
+							<USwitch v-model="is_photo" :label="$t('renamer.apply_photo_rules')" :ui="{ label: 'text-highlighted' }" />
+							<USwitch v-model="is_album" :label="$t('renamer.apply_album_rules')" :ui="{ label: 'text-highlighted' }" />
 						</div>
 						<UProgress v-if="isTestLoading" class="w-full" />
 						<div v-if="testResult !== null" class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -63,7 +58,7 @@
 					<span class="text-sm text-muted">{{ $t("renamer.rules_count", { count: rules.length.toString() }) }}</span>
 					<UButton
 						v-if="rules.length > 0"
-						icon="prime:plus"
+						icon="lucide:plus"
 						size="sm"
 						:label="$t('renamer.create_rule')"
 						@click="
@@ -77,11 +72,11 @@
 
 			<div v-if="rules.length === 0" class="text-center py-8">
 				<div class="text-muted mb-4">
-					<UIcon name="prime:file-edit" class="text-4xl" />
+					<UIcon name="lucide:file-edit" class="text-4xl" />
 				</div>
 				<p class="text-muted mb-4">{{ $t("renamer.no_rules") }}</p>
 				<UButton
-					icon="prime:plus"
+					icon="lucide:plus"
 					:label="$t('renamer.create_first_rule')"
 					@click="
 						() => {

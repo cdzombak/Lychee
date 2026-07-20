@@ -54,6 +54,10 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		number_albums_per_row_mobile: 3 as 1 | 2 | 3,
 		photo_thumb_info: "title" as App.Enum.PhotoThumbInfoType,
 		is_photo_thumb_tags_enabled: false,
+		is_rounded_corners_enabled: true,
+		is_album_border_enabled: false,
+		is_selection_border_enabled: false,
+		is_selection_overlay_enabled: true,
 
 		// Enhanced Album Display
 		is_album_enhanced_display_enabled: false,
@@ -85,6 +89,8 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		default_homepage: "gallery",
 		is_timeline_page_enabled: false,
 		is_embed_enabled: true,
+		is_photo_share_card_enabled: true,
+		site_owner: "",
 
 		// Login options
 		is_basic_auth_enabled: true,
@@ -201,6 +207,10 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.number_albums_per_row_mobile = data.number_albums_per_row_mobile;
 					this.photo_thumb_info = data.photo_thumb_info;
 					this.is_photo_thumb_tags_enabled = data.is_photo_thumb_tags_enabled;
+					this.is_rounded_corners_enabled = data.is_rounded_corners_enabled;
+					this.is_album_border_enabled = data.is_album_border_enabled;
+					this.is_selection_border_enabled = data.is_selection_border_enabled;
+					this.is_selection_overlay_enabled = data.is_selection_overlay_enabled;
 					this.album_view_mode = data.album_layout;
 
 					this.is_raw_download_enabled = data.is_raw_download_enabled;
@@ -239,6 +249,8 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.default_homepage = data.default_homepage;
 					this.is_timeline_page_enabled = data.is_timeline_page_enabled;
 					this.is_embed_enabled = data.is_embed_enabled;
+					this.is_photo_share_card_enabled = data.is_photo_share_card_enabled;
+					this.site_owner = data.site_owner;
 
 					this.photos_pagination_mode = data.photos_pagination_mode;
 					this.albums_pagination_mode = data.albums_pagination_mode;

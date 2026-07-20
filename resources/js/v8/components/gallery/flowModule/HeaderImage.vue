@@ -10,7 +10,7 @@
 		</template>
 		<template v-else-if="image_header_cover === 'fit'">
 			<img alt="image background" class="absolute w-full h-full object-cover object-center" :src="header.thumb?.url ?? '/img/no_images.svg'" />
-			<div class="w-full h-full bg-repeat absolute bg-[url(/img/noise.png)] backdrop-blur-3xl blur-3xl"></div>
+			<div class="w-full h-full bg-repeat absolute bg-noise backdrop-blur-3xl blur-3xl"></div>
 			<img
 				:src="header.medium?.url ?? header.small?.url ?? '/img/no_images.svg'"
 				:alt="props.title"
@@ -26,7 +26,7 @@
 			@click="emits('clicked')"
 		/>
 		<Blur v-if="props.isNsfw">
-			<UIcon name="prime:eye-slash" class="text-6xl text-surface-0" />
+			<UIcon name="lucide:eye-off" class="text-6xl text-white" />
 		</Blur>
 	</div>
 </template>

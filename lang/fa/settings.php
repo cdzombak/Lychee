@@ -56,6 +56,8 @@ return [
         'album_decoration' => 'نمایش تزئینات روی جلد آلبوم (تعداد زیرآلبوم و/یا عکس)',
         'album_decoration_direction' => 'تراز افقی یا عمودی تزئینات آلبوم',
         'photo_overlay' => 'اطلاعات پیش فرض پوشش تصویر',
+        'rounded_corners_enabled' => 'گرد کردن گوشه‌های تصاویر بندانگشتی عکس‌ها و آلبوم‌ها',
+        'album_border_enabled' => 'نمایش حاشیه دور تصاویر بندانگشتی عکس‌ها و آلبوم‌ها',
         'license_default' => 'مجوز پیش فرض برای آلبوم‌ها',
         'license_help' => 'در انتخاب نیاز به راهنمایی دارید؟',
     ],
@@ -67,8 +69,10 @@ return [
         'map_include_subalbums' => 'نمایش تصاویر زیرآلبوم‌ها روی نقشه',
         'location_decoding' => 'استفاده از رمزگشایی موقعیت GPS',
         'location_show' => 'نمایش موقعیت استخراج شده از مختصات GPS',
-        'location_show_public' => 'کاربران ناشناس می‌توانند به موقعیت استخراج شده از مختصات GPS دسترسی داشته باشند',        'gps_coordinate_display' => 'Display the GPS coordinates',
-        'gps_coordinate_display_public' => 'Allow anonymous users to access the GPS coordinates',    ],
+        'location_show_public' => 'کاربران ناشناس می‌توانند به موقعیت استخراج شده از مختصات GPS دسترسی داشته باشند',
+        'gps_coordinate_display' => 'نمایش مختصات GPS',
+        'gps_coordinate_display_public' => 'اجازه دسترسی کاربران ناشناس به مختصات GPS',
+    ],
     'cssjs' => [
         'header' => 'CSS و JS سفارشی',
         'change_css' => 'تغییر CSS',
@@ -94,8 +98,8 @@ return [
     ],
     'config' => [
         'use_admin_dashboard' => [
-            'label' => 'Use admin dashboard',
-            'help' => 'Replace the nested admin submenu with a single link to the new admin dashboard page.',
+            'label' => 'استفاده از داشبورد مدیریت',
+            'help' => 'جایگزینی زیرمنوی تودرتوی مدیریت با یک لینک ساده به صفحه جدید داشبورد مدیریت.',
         ],
     ],
 ];

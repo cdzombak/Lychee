@@ -1,7 +1,7 @@
 <template>
 	<UCard v-if="initData?.modules.is_face_recognition_warning_enabled" class="max-w-6xl mx-auto">
 		<h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-			<UIcon name="prime:exclamation-triangle" class="text-warning-600" />
+			<UIcon name="lucide:triangle-alert" class="text-warning-600" />
 			<span>{{ $t("people.face_recognition_warning.title") }}</span>
 		</h2>
 
@@ -17,14 +17,11 @@
 		<p class="text-muted mb-4" v-html="$t('people.face_recognition_warning.no_liability')"></p>
 
 		<div v-if="initData?.settings.can_edit" class="flex flex-row justify-between gap-3 border-t border-default pt-4">
-			<div class="flex items-center gap-2">
-				<UCheckbox v-model="acknowledged" id="face-warning-ack" />
-				<label for="face-warning-ack" class="text-sm cursor-pointer">{{ $t("people.face_recognition_warning.acknowledge") }}</label>
-			</div>
+			<UCheckbox v-model="acknowledged" :label="$t('people.face_recognition_warning.acknowledge')" />
 			<div class="flex ltr:justify-end rtl:justify-start">
 				<UButton
 					:label="$t('people.face_recognition_warning.accept')"
-					icon="prime:check"
+					icon="lucide:check"
 					color="primary"
 					:disabled="!acknowledged"
 					@click="accept"

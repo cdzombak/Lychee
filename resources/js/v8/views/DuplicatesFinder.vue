@@ -1,9 +1,11 @@
 <template>
 	<UProgress v-if="groupedDuplicates === undefined" class="rounded-none absolute w-full" />
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2">{{ $t("duplicate-finder.title") }}</span>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("duplicate-finder.title") }}
+	</UHeader>
 	<div class="text-muted text-center mt-2 p-2">
 		<p class="mb-4">
 			{{ $t("duplicate-finder.intro") }}
@@ -12,28 +14,39 @@
 			<span class="text-highlighted">{{ duplicates?.length }}</span> {{ $t("duplicate-finder.found") }}
 		</p>
 		<p v-if="!isValid" class="text-highlighted">
-			<UIcon name="prime:exclamation-triangle" class="text-warning ltr:mr-2 rtl:ml-2" /> {{ $t("duplicate-finder.invalid-search") }}
+			<UIcon name="lucide:triangle-alert" class="text-warning ltr:mr-2 rtl:ml-2" /> {{ $t("duplicate-finder.invalid-search") }}
 		</p>
 	</div>
 	<div class="text-muted">
 		<div class="md:max-w-md mt-2 mb-16 mx-auto">
 			<ul v-if="is_se_enabled || is_se_preview_enabled" class="mb-4">
 				<li class="ltr:ml-2 rtl:mr-2 pt-1 flex items-center gap-x-4">
-					<UCheckbox v-model="withChecksumConstraint" :disabled="is_se_preview_enabled" @update:model-value="fetch" />
-					<label for="withChecksumConstraint" :class="{ 'text-highlighted': isValid, 'text-warning': !isValid }">
-						{{ $t("duplicate-finder.checksum-must-match") }}
-					</label>
+					<UCheckbox
+						v-model="withChecksumConstraint"
+						:disabled="is_se_preview_enabled"
+						:label="$t('duplicate-finder.checksum-must-match')"
+						:ui="{ label: isValid ? 'text-highlighted' : 'text-warning' }"
+						@update:model-value="fetch"
+					/>
 				</li>
 				<li class="ltr:ml-2 rtl:mr-2 pt-1 flex items-center gap-x-4">
-					<UCheckbox v-model="withTitleConstraint" :disabled="is_se_preview_enabled" @update:model-value="fetch" />
-					<label for="withTitleConstraint" :class="{ 'text-highlighted': isValid, 'text-warning': !isValid }">
-						{{ $t("duplicate-finder.title-must-match") }}
-					</label>
+					<UCheckbox
+						v-model="withTitleConstraint"
+						:disabled="is_se_preview_enabled"
+						:label="$t('duplicate-finder.title-must-match')"
+						:ui="{ label: isValid ? 'text-highlighted' : 'text-warning' }"
+						@update:model-value="fetch"
+					/>
 					<SETag />
 				</li>
 				<li class="ltr:ml-2 rtl:mr-2 pt-1 flex items-center gap-x-4">
-					<UCheckbox v-model="withAlbumConstraint" :disabled="is_se_preview_enabled" @update:model-value="fetch" />
-					<label for="withAlbumConstraint" class="text-muted"> {{ $t("duplicate-finder.must-be-in-same-album") }} </label>
+					<UCheckbox
+						v-model="withAlbumConstraint"
+						:disabled="is_se_preview_enabled"
+						:label="$t('duplicate-finder.must-be-in-same-album')"
+						:ui="{ label: 'text-muted' }"
+						@update:model-value="fetch"
+					/>
 					<SETag />
 				</li>
 			</ul>
@@ -41,7 +54,7 @@
 		<div class="flex justify-between md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mx-auto gap-4 xl:gap-8">
 			<div class="w-1/4 flex-none"></div>
 			<div class="pb-2 w-full flex justify-between items-center font-bold text-lg text-highlighted border-b border-b-white/50">
-				<div><UIcon name="prime:trash" class="text-transparent mr-2" /></div>
+				<div><UIcon name="lucide:trash" class="text-transparent mr-2" /></div>
 				<div class="w-1/3">{{ $t("duplicate-finder.columns.album") }}</div>
 				<div class="w-1/3">{{ $t("duplicate-finder.columns.photo") }}</div>
 				<div class="w-1/4">{{ $t("duplicate-finder.columns.checksum") }}</div>

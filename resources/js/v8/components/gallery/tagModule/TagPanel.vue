@@ -9,10 +9,15 @@
 
 		<UContextMenu :items="menuSections" :disabled="photosStore.photos.length === 0" class="contents">
 			<div id="galleryView" class="relative flex flex-wrap content-start w-full justify-start overflow-y-auto h-full">
-				<div
-					v-if="photosStore.photos.length === 0"
-					class="flex w-full flex-col h-full items-center justify-center text-xl text-muted-color gap-8"
-				>
+				<AlbumThumbPanel
+					v-if="(tagStore.tag?.albums.length ?? 0) > 0"
+					header="gallery.album.header_albums"
+					:albums="tagStore.tag!.albums"
+					:is-alone="false"
+					:selected-albums="[]"
+					:is-timeline="false"
+				/>
+				<div v-if="photosStore.photos.length === 0" class="flex w-full flex-col h-full items-center justify-center text-xl text-muted gap-8">
 					<span class="block">
 						{{ $t("gallery.album.no_results") }}
 					</span>
@@ -36,9 +41,10 @@
 	</div>
 </template>
 <script setup lang="ts">
+import AlbumThumbPanel from "@/v8/components/gallery/albumModule/AlbumThumbPanel.vue";
 import PhotoThumbPanel from "@/v8/components/gallery/albumModule/PhotoThumbPanel.vue";
 import { useSelection } from "@/composables/selections/selections";
-import { useContextMenu } from "@/composables/contextMenus/contextMenu";
+import { useContextMenu } from "@/v8/composables/contextMenus/contextMenu";
 import PhotoService from "@/services/photo-service";
 import AlbumService from "@/services/album-service";
 import ModerationService from "@/services/moderation-service";
@@ -151,10 +157,6 @@ function contextMenuPhotoOpen(photoId: string, _e: MouseEvent): void {
 	}
 }
 
-function toIconifyName(icon: string): string {
-	return "prime:" + icon.replace(/^pi\s+pi-/, "").replace(/^pi-/, "");
-}
-
 const menuSections = computed<ContextMenuItem[][]>(() => {
 	const sections: ContextMenuItem[][] = [[]];
 	for (const entry of Menu.value) {
@@ -164,7 +166,7 @@ const menuSections = computed<ContextMenuItem[][]>(() => {
 		}
 		sections[sections.length - 1].push({
 			label: trans(entry.label ?? ""),
-			icon: toIconifyName(entry.icon ?? ""),
+			icon: entry.icon,
 			onSelect: entry.callback,
 		});
 	}

@@ -168,6 +168,7 @@ declare namespace App.Enum {
 	export type PurchasableLicenseType = "personal" | "commercial" | "extended" | "print";
 	export type PurchasableSizeVariantType = "medium" | "medium2x" | "original" | "full";
 	export type RenamerModeType = "first" | "all" | "regex" | "trim" | "strtolower" | "strtoupper" | "ucwords" | "ucfirst";
+	export type SearchSortingType = "title" | "created_at" | "taken_at";
 	export type SeverityType = "emergency" | "alert" | "critical" | "error" | "warning" | "notice" | "info" | "debug";
 	export type SharedAlbumsVisibility = "show" | "separate" | "separate_shared_only" | "hide";
 	export type ShiftType = "relative" | "absolute";
@@ -576,6 +577,10 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		number_albums_per_row_mobile: 1 | 2 | 3;
 		photo_thumb_info: App.Enum.PhotoThumbInfoType;
 		is_photo_thumb_tags_enabled: boolean;
+		is_rounded_corners_enabled: boolean;
+		is_album_border_enabled: boolean;
+		is_selection_border_enabled: boolean;
+		is_selection_overlay_enabled: boolean;
 		album_layout: App.Enum.AlbumLayoutType;
 		is_raw_download_enabled: boolean;
 		is_thumb_download_enabled: boolean;
@@ -611,6 +616,8 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		is_rating_show_avg_in_album_view_enabled: boolean;
 		rating_album_view_mode: App.Enum.VisibilityType;
 		is_embed_enabled: boolean;
+		is_photo_share_card_enabled: boolean;
+		site_owner: string;
 		default_homepage: string;
 		is_timeline_page_enabled: boolean;
 		is_contact_form_enabled: boolean;
@@ -1527,12 +1534,14 @@ declare namespace App.Http.Resources.Tags {
 	export type TagResource = {
 		id: number;
 		name: string;
-		num: number;
+		num_photos: number;
+		num_albums: number;
 	};
-	export type TagWithPhotosResource = {
+	export type TagWithPhotosAndAlbumsResource = {
 		id: number;
 		name: string;
 		photos: App.Http.Resources.Models.PhotoResource[];
+		albums: App.Http.Resources.Models.ThumbAlbumResource[];
 	};
 	export type TagsResource = {
 		can_edit: boolean;

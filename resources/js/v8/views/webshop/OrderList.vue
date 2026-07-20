@@ -1,16 +1,20 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("webshop.orderList.orders") }}</span>
-		<div></div>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("webshop.orderList.orders") }}
+	</UHeader>
 	<div class="text-center lg:hidden font-bold text-error py-3" v-html="$t('settings.small_screen')"></div>
 	<div class="md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mt-8 mx-auto w-full p-4">
 		<div v-if="numOldOrders > 0" class="flex justify-center items-center gap-4 mb-8">
 			<p>{{ sprintf($t("webshop.orderList.numStaleOrders"), numOldOrders) }}</p>
-			<UButton :label="$t('webshop.orderList.cleanStaleOrders')" icon="prime:trash" color="warning" @click="clean" />
+			<UButton :label="$t('webshop.orderList.cleanStaleOrders')" icon="lucide:trash" color="warning" @click="clean" />
 		</div>
 		<Disclaimer />
+		<div class="flex justify-end">
+			<UCheckbox v-model="showPending" :label="$t('webshop.orderList.show_pending')" @update:model-value="load" />
+		</div>
 		<OrderLegend />
 		<UTable :data="orders ?? []" :columns="columns" :loading="orders === undefined" class="mt-4" />
 	</div>
@@ -42,7 +46,7 @@ const toast = useAppToast();
 const leftMenuStore = useLeftMenuStateStore();
 const { initData } = storeToRefs(leftMenuStore);
 
-const { isZero, load, clean, orders, numOldOrders } = useOrder(toast, router);
+const { isZero, load, clean, orders, numOldOrders, showPending } = useOrder(toast, router);
 
 const columns: TableColumn<Order>[] = [
 	{

@@ -1,9 +1,10 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("moderation.title") }}</span>
-		<div></div>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("moderation.title") }}
+	</UHeader>
 
 	<UCard class="max-w-5xl mx-auto mt-4">
 		<p class="text-muted mb-6 text-center">{{ $t("moderation.description") }}</p>
@@ -16,7 +17,7 @@
 		<!-- Empty state -->
 		<div v-else-if="!loading && photos.length === 0" class="text-center py-12">
 			<div class="text-muted mb-4">
-				<UIcon name="prime:check-circle" class="text-4xl" />
+				<UIcon name="lucide:check-circle" class="text-4xl" />
 			</div>
 			<p class="text-muted">{{ $t("moderation.no_pending") }}</p>
 		</div>
@@ -25,15 +26,15 @@
 		<div class="flex items-center gap-2 mb-3 px-1 h-8">
 			<span class="text-muted text-sm">{{ selectedIds.size }} {{ $t("moderation.selected") }}</span>
 			<template v-if="selectedIds.size > 0">
-				<UButton icon="prime:check" color="success" size="sm" :label="$t('moderation.approve_selected')" @click="approveSelected" />
-				<UButton icon="prime:trash" color="error" size="sm" :label="$t('moderation.delete_selected')" @click="deleteSelected" />
+				<UButton icon="lucide:check" color="success" size="sm" :label="$t('moderation.approve_selected')" @click="approveSelected" />
+				<UButton icon="lucide:trash" color="error" size="sm" :label="$t('moderation.delete_selected')" @click="deleteSelected" />
 			</template>
 		</div>
 
 		<!-- Photos table -->
 		<table v-if="photos.length > 0" class="w-full text-sm">
 			<thead>
-				<tr class="text-left text-muted border-b border-neutral-200 dark:border-neutral-700">
+				<tr class="text-left text-muted border-b border-muted">
 					<th class="py-2 pr-3 w-10"><input type="checkbox" :checked="allSelected" @change="toggleAll" /></th>
 					<th class="py-2 pr-3 w-20">{{ $t("moderation.col_thumbnail") }}</th>
 					<th class="py-2 pr-3">{{ $t("moderation.col_title") }}</th>
@@ -48,7 +49,7 @@
 				<tr
 					v-for="photo in photos"
 					:key="photo.photo_id"
-					class="border-b border-neutral-100 dark:border-neutral-800 hover:bg-elevated/50 cursor-pointer"
+					class="border-b border-default hover:bg-elevated/50 cursor-pointer"
 					@click="toggleOne(photo.photo_id)"
 				>
 					<td class="py-2 pr-3">
@@ -62,7 +63,7 @@
 							:alt="photo.title"
 							@click.stop="openPhoto(photo.photo_id)"
 						/>
-						<UIcon v-else name="prime:image" class="text-2xl text-muted" />
+						<UIcon v-else name="lucide:image" class="text-2xl text-muted" />
 					</td>
 					<td class="py-2 pr-3">{{ photo.title }}</td>
 					<td class="py-2 pr-3">{{ photo.owner_username }}</td>
@@ -83,9 +84,9 @@
 					</td>
 					<td class="py-2">
 						<div class="flex gap-1" @click.stop>
-							<UButton icon="prime:check" color="success" variant="ghost" size="sm" @click="approveSingle(photo.photo_id)" />
+							<UButton icon="lucide:check" color="success" variant="ghost" size="sm" @click="approveSingle(photo.photo_id)" />
 							<UButton
-								icon="prime:trash"
+								icon="lucide:trash"
 								color="error"
 								variant="ghost"
 								size="sm"

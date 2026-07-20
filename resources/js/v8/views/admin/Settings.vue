@@ -1,9 +1,10 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("settings.title") }}</span>
-		<div></div>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("settings.title") }}
+	</UHeader>
 	<div class="text-center lg:hidden font-bold text-error py-3" v-html="$t('settings.small_screen')"></div>
 	<div class="pl-[calc(100vw-100%)] flex justify-center pb-10">
 		<div class="max-w-6xl w-full p-4">
@@ -48,7 +49,7 @@
 								class="px-4 py-2 rounded hover:bg-elevated cursor-pointer flex items-center gap-2"
 								@click="router.push({ name: 'settings', params: { tab: 'all' } })"
 							>
-								<UIcon name="prime:exclamation-triangle" class="text-warning-600" />
+								<UIcon name="lucide:triangle-alert" class="text-warning-600" />
 								{{ $t("settings.tabs.all_settings") }}
 							</a>
 						</nav>

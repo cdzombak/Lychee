@@ -35,6 +35,11 @@ class SettingsController extends Controller
 		'landing_logo',
 		'landing_header_logo',
 		'breadcrumb_enabled',
+		'rounded_corners_enabled',
+		'album_border_enabled',
+		'selection_border_enabled',
+		'selection_overlay_enabled',
+		'photo_share_card_enabled',
 	];
 
 	/**

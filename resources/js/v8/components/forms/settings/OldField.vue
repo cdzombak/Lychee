@@ -1,11 +1,11 @@
 <template>
-	<div>
+	<div class="w-full">
 		<div class="flex items-center justify-between gap-x-4 flex-wrap sm:flex-nowrap">
 			<label
 				:for="props.config.key"
 				:class="{
 					'w-full': true,
-					'text-primary-emphasis': props.config.require_se,
+					'text-primary': props.config.require_se,
 					'text-highlighted': !props.config.require_se,
 				}"
 				v-html="props.label ?? tDoc(props.config)"
@@ -13,7 +13,7 @@
 			<UInput :id="props.config.key" v-model="val" type="text" class="w-full grow" @update:model-value="update">
 				<template v-if="changed" #trailing>
 					<UTooltip text="Click me to reset!">
-						<UIcon name="prime:exclamation-circle" class="text-warning-600 cursor-pointer" @click="reset" />
+						<UIcon name="lucide:circle-alert" class="text-warning-600 cursor-pointer" @click="reset" />
 					</UTooltip>
 				</template>
 			</UInput>

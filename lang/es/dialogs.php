@@ -57,7 +57,7 @@ return [
         'delete' => 'Borrar la foto',
         'edit' => 'Editar información',
         'show_hide_meta' => 'Show information',
-        'toggle_face_overlay' => 'Toggle face overlay',
+        'toggle_face_overlay' => 'Activar/desactivar la superposición de la cara',
         'keep_hidden' => 'Lo mantendremos oculto.',
         'button_hidden' => 'Ocultaremos el botón en el encabezado.',
     ],
@@ -78,6 +78,9 @@ return [
     ],
     'share_album' => [
         'url_copied' => '¡Copiado URL al portapapeles!',
+    ],
+    'photo_share_card' => [
+        'by' => 'por :name',
     ],
     'embed_code' => [
         'title' => 'Incrustar álbum',
@@ -183,11 +186,11 @@ return [
         'create' => 'Crear álbum de etiquetas',
     ],
     'new_person_album' => [
-        'menu' => 'Create Person Album',
-        'info' => 'Enter a title for the new person album:',
-        'title' => 'title',
-        'set_persons' => 'Select persons to include',
-        'create' => 'Create Person Album',
+        'menu' => 'Crear álbum de una persona',
+        'info' => 'Introduce un título para el nuevo álbum de «Persona»:',
+        'title' => 'título',
+        'set_persons' => 'Selecciona las personas que quieras incluir',
+        'create' => 'Crear álbum de una persona',
     ],
     'delete_album' => [
         'confirmation' => '¿Estás seguro de que quieres eliminar el álbum «%s» y todas las fotos que contiene?',

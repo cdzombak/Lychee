@@ -1,8 +1,10 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2">{{ $t("webshop.sizeCatalogue.title") }}</span>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("webshop.sizeCatalogue.title") }}
+	</UHeader>
 	<div class="text-center lg:hidden font-bold text-error py-3" v-html="$t('settings.small_screen')"></div>
 	<UCard class="border-0 md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mt-9 mx-auto w-full" :ui="{ header: 'hidden' }">
 		<Disclaimer />
@@ -11,7 +13,7 @@
 		<div class="mt-6">
 			<div class="flex flex-row items-center justify-between mb-3">
 				<h2 class="text-xl font-semibold">{{ $t("webshop.sizeCatalogue.printSizes") }}</h2>
-				<UButton icon="prime:plus" :label="$t('webshop.sizeCatalogue.addPrintSize')" size="sm" @click="openCreatePrintDialog" />
+				<UButton icon="lucide:plus" :label="$t('webshop.sizeCatalogue.addPrintSize')" size="sm" @click="openCreatePrintDialog" />
 			</div>
 			<UTable :data="printSizes ?? []" :columns="printColumns" :loading="printSizes === undefined" class="border rounded" />
 		</div>
@@ -20,7 +22,7 @@
 		<div class="mt-8">
 			<div class="flex flex-row items-center justify-between mb-3">
 				<h2 class="text-xl font-semibold">{{ $t("webshop.sizeCatalogue.pixelSizes") }}</h2>
-				<UButton icon="prime:plus" :label="$t('webshop.sizeCatalogue.addPixelSize')" size="sm" @click="openCreatePixelDialog" />
+				<UButton icon="lucide:plus" :label="$t('webshop.sizeCatalogue.addPixelSize')" size="sm" @click="openCreatePixelDialog" />
 			</div>
 			<UTable :data="pixelSizes ?? []" :columns="pixelColumns" :loading="pixelSizes === undefined" class="border rounded" />
 		</div>
@@ -70,7 +72,7 @@ const printColumns: TableColumn<App.Http.Resources.Shop.PrintSizeResource>[] = [
 		id: "active",
 		header: trans("webshop.sizeCatalogue.active"),
 		cell: ({ row }) =>
-			h(Icon, { icon: row.original.is_active ? "prime:check" : "prime:times", class: row.original.is_active ? "text-success" : "text-error" }),
+			h(Icon, { icon: row.original.is_active ? "lucide:check" : "lucide:x", class: row.original.is_active ? "text-success" : "text-error" }),
 	},
 	{
 		id: "actions",
@@ -78,13 +80,19 @@ const printColumns: TableColumn<App.Http.Resources.Shop.PrintSizeResource>[] = [
 		cell: ({ row }) =>
 			h("div", { class: "flex justify-end gap-1" }, [
 				h(UButton, {
-					icon: "prime:pencil",
+					icon: "lucide:pencil",
 					variant: "ghost",
 					color: "neutral",
 					size: "sm",
 					onClick: () => openEditPrintDialog(row.original),
 				}),
-				h(UButton, { icon: "prime:trash", variant: "ghost", color: "error", size: "sm", onClick: () => openDeletePrintDialog(row.original) }),
+				h(UButton, {
+					icon: "lucide:trash",
+					variant: "ghost",
+					color: "error",
+					size: "sm",
+					onClick: () => openDeletePrintDialog(row.original),
+				}),
 			]),
 	},
 ];
@@ -100,7 +108,7 @@ const pixelColumns: TableColumn<App.Http.Resources.Shop.PixelSizeResource>[] = [
 		id: "active",
 		header: trans("webshop.sizeCatalogue.active"),
 		cell: ({ row }) =>
-			h(Icon, { icon: row.original.is_active ? "prime:check" : "prime:times", class: row.original.is_active ? "text-success" : "text-error" }),
+			h(Icon, { icon: row.original.is_active ? "lucide:check" : "lucide:x", class: row.original.is_active ? "text-success" : "text-error" }),
 	},
 	{
 		id: "actions",
@@ -108,13 +116,19 @@ const pixelColumns: TableColumn<App.Http.Resources.Shop.PixelSizeResource>[] = [
 		cell: ({ row }) =>
 			h("div", { class: "flex justify-end gap-1" }, [
 				h(UButton, {
-					icon: "prime:pencil",
+					icon: "lucide:pencil",
 					variant: "ghost",
 					color: "neutral",
 					size: "sm",
 					onClick: () => openEditPixelDialog(row.original),
 				}),
-				h(UButton, { icon: "prime:trash", variant: "ghost", color: "error", size: "sm", onClick: () => openDeletePixelDialog(row.original) }),
+				h(UButton, {
+					icon: "lucide:trash",
+					variant: "ghost",
+					color: "error",
+					size: "sm",
+					onClick: () => openDeletePixelDialog(row.original),
+				}),
 			]),
 	},
 ];

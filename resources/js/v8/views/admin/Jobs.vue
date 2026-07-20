@@ -1,8 +1,10 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2">{{ $t("jobs.title") }}</span>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("jobs.title") }}
+	</UHeader>
 	<UCard class="max-w-7xl mx-auto">
 		<div v-if="jobs.length === 0" class="text-center">{{ $t("jobs.no_data") }}</div>
 		<template v-else>
@@ -17,13 +19,7 @@
 					</span>
 				</div>
 			</div>
-			<div
-				v-for="(job, idx) in jobs"
-				:id="`job${idx}`"
-				:key="`job-${idx}`"
-				class="flex text-xs sm:text-base flex-wrap sm:flex-nowrap"
-				dir="ltr"
-			>
+			<div v-for="(job, idx) in jobs" :id="`job${idx}`" :key="`job-${idx}`" class="flex text-xs sm:text-base flex-wrap sm:flex-nowrap">
 				<span class="hidden sm:inline-block sm:w-2/5 text-muted">{{ prettyDate(job.created_at) }}</span>
 				<span class="w-1/6 sm:w-1/4" :class="textCss(job.status)">{{ translateStatus(job.status) }}</span>
 				<span class="w-5/6 sm:w-1/4">{{ job.username }}</span>
@@ -70,28 +66,28 @@ const meter = computed(() => {
 		vals.push({
 			label: `${translateStatus("ready")} — ${ready_count}`,
 			value: ready_percent,
-			color: "var(--color-ready-400)",
+			color: "var(--color-warning-400)",
 		});
 	}
 	if (success_percent > 0) {
 		vals.push({
 			label: `${translateStatus("success")} — ${success_count}`,
 			value: success_percent,
-			color: "var(--color-create-700)",
+			color: "var(--color-success-700)",
 		});
 	}
 	if (failure_percent > 0) {
 		vals.push({
 			label: `${translateStatus("failure")} — ${failure_count}`,
 			value: failure_percent,
-			color: "var(--color-danger-700)",
+			color: "var(--color-error-700)",
 		});
 	}
 	if (started_percent > 0) {
 		vals.push({
 			label: `${translateStatus("started")} — ${started_count}`,
 			value: started_percent,
-			color: "var(--p-primary-500)",
+			color: "var(--ui-color-primary-500)",
 		});
 	}
 	return vals;
@@ -100,11 +96,11 @@ const meter = computed(() => {
 function textCss(status: string) {
 	switch (status) {
 		case "ready":
-			return "text-ready-400";
+			return "text-warning-400";
 		case "success":
-			return "text-create-700";
+			return "text-success-700";
 		case "failure":
-			return "text-danger-700";
+			return "text-error-700";
 		case "started":
 			return "text-primary-500";
 		default:

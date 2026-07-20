@@ -1,9 +1,10 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("admin-dashboard.nsfw_config.title") }}</span>
-		<div></div>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("admin-dashboard.nsfw_config.title") }}
+	</UHeader>
 
 	<div class="max-w-5xl mx-auto mt-4 px-4 pb-8">
 		<!-- Loading -->
@@ -12,7 +13,7 @@
 		</div>
 
 		<template v-else>
-			<UTabs v-model="activeTab" :items="tabItems" class="w-full">
+			<UTabs v-model="activeTab" :items="tabItems" class="w-full" :dir="isLTR() ? 'ltr' : 'rtl'">
 				<template #settings>
 					<p class="text-muted mb-6 text-center text-sm">{{ $t("admin-dashboard.nsfw_config.description") }}</p>
 
@@ -47,7 +48,7 @@
 							<div class="overflow-x-auto">
 								<table class="w-full text-sm border-collapse">
 									<thead>
-										<tr class="text-left text-muted border-b border-neutral-200 dark:border-neutral-700">
+										<tr class="text-left text-muted border-b border-muted">
 											<th class="py-2 pr-4">{{ $t("admin-dashboard.nsfw_config.matrix_trust_level") }}</th>
 											<th class="py-2 pr-4">{{ $t("admin-dashboard.nsfw_config.block") }}</th>
 											<th class="py-2 pr-4">{{ $t("admin-dashboard.nsfw_config.review") }}</th>
@@ -58,7 +59,7 @@
 										<tr
 											v-for="(row, idx) in matrixRows"
 											:key="idx"
-											:class="idx < matrixRows.length - 1 ? 'border-b border-neutral-100 dark:border-neutral-800' : ''"
+											:class="idx < matrixRows.length - 1 ? 'border-b border-default' : ''"
 										>
 											<td class="py-2 pr-4 font-medium flex items-center gap-2">
 												<UIcon :name="row.iconClass" />{{ row.trustLevel }}
@@ -113,7 +114,7 @@
 											v-if="cfg[row.key]"
 											:model-value="cfg[row.key]!.value"
 											:items="cfg[row.key]!.type.split('|')"
-											class="shrink-0"
+											class="w-40 shrink-0"
 											@update:model-value="(v: string | number) => save(row.key, v as string)"
 										/>
 									</div>
@@ -126,7 +127,7 @@
 											v-if="cfg[row.key]"
 											:model-value="cfg[row.key]!.value"
 											:items="cfg[row.key]!.type.split('|')"
-											class="shrink-0"
+											class="w-40 shrink-0"
 											@update:model-value="(v: string | number) => save(row.key, v as string)"
 										/>
 									</div>
@@ -137,7 +138,7 @@
 							<Fieldset :legend="$t('admin-dashboard.nsfw_config.section_hide_on_scan')">
 								<p class="text-muted text-sm mb-2" v-html="$t('admin-dashboard.nsfw_config.hide_on_scan_explanation')" />
 								<p class="text-sm my-4 text-highlighted flex items-start gap-2">
-									<UIcon name="prime:exclamation-triangle" class="text-amber-600" />
+									<UIcon name="lucide:triangle-alert" class="text-amber-600" />
 									<span v-html="$t('admin-dashboard.nsfw_config.hide_on_scan_warning')" />
 								</p>
 								<div class="flex flex-col gap-3">
@@ -160,7 +161,7 @@
 
 				<template #presets>
 					<div class="flex justify-end mb-4">
-						<UButton icon="prime:refresh" variant="ghost" color="neutral" :loading="presetsLoading" @click="fetchPresets" />
+						<UButton icon="lucide:refresh-cw" variant="ghost" color="neutral" :loading="presetsLoading" @click="fetchPresets" />
 					</div>
 
 					<!-- Loading -->
@@ -171,7 +172,7 @@
 					<!-- Error -->
 					<UCard v-else-if="presetsError">
 						<div class="text-center py-8">
-							<UIcon name="prime:exclamation-triangle" class="text-4xl text-orange-500 mb-4" />
+							<UIcon name="lucide:triangle-alert" class="text-4xl text-orange-500 mb-4" />
 							<p class="text-muted">{{ presetsError }}</p>
 						</div>
 					</UCard>
@@ -258,6 +259,7 @@ import NsfwConfigService from "@/services/nsfw-config-service";
 import SettingsService from "@/services/settings-service";
 import { useAppToast } from "@/v8/composables/useAppToast";
 import type { TableColumn, TabsItem } from "@nuxt/ui";
+import { useLtRorRtL } from "@/utils/Helpers";
 
 type CfgRef = App.Http.Resources.Models.ConfigResource | undefined;
 
@@ -265,8 +267,8 @@ const toast = useAppToast();
 const activeTab = ref("settings");
 
 const tabItems: TabsItem[] = [
-	{ label: trans("admin-dashboard.nsfw_config.tab_settings"), value: "settings", icon: "prime:cog", slot: "settings" },
-	{ label: trans("admin-dashboard.nsfw_config.tab_presets"), value: "presets", icon: "prime:eye", slot: "presets" },
+	{ label: trans("admin-dashboard.nsfw_config.tab_settings"), value: "settings", icon: "lucide:cog", slot: "settings" },
+	{ label: trans("admin-dashboard.nsfw_config.tab_presets"), value: "presets", icon: "lucide:eye", slot: "presets" },
 ];
 
 // -- Settings tab state --
@@ -291,6 +293,8 @@ const NSFW_KEYS = [
 const cfg = reactive<Record<(typeof NSFW_KEYS)[number], CfgRef>>(
 	Object.fromEntries(NSFW_KEYS.map((k) => [k, undefined])) as Record<(typeof NSFW_KEYS)[number], CfgRef>,
 );
+
+const { isLTR } = useLtRorRtL();
 
 function loadSettings() {
 	settingsLoading.value = true;
@@ -335,22 +339,22 @@ type ActionRow = { key: NsfwKey; iconClass: string; label: string };
 const blockActionRows: ActionRow[] = [
 	{
 		key: "ai_vision_nsfw_check_block_action",
-		iconClass: "prime:shield text-error",
+		iconClass: "lucide:shield text-error",
 		label: trans("admin-dashboard.nsfw_config.matrix_check"),
 	},
 	{
 		key: "ai_vision_nsfw_monitor_block_action",
-		iconClass: "prime:shield text-yellow-500",
+		iconClass: "lucide:shield text-yellow-500",
 		label: trans("admin-dashboard.nsfw_config.matrix_monitor"),
 	},
 	{
 		key: "ai_vision_nsfw_trust_but_verify_block_action",
-		iconClass: "prime:shield text-blue-500",
+		iconClass: "lucide:shield text-blue-500",
 		label: trans("admin-dashboard.nsfw_config.matrix_tbv"),
 	},
 	{
 		key: "ai_vision_nsfw_trust_block_action",
-		iconClass: "prime:shield text-success",
+		iconClass: "lucide:shield text-success",
 		label: trans("admin-dashboard.nsfw_config.matrix_trusted"),
 	},
 ];
@@ -363,17 +367,17 @@ const sensitiveActionRows: ActionRow[] = [
 const hideOnScanRows: ActionRow[] = [
 	{
 		key: "ai_vision_nsfw_monitor_hide_on_scan",
-		iconClass: "prime:shield text-yellow-500",
+		iconClass: "lucide:shield text-yellow-500",
 		label: trans("admin-dashboard.nsfw_config.matrix_monitor"),
 	},
 	{
 		key: "ai_vision_nsfw_trust_but_verify_hide_on_scan",
-		iconClass: "prime:shield text-blue-500",
+		iconClass: "lucide:shield text-blue-500",
 		label: trans("admin-dashboard.nsfw_config.matrix_tbv"),
 	},
 	{
 		key: "ai_vision_nsfw_trust_hide_on_scan",
-		iconClass: "prime:shield text-success",
+		iconClass: "lucide:shield text-success",
 		label: trans("admin-dashboard.nsfw_config.matrix_trusted"),
 	},
 ];
@@ -408,28 +412,28 @@ function sensitiveCell(): MatrixCell {
 const matrixRows = computed(() => [
 	{
 		trustLevel: trans("admin-dashboard.nsfw_config.matrix_check"),
-		iconClass: "prime:shield text-error",
+		iconClass: "lucide:shield text-error",
 		block: blockActionCell(cfg.ai_vision_nsfw_check_block_action),
 		review: { label: trans("admin-dashboard.nsfw_config.matrix_moderate"), severity: "warning" as const },
 		sensitive: { label: trans("admin-dashboard.nsfw_config.matrix_moderate"), severity: "warning" as const },
 	},
 	{
 		trustLevel: trans("admin-dashboard.nsfw_config.matrix_monitor"),
-		iconClass: "prime:shield text-yellow-500",
+		iconClass: "lucide:shield text-yellow-500",
 		block: blockActionCell(cfg.ai_vision_nsfw_monitor_block_action),
 		review: { label: trans("admin-dashboard.nsfw_config.matrix_moderate"), severity: "warning" as const },
 		sensitive: sensitiveCell(),
 	},
 	{
 		trustLevel: trans("admin-dashboard.nsfw_config.matrix_tbv"),
-		iconClass: "prime:shield text-blue-500",
+		iconClass: "lucide:shield text-blue-500",
 		block: blockActionCell(cfg.ai_vision_nsfw_trust_but_verify_block_action),
 		review: { label: trans("admin-dashboard.nsfw_config.matrix_approve"), severity: "success" as const },
 		sensitive: sensitiveCell(),
 	},
 	{
 		trustLevel: trans("admin-dashboard.nsfw_config.matrix_trusted"),
-		iconClass: "prime:shield text-success",
+		iconClass: "lucide:shield text-success",
 		block: blockActionCell(cfg.ai_vision_nsfw_trust_block_action),
 		review: { label: trans("admin-dashboard.nsfw_config.matrix_approve"), severity: "success" as const },
 		sensitive: sensitiveCell(),

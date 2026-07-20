@@ -80,6 +80,9 @@ return [
     'share_album' => [
         'url_copied' => 'URL copiée dans le presse-papiers !',
     ],
+    'photo_share_card' => [
+        'by' => 'par :name',
+    ],
     'embed_code' => [
         'title' => 'Embed Album',
         'title_stream' => 'Embed Photo Stream',
@@ -229,7 +232,7 @@ return [
         'no_tags' => 'Aucune étiquette',
         'set_tags' => 'Définir les étiquettes',
         'updated' => 'Étiquettes mises à jour !',
-        'tags_override_info' => 'Si cette case n’est pas cochée, les étiquettes seront ajoutées à celles existantes.',
+        'tags_override_info' => 'Si cette case est cochée, les étiquettes existantes seront remplacées.',
     ],
     'photo_license' => [
         'question' => 'Select a license for this photo.',

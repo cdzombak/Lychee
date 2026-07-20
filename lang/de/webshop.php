@@ -97,6 +97,7 @@ return [
         'processing' => 'In Bearbeitung',
         'failed' => 'Fehlgeschlagen',
         'closed' => 'Geschlossen',
+        'cancelled' => 'Cancelled',
     ],
     'orderList' => [
         'orders' => 'Bestellungen',
@@ -106,6 +107,7 @@ return [
         'transactionId' => 'Transaktions-ID',
         'status' => 'Status',
         'amount' => 'Betrag',
+        'show_pending' => 'Ausstehende Bestellungen anzeigen',
     ],
     'purchasablesList' => [
         'purchasables' => 'Kaufbare Artikel',

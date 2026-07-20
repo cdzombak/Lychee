@@ -1,8 +1,10 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2">{{ $t("webshop.basketList.basket") }}</span>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("webshop.basketList.basket") }}
+	</UHeader>
 	<UCard class="border-0 md:max-w-3xl lg:max-w-5xl xl:max-w-7xl mt-9 mx-auto w-full" :ui="{ header: 'hidden' }">
 		<div v-if="order && order.items && order.items.length > 0">
 			<div
@@ -34,7 +36,7 @@
 				<div class="font-bold shrink">{{ item.price }}</div>
 				<UTooltip :text="$t('webshop.basketList.removeItem')">
 					<UButton
-						icon="prime:trash"
+						icon="lucide:trash"
 						color="neutral"
 						variant="ghost"
 						class="h-12"
@@ -46,7 +48,7 @@
 			<div class="flex flex-row-reverse p-4 items-center">
 				<UTooltip :text="$t('webshop.basketList.clearBasket')">
 					<UButton
-						icon="prime:trash"
+						icon="lucide:trash"
 						color="neutral"
 						variant="ghost"
 						class="h-12"
@@ -59,7 +61,7 @@
 				</div>
 			</div>
 			<div class="flex ltr:justify-end rtl:justify-start">
-				<UButton :to="{ name: 'checkout' }" icon="prime:credit-card" class="px-8" :label="$t('webshop.basketList.proceedToCheckout')" />
+				<UButton :to="{ name: 'checkout' }" icon="lucide:credit-card" class="px-8" :label="$t('webshop.basketList.proceedToCheckout')" />
 			</div>
 		</div>
 		<div v-else class="text-center py-10 text-muted">{{ $t("webshop.basketList.emptyBasket") }}</div>

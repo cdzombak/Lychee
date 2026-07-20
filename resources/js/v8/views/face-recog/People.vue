@@ -1,15 +1,17 @@
 <template>
 	<div class="h-svh overflow-y-auto">
-		<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-			<OpenLeftMenu />
-			<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("people.title") }}</span>
-			<div class="flex items-center gap-2">
+		<UHeader :toggle="false">
+			<template #left>
+				<OpenLeftMenu />
+			</template>
+			{{ $t("people.title") }}
+			<template #right>
 				<UButton
 					v-if="userStore.isAdmin"
 					:label="$t('maintenance.face_quality.title')"
 					color="neutral"
 					variant="outline"
-					icon="prime:filter"
+					icon="lucide:filter"
 					@click="
 						() => {
 							$router.push({ name: 'face-maintenance' });
@@ -20,15 +22,15 @@
 					:label="$t('people.clusters_title')"
 					color="neutral"
 					variant="outline"
-					icon="prime:sitemap"
+					icon="lucide:list-tree"
 					@click="
 						() => {
 							$router.push('/people/clusters');
 						}
 					"
 				/>
-			</div>
-		</div>
+			</template>
+		</UHeader>
 
 		<div v-if="loading" class="flex justify-center items-center mt-20">
 			<Spinner class="text-4xl" />
@@ -144,7 +146,7 @@ function buildContextMenuItems(person: App.Http.Resources.Models.PersonResource)
 	const items: ContextMenuAction[] = [
 		{
 			label: trans("people.person.toggle_searchable"),
-			icon: person.is_searchable ? "prime:eye-slash" : "prime:eye",
+			icon: person.is_searchable ? "lucide:eye-off" : "lucide:eye",
 			command: () => toggleSearchable(person),
 		},
 	];
@@ -152,14 +154,14 @@ function buildContextMenuItems(person: App.Http.Resources.Models.PersonResource)
 	if (initData.value?.user_management.can_edit) {
 		items.push({
 			label: trans("people.assign_to_user"),
-			icon: "prime:user-edit",
+			icon: "lucide:user-pen",
 			command: () => openUserPicker(person),
 		});
 	}
 
 	items.push({
 		label: trans("people.person.delete"),
-		icon: "prime:trash",
+		icon: "lucide:trash",
 		command: () => openDeleteDialog(person),
 	});
 

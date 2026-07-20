@@ -1,6 +1,6 @@
 <template>
 	<div class="flex flex-wrap items-center w-full">
-		<div class="w-1/2" :class="props.config.require_se ? 'text-primary-emphasis' : 'text-highlighted'">
+		<div class="w-1/2" :class="props.config.require_se ? 'text-primary' : 'text-highlighted'">
 			{{ props.config.key }}
 			<sub v-if="props.config.order !== null" class="text-muted text-2xs"> ({{ props.config.order }}) </sub>
 		</div>
@@ -38,7 +38,7 @@ const val = ref<string>(props.config.value);
 
 const changed = computed(() => val.value !== props.config.value);
 const isVersion = computed(() => props.config.key === "version");
-const iconName = computed(() => (isVersion.value ? "prime:exclamation-triangle" : "prime:exclamation-circle"));
+const iconName = computed(() => (isVersion.value ? "lucide:triangle-alert" : "lucide:circle-alert"));
 const iconColorClass = computed(() => (isVersion.value ? "text-error" : "text-warning-600"));
 
 const emits = defineEmits<{

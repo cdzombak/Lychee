@@ -97,6 +97,7 @@ return [
         'processing' => 'Обработва се',
         'failed' => 'Неуспешно',
         'closed' => 'Затворено',
+        'cancelled' => 'Cancelled',
     ],
     'orderList' => [
         'orders' => 'Поръчки',
@@ -106,6 +107,7 @@ return [
         'transactionId' => 'Идентификатор на транзакция',
         'status' => 'Статус',
         'amount' => 'Сума',
+        'show_pending' => 'Показване на чакащите поръчки',
     ],
     'purchasablesList' => [
         'purchasables' => 'Продукти за покупка',

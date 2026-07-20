@@ -12,7 +12,7 @@
 				</UTooltip>
 				<UInput id="slug" v-model="slugForInput" type="text" :disabled="is_se_preview_enabled" class="flex-1" />
 				<UTooltip :text="$t('gallery.album.properties.generate_slug')">
-					<UButton icon="prime:sync" variant="ghost" color="primary" :disabled="is_se_preview_enabled" @click="generateSlug" />
+					<UButton icon="lucide:refresh-cw" variant="ghost" color="primary" :disabled="is_se_preview_enabled" @click="generateSlug" />
 				</UTooltip>
 			</div>
 			<UFormField :label="$t('gallery.album.properties.description')">
@@ -21,11 +21,13 @@
 			<div class="flex gap-4 flex-wrap">
 				<UFormField :label="$t('gallery.album.properties.photo_ordering')">
 					<USelectMenu v-model="photoSortingColumn" :items="photoSortingColumnsOptions" label-key="label" class="w-62">
+						<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 						<template #item-label="{ item }">{{ $t(item.label) }}</template>
 					</USelectMenu>
 				</UFormField>
 				<UFormField :label="$t('gallery.album.properties.asc/desc')">
 					<USelectMenu v-model="photoSortingOrder" :items="sortingOrdersOptions" label-key="label" class="w-62">
+						<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 						<template #item-label="{ item }">{{ $t(item.label) }}</template>
 					</USelectMenu>
 				</UFormField>
@@ -34,11 +36,13 @@
 				<div class="flex gap-4 flex-wrap">
 					<UFormField :label="$t('gallery.album.properties.children_ordering')">
 						<USelectMenu v-model="albumSortingColumn" :items="albumSortingColumnsOptions" label-key="label" class="w-62">
+							<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 							<template #item-label="{ item }">{{ $t(item.label) }}</template>
 						</USelectMenu>
 					</UFormField>
 					<UFormField :label="$t('gallery.album.properties.asc/desc')">
 						<USelectMenu v-model="albumSortingOrder" :items="sortingOrdersOptions" label-key="label" class="w-62">
+							<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 							<template #item-label="{ item }">{{ $t(item.label) }}</template>
 						</USelectMenu>
 					</UFormField>
@@ -46,13 +50,14 @@
 				<UFormField :label="$t('gallery.album.properties.header')">
 					<USelectMenu v-model="header_id" :items="headersOptions" label-key="title" class="w-72">
 						<template #item-leading="{ item }">
-							<UIcon v-if="item.id === 'compact'" name="prime:arrow-down-left-and-arrow-up-right-to-center" />
+							<UIcon v-if="item.id === 'compact'" name="lucide:shrink" />
 							<img v-else :src="item.thumb ?? undefined" alt="poster" class="w-4 rounded-sm" />
 						</template>
 					</USelectMenu>
 				</UFormField>
 				<UFormField :label="$t('gallery.album.properties.license')">
 					<USelectMenu v-model="license" :items="licenseOptions" label-key="label" class="w-72">
+						<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 						<template #item-label="{ item }">{{ $t(item.label) }}</template>
 					</USelectMenu>
 				</UFormField>
@@ -62,11 +67,13 @@
 				<div class="flex flex-wrap gap-4">
 					<UFormField :label="$t('gallery.album.properties.aspect_ratio')">
 						<USelectMenu v-model="aspectRatio" :items="aspectRatioOptions" label-key="label" class="w-72">
+							<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 							<template #item-label="{ item }">{{ $t(item.label) }}</template>
 						</USelectMenu>
 					</UFormField>
 					<UFormField :label="$t('gallery.album.properties.album_timeline')">
 						<USelectMenu v-model="albumTimeline" :items="albumTimelineOptions" label-key="label" class="w-72">
+							<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 							<template #item-label="{ item }">{{ $t(item.label) }}</template>
 						</USelectMenu>
 					</UFormField>
@@ -75,33 +82,40 @@
 			<div class="flex flex-wrap gap-4">
 				<UFormField :label="$t('gallery.album.properties.layout')">
 					<USelectMenu v-model="photoLayout" :items="photoLayoutOptions" label-key="label" class="w-72">
+						<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 						<template #item-label="{ item }">{{ $t(item.label) }}</template>
 					</USelectMenu>
 				</UFormField>
 				<UFormField :label="$t('gallery.album.properties.photo_timeline')">
 					<USelectMenu v-model="photoTimeline" :items="photoTimelineOptions" label-key="label" class="w-72">
+						<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 						<template #item-label="{ item }">{{ $t(item.label) }}</template>
 					</USelectMenu>
 				</UFormField>
 			</div>
 
-			<div v-if="!is_model_album && !is_person_album" class="flex flex-col gap-2">
-				<UFormField :label="$t('gallery.album.properties.show_tags')">
+			<div v-if="!is_person_album" class="flex flex-col gap-2">
+				<UFormField :label="$t(is_model_album ? 'gallery.album.properties.tags' : 'gallery.album.properties.show_tags')">
 					<TagsInput v-model="tags" :add="false" />
 				</UFormField>
-				<div class="flex gap-2 items-center my-2">
-					<USwitch v-model="is_and" input-id="pp_is_and" />
-					<label for="pp_is_and" class="text-highlighted">{{ $t("gallery.album.properties.all_tags_must_match") }}</label>
-				</div>
+				<USwitch
+					v-if="!is_model_album"
+					v-model="is_and"
+					class="my-2"
+					:label="$t('gallery.album.properties.all_tags_must_match')"
+					:ui="{ label: 'text-highlighted' }"
+				/>
 			</div>
 			<div v-if="is_person_album" class="flex flex-col gap-2">
 				<UFormField :label="$t('dialogs.new_person_album.set_persons')">
 					<PersonsInput v-model="selectedPersons" :placeholder="$t('dialogs.new_person_album.set_persons')" />
 				</UFormField>
-				<div class="flex gap-2 items-center my-2">
-					<USwitch v-model="is_and" input-id="pp_is_and" />
-					<label for="pp_is_and" class="text-highlighted">{{ $t("gallery.album.properties.all_persons_must_match") }}</label>
-				</div>
+				<USwitch
+					v-model="is_and"
+					class="my-2"
+					:label="$t('gallery.album.properties.all_persons_must_match')"
+					:ui="{ label: 'text-highlighted' }"
+				/>
 			</div>
 			<UButton class="mt-4 w-full font-bold justify-center" color="primary" @click="save">
 				{{ $t("dialogs.button.save") }}
@@ -192,6 +206,10 @@ const descriptionForInput = computed<string | undefined>({
 		description.value = v ?? null;
 	},
 });
+function selectedLabel<T>(option: SelectOption<T> | undefined): string {
+	return option ? trans(option.label) : "";
+}
+
 const photoSortingColumn = ref<SelectOption<App.Enum.ColumnSortingPhotoType> | undefined>(undefined);
 const photoSortingOrder = ref<SelectOption<App.Enum.OrderSortingType> | undefined>(undefined);
 const albumSortingColumn = ref<SelectOption<App.Enum.ColumnSortingAlbumType> | undefined>(undefined);
@@ -318,6 +336,7 @@ function saveAlbum() {
 		album_sorting_order: albumSortingOrder.value?.value ?? null,
 		album_aspect_ratio: aspectRatio.value?.value ?? null,
 		copyright: copyright.value ?? null,
+		tags: tags.value,
 		header_id: header_id.value?.id === "compact" ? null : (header_id.value?.id ?? null),
 		is_compact: header_id.value?.id === "compact",
 		photo_layout: photoLayout.value?.value ?? null,

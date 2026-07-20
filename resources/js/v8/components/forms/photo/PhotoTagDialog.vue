@@ -5,16 +5,13 @@
 				{{ question }}
 				<br />
 				<span class="text-highlighted flex items-center justify-center gap-1">
-					<UIcon name="prime:exclamation-triangle" class="text-warning-600" />Press Enter to confirm each tag.
+					<UIcon name="lucide:triangle-alert" class="text-warning-600" />Press Enter to confirm each tag.
 				</span>
 			</p>
 			<div class="my-3 first:mt-0 last:mb-0">
 				<TagsInput v-model="tags" :placeholder="$t('dialogs.photo_tags.no_tags')" :add="true" />
 			</div>
-			<div class="flex items-center gap-2">
-				<UCheckbox v-model="shallOverride" id="shallOverride" />
-				<label for="shallOverride" class="text-sm text-muted">{{ $t("dialogs.photo_tags.tags_override_info") }}</label>
-			</div>
+			<UCheckbox v-model="shallOverride" :label="$t('dialogs.photo_tags.tags_override_info')" :ui="{ label: 'text-sm text-muted' }" />
 		</template>
 		<template #footer>
 			<div class="flex w-full gap-2">

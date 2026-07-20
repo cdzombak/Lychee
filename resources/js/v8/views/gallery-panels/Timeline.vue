@@ -12,7 +12,7 @@
 			<div v-if="timelineStore.minPage > 1" class="flex justify-center pt-2">
 				<UButton
 					variant="ghost"
-					icon="prime:angle-double-up"
+					icon="lucide:chevrons-up"
 					color="neutral"
 					@click="timelineStore.loadLess"
 					:label="$t('gallery.timeline.load_previous')"
@@ -127,7 +127,6 @@ import { useUserStore } from "@/stores/UserState";
 import { ref } from "vue";
 import { useLycheeStateStore } from "@/stores/LycheeState";
 import { storeToRefs } from "pinia";
-import { onKeyStroke } from "@vueuse/core";
 import { isTouchDevice, shouldIgnoreKeystroke } from "@/utils/keybindings-utils";
 import { useSelection } from "@/composables/selections/selections";
 import { useGalleryModals } from "@/composables/modalsTriggers/galleryModals";
@@ -157,7 +156,7 @@ import PhotoLicenseDialog from "@/v8/components/forms/photo/PhotoLicenseDialog.v
 import PhotoCopyDialog from "@/v8/components/forms/photo/PhotoCopyDialog.vue";
 import MoveDialog from "@/v8/components/forms/gallery-dialogs/MoveDialog.vue";
 import DeleteDialog from "@/v8/components/forms/gallery-dialogs/DeleteDialog.vue";
-import { useContextMenu } from "@/composables/contextMenus/contextMenu";
+import { useContextMenu } from "@/v8/composables/contextMenus/contextMenu";
 import PhotoService from "@/services/photo-service";
 import AlbumService from "@/services/album-service";
 import ModerationService from "@/services/moderation-service";
@@ -385,10 +384,6 @@ function contextMenuPhotoOpen(photoId: string, _e: MouseEvent): void {
 	}
 }
 
-function toIconifyName(icon: string): string {
-	return "prime:" + icon.replace(/^pi\s+pi-/, "").replace(/^pi-/, "");
-}
-
 const menuSections = computed<ContextMenuItem[][]>(() => {
 	const sections: ContextMenuItem[][] = [[]];
 	for (const entry of Menu.value) {
@@ -398,7 +393,7 @@ const menuSections = computed<ContextMenuItem[][]>(() => {
 		}
 		sections[sections.length - 1].push({
 			label: trans(entry.label ?? ""),
-			icon: toIconifyName(entry.icon ?? ""),
+			icon: entry.icon,
 			onSelect: entry.callback,
 		});
 	}
@@ -434,74 +429,72 @@ function openSearch() {
 	router.push({ name: "search" });
 }
 
-onKeyStroke("l", () => !shouldIgnoreKeystroke() && !photoStore.isLoaded && !userStore.isLoggedIn && (is_login_open.value = true));
-onKeyStroke("/", () => !shouldIgnoreKeystroke() && !photoStore.isLoaded && timelineStore.rootConfig?.is_search_accessible && openSearch());
-onKeyStroke("f", () => !shouldIgnoreKeystroke() && !photoStore.isLoaded && togglableStore.toggleFullScreen());
-onKeyStroke("u", () => !shouldIgnoreKeystroke() && !photoStore.isLoaded && (is_upload_visible.value = true));
+defineShortcuts({
+	l: () => !photoStore.isLoaded && !userStore.isLoggedIn && (is_login_open.value = true),
+	"/": () => !photoStore.isLoaded && timelineStore.rootConfig?.is_search_accessible && openSearch(),
+	f: () => togglableStore.toggleFullScreen(),
+	u: () => !photoStore.isLoaded && (is_upload_visible.value = true),
 
-onKeyStroke("ArrowLeft", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && isLTR() && photoStore.hasPrevious && previous(true));
-onKeyStroke("ArrowRight", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && isLTR() && photoStore.hasNext && next(true));
-onKeyStroke("ArrowLeft", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && !isLTR() && photoStore.hasNext && next(true));
-onKeyStroke("ArrowRight", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && !isLTR() && photoStore.hasPrevious && previous(true));
-onKeyStroke("o", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && rotateOverlay());
-onKeyStroke(" ", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && slideshow());
-onKeyStroke("i", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && toggleDetails());
-onKeyStroke("f", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && togglableStore.toggleFullScreen());
-onKeyStroke("Escape", () => !shouldIgnoreKeystroke() && photoStore.isLoaded && is_slideshow_active.value && stop());
+	arrowleft: () => photoStore.isLoaded && (isLTR() ? photoStore.hasPrevious && previous(true) : photoStore.hasNext && next(true)),
+	arrowright: () => photoStore.isLoaded && (isLTR() ? photoStore.hasNext && next(true) : photoStore.hasPrevious && previous(true)),
+	o: () => photoStore.isLoaded && rotateOverlay(),
+	" ": () => photoStore.isLoaded && slideshow(),
+	i: () => photoStore.isLoaded && toggleDetails(),
 
-onKeyStroke(["Delete", "Backspace"], () => !shouldIgnoreKeystroke() && photoStore.isLoaded && toggleDelete());
+	delete: () => photoStore.isLoaded && toggleDelete(),
+	backspace: () => photoStore.isLoaded && toggleDelete(),
 
-// on key stroke escape:
-// 1. lose focus
-// 2. close modals
-// 3. go back
-onKeyStroke("Escape", () => {
-	if (is_slideshow_active.value) {
-		return;
-	}
+	// on key stroke escape:
+	// 1. stop an active slideshow
+	// 2. lose focus
+	// 3. close modals
+	// 4. go back
+	escape: {
+		usingInput: true,
+		handler: () => {
+			if (photoStore.isLoaded && is_slideshow_active.value) {
+				stop();
+			}
 
-	// 1. lose focus
-	if (shouldIgnoreKeystroke() && document.activeElement instanceof HTMLElement) {
-		document.activeElement.blur();
-		return;
-	}
+			// 2. lose focus
+			if (shouldIgnoreKeystroke() && document.activeElement instanceof HTMLElement) {
+				document.activeElement.blur();
+				return;
+			}
 
-	if (are_details_open.value) {
-		are_details_open.value = false;
-		return;
-	}
+			if (are_details_open.value) {
+				are_details_open.value = false;
+				return;
+			}
 
-	if (is_move_visible.value) {
-		is_move_visible.value = false;
-		return;
-	}
+			if (is_move_visible.value) {
+				is_move_visible.value = false;
+				return;
+			}
 
-	if (is_delete_visible.value) {
-		is_delete_visible.value = false;
-		return;
-	}
+			if (is_delete_visible.value) {
+				is_delete_visible.value = false;
+				return;
+			}
 
-	if (is_rename_visible.value) {
-		is_rename_visible.value = false;
-		return;
-	}
+			if (is_rename_visible.value) {
+				is_rename_visible.value = false;
+				return;
+			}
 
-	if (is_tag_visible.value) {
-		is_tag_visible.value = false;
-		return;
-	}
+			if (is_tag_visible.value) {
+				is_tag_visible.value = false;
+				return;
+			}
 
-	if (is_copy_visible.value) {
-		is_copy_visible.value = false;
-		return;
-	}
+			if (is_copy_visible.value) {
+				is_copy_visible.value = false;
+				return;
+			}
 
-	if (is_move_visible.value) {
-		is_move_visible.value = false;
-		return;
-	}
-
-	goBack();
+			goBack();
+		},
+	},
 });
 
 watch(

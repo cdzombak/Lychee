@@ -43,7 +43,7 @@
 						<small class="text-muted ltr:text-left rtl:text-right">
 							<template v-if="form.mode === 'regex'"
 								>{{ $t("renamer.mode_regex_description") }}
-								<UIcon name="prime:question-circle" class="text-xs cursor-pointer" @click="showHelpRegex = !showHelpRegex" />
+								<UIcon name="lucide:circle-help" class="text-xs cursor-pointer" @click="showHelpRegex = !showHelpRegex" />
 							</template>
 							<template v-else>{{ modeOptions.find((o) => o.value === form.mode)?.description }}</template>
 						</small>
@@ -70,7 +70,7 @@
 						class="text-muted text-justify text-xs -mt-4 bg-elevated rounded p-2"
 						@click="showHelpRegex = false"
 					>
-						<UIcon name="prime:question-circle" class="ltr:mr-2 rtl:ml-2" />
+						<UIcon name="lucide:circle-help" class="ltr:mr-2 rtl:ml-2" />
 						<span class="renamer-help-regex" v-html="$t('renamer.regex_help')"></span><br />
 						<a href="https://regex101.com" target="_blank" rel="noopener noreferrer" class="text-primary-500 hover:underline"
 							>https://regex101.com</a
@@ -105,28 +105,15 @@
 
 					<!-- Enabled -->
 					<div class="grid grid-cols-2">
-						<div class="flex flex-col">
-							<div class="flex items-center gap-2">
-								<USwitch id="is_enabled" v-model="form.is_enabled" />
-								<label for="is_enabled"
-									><span class="font-semibold">{{ $t("renamer.enabled") }}</span></label
-								>
-							</div>
-							<small class="text-muted ltr:text-left rtl:text-right">{{ $t("renamer.enabled_help") }}</small>
-						</div>
-						<div class="flex flex-col">
-							<div class="flex items-center gap-2">
-								<USwitch id="is_photo_rule" v-model="form.is_photo_rule" />
-								<label for="is_photo_rule"
-									><span class="font-semibold">{{ $t("renamer.photo_rule") }}</span></label
-								>
-							</div>
-							<div class="flex items-center gap-2">
-								<USwitch id="is_album_rule" v-model="form.is_album_rule" />
-								<label for="is_album_rule"
-									><span class="font-semibold">{{ $t("renamer.album_rule") }}</span></label
-								>
-							</div>
+						<USwitch
+							v-model="form.is_enabled"
+							:label="$t('renamer.enabled')"
+							:description="$t('renamer.enabled_help')"
+							:ui="{ label: 'font-semibold' }"
+						/>
+						<div class="flex flex-col gap-2">
+							<USwitch v-model="form.is_photo_rule" :label="$t('renamer.photo_rule')" :ui="{ label: 'font-semibold' }" />
+							<USwitch v-model="form.is_album_rule" :label="$t('renamer.album_rule')" :ui="{ label: 'font-semibold' }" />
 						</div>
 					</div>
 				</div>

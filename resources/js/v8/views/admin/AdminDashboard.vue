@@ -1,24 +1,30 @@
 <template>
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("admin-dashboard.title") }}</span>
-		<UButton
-			v-if="initData?.settings.can_edit"
-			:label="$t('admin-dashboard.refresh')"
-			icon="prime:refresh"
-			:disabled="isLoading"
-			color="neutral"
-			variant="ghost"
-			@click="refreshStats"
-		/>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+
+		{{ $t("admin-dashboard.title") }}
+
+		<template #right>
+			<UButton
+				v-if="initData?.settings.can_edit"
+				:label="$t('admin-dashboard.refresh')"
+				icon="lucide:refresh-cw"
+				:disabled="isLoading"
+				color="neutral"
+				variant="ghost"
+				@click="refreshStats"
+			/>
+		</template>
+	</UHeader>
 
 	<div class="admin-dashboard max-w-7xl mx-auto p-4">
 		<!-- Update Status (only for full admins) -->
 		<UCard v-if="initData?.settings.can_edit && updateStatus?.enabled && updateStatus?.has_update" class="mb-4">
 			<template #header>
 				<div class="flex items-center gap-2 font-bold text-primary-500">
-					<UIcon name="prime:arrow-circle-up" class="text-lg" />
+					<UIcon name="lucide:circle-arrow-up" class="text-lg" />
 					<span>{{ $t("admin-dashboard.update.title") }}</span>
 				</div>
 			</template>
@@ -36,7 +42,7 @@
 		<UCard v-if="initData?.settings.can_edit && advisories.length > 0" class="mb-4">
 			<template #header>
 				<div class="flex items-center gap-2 text-orange-400 font-bold">
-					<UIcon name="prime:exclamation-triangle" class="text-lg" />
+					<UIcon name="lucide:triangle-alert" class="text-lg" />
 					<span>{{ $t("admin-dashboard.security.title") }}</span>
 				</div>
 			</template>
@@ -81,7 +87,7 @@
 					<div class="text-muted text-sm">{{ $t("admin-dashboard.metrics.users_count") }}</div>
 				</div>
 				<div class="bg-elevated rounded p-4 text-center">
-					<div class="text-2xl font-bold">{{ formatBytes(stats.storage_bytes) }}</div>
+					<div class="text-2xl font-bold" dir="ltr">{{ formatBytes(stats.storage_bytes) }}</div>
 					<div class="text-muted text-sm">{{ $t("admin-dashboard.metrics.storage_bytes") }}</div>
 				</div>
 				<div class="bg-elevated rounded p-4 text-center">
@@ -126,9 +132,9 @@
 								@keydown.space.prevent="navigateTile(tile)"
 							>
 								<UChip v-if="tile.num && tile.num.value > 0" :text="tile.num.value" color="primary">
-									<PiMiniIcon :icon="tile.icon" class="w-6 h-6 text-2xl fill-surface-0" />
+									<PiMiniIcon :icon="tile.icon" class="w-6 h-6 text-2xl fill-white" />
 								</UChip>
-								<PiMiniIcon v-else :icon="tile.icon" class="w-6 h-6 text-2xl fill-surface-0" />
+								<PiMiniIcon v-else :icon="tile.icon" class="w-6 h-6 text-2xl fill-white" />
 								<span class="text-sm">{{ $t(tile.label) }}</span>
 							</component>
 						</template>
@@ -139,7 +145,7 @@
 
 		<div class="flex items-center justify-center gap-6 mt-6 text-sm">
 			<a
-				v-if="initData?.settings.can_edit"
+				v-if="initData?.settings.can_edit && !lycheeStore.is_white_label_enabled"
 				:href="`${Constants.BASE_URL}/docs/api`"
 				target="_blank"
 				rel="noopener noreferrer"
@@ -168,7 +174,7 @@ import { useLeftMenuStateStore } from "@/stores/LeftMenuState";
 import Constants from "@/services/constants";
 import SecurityAdvisoriesService from "@/services/security-advisories-service";
 import AdminStatsService, { type AdminUpdateStatusResource } from "@/services/admin-stats-service";
-import { useAdminTiles, type AdminTile, type AdminTileGroup } from "@/composables/useAdminTiles";
+import { useAdminTiles, type AdminTile, type AdminTileGroup } from "@/v8/composables/useAdminTiles";
 
 const lycheeStore = useLycheeStateStore();
 const leftMenuStore = useLeftMenuStateStore();

@@ -6,7 +6,7 @@
 				'text-highlighted': !isVisible,
 				'text-primary-500': isVisible,
 			}"
-			name="prime:question-circle"
+			name="lucide:circle-help"
 			@click="toggle"
 		/>
 	</div>
@@ -26,52 +26,52 @@
 				<div class="mb-2">{{ $t("webshop.orderLegend.flowsIntro") }}</div>
 				<div class="flex justify-center gap-2 items-center">
 					<OrderStatus size="small" status="pending" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="processing" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="completed" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="closed" />
 				</div>
 				<div class="flex justify-center gap-2 items-center">
 					<OrderStatus size="small" status="pending" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="processing" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="cancelled" />
 				</div>
 				<div class="flex justify-center gap-2 items-center">
 					<OrderStatus size="small" status="pending" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="processing" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="failed" />
 				</div>
 				<div class="flex justify-center gap-2 items-center">
 					<OrderStatus size="small" status="pending" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="offline" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="completed" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="closed" />
 				</div>
 				<div class="flex justify-center gap-2 items-center">
 					<OrderStatus size="small" status="cancelled" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="processing" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="completed" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="closed" />
 				</div>
 				<div class="flex justify-center gap-2 items-center">
 					<OrderStatus size="small" status="failed" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="processing" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="completed" />
-					<UIcon name="prime:arrow-right" />
+					<UIcon :name="arrow" />
 					<OrderStatus size="small" status="closed" />
 				</div>
 			</div>
@@ -93,10 +93,15 @@
 	</Transition>
 </template>
 <script setup lang="ts">
+import { useLtRorRtL } from "@/utils/Helpers";
 import OrderStatus from "@/v8/components/webshop/OrderStatus.vue";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 const isVisible = ref(false);
+
+const { isLTR } = useLtRorRtL();
+
+const arrow = computed(() => (isLTR() ? "lucide:arrow-right" : "lucide:arrow-left"));
 
 function toggle() {
 	isVisible.value = !isVisible.value;

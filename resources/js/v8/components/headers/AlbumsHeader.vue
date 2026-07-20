@@ -1,16 +1,16 @@
 <template>
-	<div
+	<UHeader
 		v-if="albumsStore.rootConfig && albumsStore.rootRights"
-		class="w-full z-10 border-0 h-14 flex-nowrap relative flex items-center justify-between px-2"
 		:class="{
 			'bg-transparent': albumsStore.rootConfig.is_header_bar_transparent,
-			'bg-linear-to-b dark:from-surface-800 from-surface-50 via-75% light:via-surface-50/80 light:to-surface-50/20':
-				albumsStore.rootConfig.is_header_bar_gradient,
+			'max-h-14': !is_full_screen,
+			'max-h-0 overflow-hidden': is_full_screen,
 		}"
+		:toggle="false"
 	>
-		<div class="flex items-center">
+		<template #left>
 			<OpenLeftMenu />
-		</div>
+		</template>
 
 		<div class="absolute top-0 py-3 left-1/2 -translate-x-1/2 h-14 flex items-center">
 			<template v-if="albumsStore.rootConfig.header_image_url === ''">
@@ -35,9 +35,9 @@
 			</template>
 		</div>
 
-		<div class="flex items-center gap-1">
+		<template #right>
 			<template v-if="userStore.isGuest">
-				<UButton as="router-link" :to="{ name: 'login' }" color="neutral" variant="ghost" class="py-2 px-4 rounded-xl hidden xl:inline-flex">
+				<UButton as="router-link" :to="{ name: 'login' }" color="neutral" variant="ghost" class="py-2 px-4 hidden xl:inline-flex">
 					{{ $t("dialogs.login.signin") }}
 				</UButton>
 				<UButton
@@ -46,7 +46,7 @@
 					:to="{ name: 'register' }"
 					color="neutral"
 					variant="ghost"
-					class="py-2 px-4 rounded-xl mr-12 lg:mr-0 inline-flex"
+					class="py-2 px-4 mr-12 lg:mr-0 inline-flex"
 				>
 					{{ $t("profile.register.signup") }}
 				</UButton>
@@ -62,27 +62,27 @@
 						v-if="item.type === 'link'"
 						as="router-link"
 						:to="item.to"
-						:icon="toIconifyName(item.icon)"
-						:color="(item.severity as 'secondary' | 'danger') ?? 'neutral'"
+						:icon="item.icon"
+						:color="(item.severity as 'secondary' | 'danger' | 'primary') ?? 'neutral'"
 						variant="ghost"
 					/>
 					<UButton
 						v-else
-						:icon="toIconifyName(item.icon)"
-						:color="(item.severity as 'secondary' | 'danger') ?? 'neutral'"
+						:icon="item.icon"
+						:color="(item.severity as 'secondary' | 'danger' | 'primary') ?? 'neutral'"
 						variant="ghost"
 						@click="item.callback"
 					/>
 				</template>
 				<UDropdownMenu v-if="albumsStore.rootRights?.can_upload" :items="addMenuSections">
-					<UButton icon="prime:plus" color="neutral" variant="ghost" />
+					<UButton icon="lucide:plus" color="neutral" variant="ghost" />
 				</UDropdownMenu>
 			</div>
 			<UDropdownMenu :items="mobileMenuSections" class="lg:hidden">
-				<UButton icon="prime:angle-double-down" color="neutral" variant="ghost" />
+				<UButton icon="lucide:chevrons-down" color="neutral" variant="ghost" />
 			</UDropdownMenu>
-		</div>
-	</div>
+		</template>
+	</UHeader>
 	<div v-if="albumsStore.rootConfig?.header_image_url !== ''" class="relative w-full h-[50vh] -mt-14 z-0">
 		<img :src="albumsStore.rootConfig?.header_image_url" class="object-cover h-full w-full" />
 		<div class="absolute top-0 left-0 w-full h-full flex items-center justify-center px-20">
@@ -95,7 +95,7 @@
 			/>
 			<h1
 				v-else
-				class="text-sm font-bold sm:text-lg md:text-3xl md:font-normal text-surface-0 uppercase text-center text-shadow-md text-shadow-black/25"
+				class="text-sm font-bold sm:text-lg md:text-3xl md:font-normal text-white uppercase text-center text-shadow-md text-shadow-black/25"
 				id="header-site-text"
 			>
 				{{ props.title }}
@@ -105,13 +105,12 @@
 </template>
 <script setup lang="ts">
 import { computed, ComputedRef } from "vue";
-import { onKeyStroke } from "@vueuse/core";
 import { useLycheeStateStore } from "@/stores/LycheeState";
-import { isTouchDevice, shouldIgnoreKeystroke } from "@/utils/keybindings-utils";
+import { isTouchDevice } from "@/utils/keybindings-utils";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 import { useTogglablesStateStore } from "@/stores/ModalsState";
-import { useContextMenuAlbumsAdd } from "@/composables/contextMenus/contextMenuAlbumsAdd";
+import { useContextMenuAlbumsAdd } from "@/v8/composables/contextMenus/contextMenuAlbumsAdd";
 import { useGalleryModals } from "@/composables/modalsTriggers/galleryModals";
 import BackLinkButton from "./BackLinkButton.vue";
 import OpenLeftMenu from "./OpenLeftMenu.vue";
@@ -122,7 +121,7 @@ import { useUserStore } from "@/stores/UserState";
 import { useOrderManagementStore } from "@/stores/OrderManagement";
 import { trans } from "laravel-vue-i18n";
 import type { DropdownMenuItem } from "@nuxt/ui";
-import type { AddMenuItem } from "@/composables/contextMenus/contextMenuAlbumAdd";
+import type { AddMenuItem } from "@/v8/composables/contextMenus/contextMenuAlbumAdd";
 
 const props = defineProps<{
 	title: string;
@@ -143,7 +142,8 @@ const orderManagementStore = useOrderManagementStore();
 
 const { dropbox_api_key, is_favourite_enabled, is_se_preview_enabled, is_live_metrics_enabled, is_registration_enabled, is_person_album_enabled } =
 	storeToRefs(lycheeStore);
-const { is_login_open, is_upload_visible, is_create_album_visible, is_create_tag_album_visible, is_metrics_open } = storeToRefs(togglableStore);
+const { is_login_open, is_upload_visible, is_create_album_visible, is_create_tag_album_visible, is_metrics_open, is_full_screen } =
+	storeToRefs(togglableStore);
 
 const router = useRouter();
 
@@ -176,10 +176,6 @@ const { addMenu } = useContextMenuAlbumsAdd(
 	is_person_album_enabled,
 );
 
-function toIconifyName(icon: string): string {
-	return "prime:" + icon.replace(/^pi\s+pi-/, "").replace(/^pi-/, "");
-}
-
 const addMenuSections = computed<DropdownMenuItem[][]>(() => {
 	const sections: DropdownMenuItem[][] = [[]];
 	for (const entry of addMenu.value as AddMenuItem[]) {
@@ -192,7 +188,7 @@ const addMenuSections = computed<DropdownMenuItem[][]>(() => {
 		}
 		sections[sections.length - 1].push({
 			label: trans(entry.label),
-			icon: toIconifyName(entry.icon),
+			icon: entry.icon,
 			onSelect: entry.callback,
 		});
 	}
@@ -215,41 +211,45 @@ function toggleToList() {
 	lycheeStore.album_view_mode = "list";
 }
 
-onKeyStroke("n", () => !shouldIgnoreKeystroke() && albumsStore.rootRights?.can_upload && (is_create_album_visible.value = true));
-onKeyStroke("u", () => !shouldIgnoreKeystroke() && albumsStore.rootRights?.can_upload && (is_upload_visible.value = true));
-onKeyStroke("/", () => !shouldIgnoreKeystroke() && albumsStore.rootConfig?.is_search_accessible && openSearch());
-
-// on key stroke escape:
-// 1. lose focus
-// 2. close modals
-// 3. go back
-onKeyStroke("Escape", () => {
+defineShortcuts({
+	n: () => albumsStore.rootRights?.can_upload && (is_create_album_visible.value = true),
+	u: () => albumsStore.rootRights?.can_upload && (is_upload_visible.value = true),
+	"/": () => albumsStore.rootConfig?.is_search_accessible && openSearch(),
+	// on key stroke escape:
 	// 1. lose focus
-	if (document.activeElement instanceof HTMLElement) {
-		document.activeElement.blur();
-		return;
-	}
-
 	// 2. close modals
-	if (is_login_open.value) {
-		is_login_open.value = false;
-		return;
-	}
+	// 3. go back
+	escape: {
+		usingInput: true,
+		handler: () => {
+			// 1. lose focus
+			if (document.activeElement instanceof HTMLElement) {
+				document.activeElement.blur();
+				return;
+			}
 
-	if (is_upload_visible.value) {
-		is_upload_visible.value = false;
-		return;
-	}
-	if (is_create_album_visible.value) {
-		is_create_album_visible.value = false;
-		return;
-	}
-	if (is_create_tag_album_visible.value) {
-		is_create_tag_album_visible.value = false;
-		return;
-	}
+			// 2. close modals
+			if (is_login_open.value) {
+				is_login_open.value = false;
+				return;
+			}
 
-	leftMenuStore.left_menu_open = false;
+			if (is_upload_visible.value) {
+				is_upload_visible.value = false;
+				return;
+			}
+			if (is_create_album_visible.value) {
+				is_create_album_visible.value = false;
+				return;
+			}
+			if (is_create_tag_album_visible.value) {
+				is_create_tag_album_visible.value = false;
+				return;
+			}
+
+			leftMenuStore.left_menu_open = false;
+		},
+	},
 });
 
 type Link = {
@@ -272,7 +272,7 @@ const menu = computed(() =>
 		{
 			to: { name: "basket" },
 			type: "link",
-			icon: "pi pi-shopping-cart",
+			icon: "lucide:shopping-cart",
 			severity: orderManagementStore.order?.status === "processing" ? "danger" : "secondary",
 			if: orderManagementStore.hasItems,
 			key: "basket",
@@ -280,61 +280,62 @@ const menu = computed(() =>
 		{
 			to: { name: "favourites" },
 			type: "link",
-			icon: "pi pi-heart",
+			icon: "lucide:heart",
 			if: userStore.isLoggedIn && is_favourite_enabled.value && (favourites.photos?.length ?? 0) > 0,
 			key: "favourites",
 		},
 		{
-			icon: "pi pi-th-large",
+			icon: "lucide:layout-grid",
 			type: "fn",
 			callback: toggleToGrid,
 			if: lycheeStore.album_view_mode === "list",
 			key: "view_grid",
 		},
 		{
-			icon: "pi pi-list",
+			icon: "lucide:list",
 			type: "fn",
 			callback: toggleToList,
 			if: lycheeStore.album_view_mode === "grid",
 			key: "view_list",
 		},
 		{
-			icon: "pi pi-search",
+			icon: "lucide:search",
 			type: "fn",
 			callback: openSearch,
 			if: albumsStore.rootConfig?.is_search_accessible,
 			key: "search",
 		},
 		{
-			icon: "pi pi-bell",
+			icon: "lucide:bell",
 			type: "fn",
 			callback: () => (is_metrics_open.value = true),
 			if: is_live_metrics_enabled.value && albumsStore.rootRights?.can_see_live_metrics,
 			key: "metrics",
 		},
 		{
-			icon: "pi pi-bell text-primary-emphasis",
+			icon: "lucide:bell",
+			severity: "primary",
 			type: "fn",
 			callback: () => (is_metrics_open.value = true),
 			if: is_se_preview_enabled.value && albumsStore.rootRights?.can_see_live_metrics,
 			key: "se_preview",
 		},
 		{
-			icon: "pi pi-question-circle",
+			icon: "lucide:circle-help",
 			type: "fn",
 			callback: openHelp,
 			if: !isTouchDevice() && userStore.isLoggedIn && albumsStore.rootConfig?.show_keybinding_help_button && document.body.scrollWidth > 800,
 			key: "help",
 		},
 		{
-			icon: "pi pi-eye-slash",
+			icon: "lucide:eye-off",
 			type: "fn",
 			callback: () => (lycheeStore.are_nsfw_visible = false),
 			if: isTouchDevice() && albumsStore.hasHidden && lycheeStore.are_nsfw_visible,
 			key: "hide_nsfw",
 		},
 		{
-			icon: "pi pi-eye",
+			icon: "lucide:eye",
 			type: "fn",
 			callback: () => (lycheeStore.are_nsfw_visible = true),
 			if: isTouchDevice() && albumsStore.hasHidden && !lycheeStore.are_nsfw_visible,
@@ -347,13 +348,13 @@ const menu = computed(() =>
 const mobileMenuSections = computed<DropdownMenuItem[][]>(() => {
 	const items: DropdownMenuItem[] = menu.value.map((item) => ({
 		label: "",
-		icon: toIconifyName(item.icon),
+		icon: item.icon,
 		to: item.type === "link" ? item.to : undefined,
 		onSelect: item.type === "fn" ? item.callback : undefined,
 	}));
 	if (albumsStore.rootRights?.can_upload) {
 		items.push({
-			icon: "prime:plus",
+			icon: "lucide:plus",
 			label: trans("gallery.menus.add"),
 			children: addMenuSections.value,
 		} as DropdownMenuItem);

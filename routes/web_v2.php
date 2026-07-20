@@ -82,6 +82,7 @@ Route::get('/admin/user-groups', VueController::class)->middleware(['migration:c
 Route::get('/admin/contact-messages', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/admin/webhooks', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/admin/moderation', VueController::class)->middleware(['migration:complete', 'login_required:always']);
+Route::get('/admin/watermark', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/admin/purchasables', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/admin/jobs', VueController::class)->middleware(['migration:complete', 'login_required:always']);
 Route::get('/admin/maintenance/{faces?}', VueController::class)->middleware(['migration:complete', 'login_required:always']);
@@ -117,6 +118,8 @@ Route::match(['get', 'post'], '/api/v1/{path}', fn () => view('error.v1-is-dead'
 Route::get('image/{path}', SecurePathController::class)
 	->name('image')
 	->where('path', '.*');
+
+Route::get('/.well-known/appspecific/com.chrome.devtools.json', fn () => response()->noContent());
 
 // This route must be defined last because it is a catch all.
 Route::match(['get', 'post'], '{path}', HoneyPotController::class)->where('path', '.*');

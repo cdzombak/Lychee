@@ -11,11 +11,12 @@
 
 	<WebhookFormDialog v-model:open="isFormDialogVisible" :webhook="editingWebhook" @saved="load" />
 
-	<div class="w-full border-0 h-14 flex items-center justify-between px-2">
-		<OpenLeftMenu />
-		<span class="absolute left-1/2 -translate-x-1/2 pointer-events-none">{{ $t("webhook.title") }}</span>
-		<div></div>
-	</div>
+	<UHeader :toggle="false">
+		<template #left>
+			<OpenLeftMenu />
+		</template>
+		{{ $t("webhook.title") }}
+	</UHeader>
 
 	<UCard class="max-w-5xl mx-auto mt-4">
 		<p class="text-muted mb-6 text-center">{{ $t("webhook.description") }}</p>
@@ -28,14 +29,14 @@
 		<!-- Empty state -->
 		<div v-else-if="webhooks.length === 0" class="text-center py-12">
 			<div class="text-muted mb-4">
-				<UIcon name="prime:send" class="text-4xl" />
+				<UIcon name="lucide:send" class="text-4xl" />
 			</div>
 			<p class="text-muted mb-4">{{ $t("webhook.no_webhooks") }}</p>
-			<UButton icon="prime:plus" :label="$t('webhook.create_first')" @click="openCreateModal" />
+			<UButton icon="lucide:plus" :label="$t('webhook.create_first')" @click="openCreateModal" />
 		</div>
 		<template v-else>
 			<div class="flex mb-4 justify-end">
-				<UButton icon="prime:plus" size="sm" :label="$t('webhook.create')" @click="openCreateModal" />
+				<UButton icon="lucide:plus" size="sm" :label="$t('webhook.create')" @click="openCreateModal" />
 			</div>
 
 			<!-- Webhooks table -->
@@ -127,8 +128,8 @@ const columns: TableColumn<Webhook>[] = [
 		header: trans("webhook.col_actions"),
 		cell: ({ row }) =>
 			h("div", { class: "flex justify-center gap-2" }, [
-				h(UButton, { icon: "prime:pencil", color: "neutral", variant: "ghost", size: "sm", onClick: () => openEditModal(row.original) }),
-				h(UButton, { icon: "prime:trash", color: "error", variant: "ghost", size: "sm", onClick: () => openDeleteModal(row.original) }),
+				h(UButton, { icon: "lucide:pencil", color: "neutral", variant: "ghost", size: "sm", onClick: () => openEditModal(row.original) }),
+				h(UButton, { icon: "lucide:trash", color: "error", variant: "ghost", size: "sm", onClick: () => openDeleteModal(row.original) }),
 			]),
 	},
 ];

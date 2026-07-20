@@ -33,10 +33,8 @@
 								size="sm"
 								@update:model-value="(v: SelectOption<string> | undefined) => onEnumChange(field.key, v?.value ?? null)"
 							>
+								<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 								<template #item-label="{ item }">{{ $t(item.label) }}</template>
-								<!-- <template #default="{ modelValue }">
-									<span v-if="modelValue">{{ $t((modelValue as SelectOption<string>).label) }}</span>
-								</template> -->
 							</USelectMenu>
 						</UFormField>
 					</div>
@@ -53,10 +51,8 @@
 									size="sm"
 									@update:model-value="(v: SelectOption<string> | undefined) => onEnumChange(pair.col.key, v?.value ?? null)"
 								>
+									<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 									<template #item-label="{ item }">{{ $t(item.label) }}</template>
-									<!-- <template #default="{ modelValue }">
-										<span v-if="modelValue">{{ $t((modelValue as SelectOption<string>).label) }}</span>
-									</template> -->
 								</USelectMenu>
 							</UFormField>
 							<UCheckbox v-model="editEnabled[pair.order.key]" class="mt-2 shrink-0" />
@@ -69,10 +65,8 @@
 									size="sm"
 									@update:model-value="(v: SelectOption<string> | undefined) => onEnumChange(pair.order.key, v?.value ?? null)"
 								>
+									<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
 									<template #item-label="{ item }">{{ $t(item.label) }}</template>
-									<!-- <template #default="{ modelValue }">
-										<span v-if="modelValue">{{ $t((modelValue as SelectOption<string>).label) }}</span>
-									</template> -->
 								</USelectMenu>
 							</UFormField>
 						</div>
@@ -80,10 +74,15 @@
 
 					<p class="font-semibold text-sm mt-2">{{ $t("bulk_album_edit.section_visibility") }}</p>
 
-					<div class="grid grid-cols-2 gap-3">
+					<div class="grid grid-cols-2 gap-3 text-sm">
 						<div v-for="field in visibleBoolFields" :key="field.key" class="flex items-center gap-2">
-							<UCheckbox v-model="editEnabled[field.key]" class="shrink-0" :disabled="field.seOnly === true && !is_se_enabled" />
-							<label class="text-sm flex-1" :class="field.red ? 'text-error' : ''">{{ $t("bulk_album_edit." + field.label) }}</label>
+							<UCheckbox
+								v-model="editEnabled[field.key]"
+								class="flex-1"
+								:disabled="field.seOnly === true && !is_se_enabled"
+								:label="$t('bulk_album_edit.' + field.label)"
+								:ui="{ label: field.red ? 'text-error' : '' }"
+							/>
 							<USwitch
 								:model-value="editBoolValues[field.key]"
 								:disabled="field.seOnly === true && !is_se_enabled"
@@ -200,6 +199,10 @@ const hasAnyEnabled = computed(() => Object.values(editEnabled.value).some((v) =
 
 function findOption(options: SelectOption<string>[], value: string | null): SelectOption<string> | undefined {
 	return options.find((o) => o.value === value);
+}
+
+function selectedLabel(option: SelectOption<string> | undefined): string {
+	return option ? trans(option.label) : "";
 }
 
 function onTextChange(key: string, val: string | null): void {

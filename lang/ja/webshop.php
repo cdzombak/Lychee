@@ -97,6 +97,7 @@ return [
         'processing' => 'Processing',
         'failed' => 'Failed',
         'closed' => 'Closed',
+        'cancelled' => 'Cancelled',
     ],
     'orderList' => [
         'orders' => 'Orders',
@@ -106,6 +107,7 @@ return [
         'transactionId' => 'Transaction ID',
         'status' => 'Status',
         'amount' => 'Amount',
+        'show_pending' => 'Show pending orders',
     ],
     'purchasablesList' => [
         'purchasables' => 'Purchasables',

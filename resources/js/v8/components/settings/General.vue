@@ -54,7 +54,7 @@
 			<label for="disable_se_call_for_actions">{{ $t("settings.lychee_se.hide_call4action") }}</label>
 			<USwitch id="disable_se_call_for_actions" v-model="disable_se_call_for_actions" class="text-sm" @update:model-value="saveHideC4A" />
 			<span class="mt-1 w-full text-muted flex items-center gap-2"
-				><UIcon name="prime:exclamation-triangle" class="text-orange-500" />{{ $t("settings.lychee_se.hide_warning") }}</span
+				><UIcon name="lucide:triangle-alert" class="text-orange-500" />{{ $t("settings.lychee_se.hide_warning") }}</span
 			>
 		</p>
 	</Fieldset>
@@ -67,7 +67,7 @@
 		<p class="mb-4 text-muted">
 			{{ $t("settings.dropbox.instruction") }}
 			<a href="https://www.dropbox.com/developers/saver" class="pl-2 border-b border-dashed border-b-primary-500 text-primary-500">
-				<UIcon name="prime:link" />
+				<UIcon name="lucide:link" />
 			</a>
 		</p>
 		<div class="flex gap-4">
@@ -152,6 +152,18 @@
 				:mapper="SelectBuilders.buildOverlay"
 				@filled="save"
 			/>
+			<BoolField
+				v-if="rounded_corners_enabled !== undefined"
+				:label="$t('settings.gallery.rounded_corners_enabled')"
+				:config="rounded_corners_enabled"
+				@filled="save"
+			/>
+			<BoolField
+				v-if="album_border_enabled !== undefined"
+				:label="$t('settings.gallery.album_border_enabled')"
+				:config="album_border_enabled"
+				@filled="save"
+			/>
 		</div>
 		<!-- LICENSE -->
 		<div class="flex flex-col">
@@ -166,12 +178,8 @@
 			<div class="mb-4 text-muted">
 				<p>
 					{{ $t("settings.gallery.license_help") }}
-					<a
-						href="https://creativecommons.org/choose/"
-						target="_blank"
-						class="pl-2 border-b border-dashed border-b-primary-500 text-primary-500"
-					>
-						<UIcon name="prime:link" />
+					<a href="https://creativecommons.org/choose/" target="_blank" class="ml-2 text-primary-500">
+						<UIcon name="lucide:link" class="inline" />
 					</a>
 				</p>
 			</div>
@@ -276,6 +284,8 @@ const default_license = ref<App.Http.Resources.Models.ConfigResource | undefined
 const aspectRatio = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 const lang = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 const layout = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
+const rounded_corners_enabled = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
+const album_border_enabled = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 const nsfwVisible = ref<boolean | undefined>(undefined);
 
 const dark_mode_enabled = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
@@ -351,6 +361,8 @@ function load(configs: App.Http.Resources.Models.ConfigCategoryResource[]) {
 	album_decoration.value = configurations.find((config) => config.key === "album_decoration");
 	album_decoration_orientation.value = configurations.find((config) => config.key === "album_decoration_orientation");
 	image_overlay_type.value = configurations.find((config) => config.key === "image_overlay_type");
+	rounded_corners_enabled.value = configurations.find((config) => config.key === "rounded_corners_enabled");
+	album_border_enabled.value = configurations.find((config) => config.key === "album_border_enabled");
 
 	map_display.value = configurations.find((config) => config.key === "map_display");
 	map_display_public.value = configurations.find((config) => config.key === "map_display_public");

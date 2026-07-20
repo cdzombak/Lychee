@@ -1,35 +1,37 @@
 <template>
-	<div
+	<input id="upload_track_file" type="file" name="fileElem" accept="application/x-gpx+xml" class="hidden" @change="uploadTrack" />
+	<UHeader
 		v-if="albumStore.album"
-		class="w-full transition-all duration-100 ease-in-out @container flex items-center justify-between px-4 overflow-hidden"
 		:class="{
 			'max-h-14': !is_full_screen,
-			'max-h-0': is_full_screen,
+			'max-h-0 overflow-hidden': is_full_screen,
 		}"
+		:toggle="false"
 	>
-		<div class="flex items-center min-w-0">
-			<template v-if="showBreadcrumb">
-				<LycheeBreadcrumb :items="albumStore.modelAlbum?.breadcrumb ?? []" :current-title="albumStore.album?.title ?? ''" />
-				<div class="flex @min-[28rem]:hidden">
-					<GoBack @go-back="emits('goBack')" />
-				</div>
-			</template>
+		<template #title>
+			<LycheeBreadcrumb
+				v-if="showBreadcrumb"
+				:key="`albumheader-${albumStore.albumId}`"
+				:items="albumStore.modelAlbum?.breadcrumb ?? []"
+				:current-title="albumStore.album?.title ?? ''"
+				@go-back="emits('goBack')"
+			/>
 			<GoBack v-else @go-back="emits('goBack')" />
-		</div>
+		</template>
 
-		<span :class="{ '@min-[28rem]:hidden': showBreadcrumb }">{{ albumStore.album.title }}</span>
+		<span v-if="!showBreadcrumb">{{ albumStore.album.title }}</span>
 
-		<div class="flex items-center gap-1">
+		<template #right>
 			<UButton
 				v-if="is_touch_select_mode && (selectedPhotosIds.length > 0 || selectedAlbumsIds.length > 0)"
-				icon="prime:ellipsis-v"
+				icon="lucide:ellipsis-vertical"
 				color="neutral"
 				variant="ghost"
 				@click="(e: MouseEvent) => emits('openContextMenu', e)"
 			/>
 			<UButton
 				v-if="isTouchDevice() && canInteractPhoto()"
-				:icon="is_touch_select_mode ? 'prime:check-square' : 'prime:stop'"
+				:icon="is_touch_select_mode ? 'lucide:check-square' : 'lucide:square'"
 				color="neutral"
 				variant="ghost"
 				:class="{ 'text-primary': is_touch_select_mode }"
@@ -38,7 +40,7 @@
 			<template v-if="!is_touch_select_mode">
 				<UButton
 					v-if="is_se_enabled && albumStore.album.rights?.can_edit"
-					icon="prime:copy"
+					icon="lucide:copy"
 					color="neutral"
 					variant="ghost"
 					class="hover:text-default"
@@ -46,28 +48,28 @@
 				/>
 				<RouterLink v-if="orderManagementStore.hasItems" :to="{ name: 'basket' }" class="hidden sm:block">
 					<UButton
-						icon="prime:shopping-cart"
+						icon="lucide:shopping-cart"
 						:color="orderManagementStore.order?.status === 'processing' ? 'error' : 'neutral'"
 						variant="ghost"
 					/>
 				</RouterLink>
 				<RouterLink v-if="is_favourite_enabled && (favourites.photos?.length ?? 0) > 0" :to="{ name: 'favourites' }" class="hidden sm:block">
-					<UButton icon="prime:heart" color="neutral" variant="ghost" />
+					<UButton icon="lucide:heart" color="neutral" variant="ghost" />
 				</RouterLink>
 				<UButton
 					v-if="albumStore.config?.is_search_accessible"
-					icon="prime:search"
+					icon="lucide:search"
 					color="neutral"
 					variant="ghost"
 					class="hidden sm:inline-flex"
 					@click="emits('openSearch')"
 				/>
 				<UDropdownMenu v-if="albumStore.rights?.can_upload" :items="addMenuSections">
-					<UButton icon="prime:plus" color="neutral" variant="ghost" />
+					<UButton icon="lucide:plus" color="neutral" variant="ghost" />
 				</UDropdownMenu>
 				<template v-if="albumStore.rights?.can_edit">
 					<UButton
-						:icon="is_album_edit_open ? 'prime:angle-up' : 'prime:angle-down'"
+						:icon="is_album_edit_open ? 'lucide:chevron-up' : 'lucide:chevron-down'"
 						color="neutral"
 						variant="ghost"
 						:class="{ 'ltr:mr-2 rtl:ml-2': true, 'text-primary': is_album_edit_open }"
@@ -75,13 +77,12 @@
 					/>
 				</template>
 			</template>
-		</div>
-	</div>
-	<input id="upload_track_file" type="file" name="fileElem" accept="application/x-gpx+xml" class="hidden" @change="uploadTrack" />
+		</template>
+	</UHeader>
 </template>
 <script setup lang="ts">
 import LycheeBreadcrumb from "./LycheeBreadcrumb.vue";
-import { useContextMenuAlbumAdd, type AddMenuItem } from "@/composables/contextMenus/contextMenuAlbumAdd";
+import { useContextMenuAlbumAdd, type AddMenuItem } from "@/v8/composables/contextMenus/contextMenuAlbumAdd";
 import { useGalleryModals } from "@/composables/modalsTriggers/galleryModals";
 import { useLycheeStateStore } from "@/stores/LycheeState";
 import { storeToRefs } from "pinia";
@@ -119,7 +120,7 @@ const emits = defineEmits<{
 	openContextMenu: [event: MouseEvent];
 }>();
 
-const showBreadcrumb = computed(() => (albumStore.config?.is_breadcrumb_enabled ?? false) && (albumStore.modelAlbum?.breadcrumb.length ?? 0) > 0);
+const showBreadcrumb = computed(() => albumStore.config?.is_breadcrumb_enabled ?? false);
 
 function toggleUploadTrack() {
 	document.getElementById("upload_track_file")?.click();
@@ -159,10 +160,6 @@ const { addMenu } = useContextMenuAlbumAdd(
 	dropbox_api_key,
 );
 
-function toIconifyName(icon: string): string {
-	return "prime:" + icon.replace(/^pi\s+pi-/, "").replace(/^pi-/, "");
-}
-
 const addMenuSections = computed<DropdownMenuItem[][]>(() => {
 	const sections: DropdownMenuItem[][] = [[]];
 	for (const entry of addMenu.value as AddMenuItem[]) {
@@ -175,7 +172,7 @@ const addMenuSections = computed<DropdownMenuItem[][]>(() => {
 		}
 		sections[sections.length - 1].push({
 			label: trans(entry.label),
-			icon: toIconifyName(entry.icon),
+			icon: entry.icon,
 			onSelect: entry.callback,
 		});
 	}
