@@ -1,26 +1,22 @@
 <template>
-	<UCard class="min-h-40 relative" :ui="{ body: 'h-full flex flex-col justify-between gap-4' }">
-		<template #header>
-			<div class="text-center">
-				{{ $t("maintenance.optimize.title") }}
-			</div>
-		</template>
-		<div class="w-full h-40 overflow-y-auto text-sm text-muted">
-			<div v-if="data.length === 0 && !loading">{{ $t("maintenance.optimize.description") }}</div>
-			<Spinner v-if="loading && data.length === 0" class="w-full" />
-			<pre v-if="data.length > 0" class="text-2xs m-4">{{ data.join("\n") }}</pre>
-		</div>
-		<div class="flex gap-4 mt-1">
-			<UButton v-if="data.length === 0 && !loading" color="warning" class="w-full justify-center" @click="exec">
+	<MaintenanceRow>
+		<template #title>{{ $t("maintenance.optimize.title") }}</template>
+		<span v-if="data.length === 0 && !loading">{{ $t("maintenance.optimize.description") }}</span>
+		<LycheeLoadingIcon fast v-if="loading && data.length === 0" class="inline-block text-2xl" />
+		<span v-if="data.length > 0">{{ $t("toasts.success") }}</span>
+		<template #actions>
+			<UButton variant="soft" v-if="data.length === 0 && !loading" color="primary" @click="exec">
 				{{ $t("maintenance.optimize.button") }}
 			</UButton>
-		</div>
-	</UCard>
+		</template>
+	</MaintenanceRow>
+	<pre v-if="data.length > 0" class="text-2xs max-h-40 overflow-y-auto mb-3">{{ data.join("\n") }}</pre>
 </template>
 
 <script setup lang="ts">
 import { ref } from "vue";
-import Spinner from "@/v8/components/Spinner.vue";
+import LycheeLoadingIcon from "@/v8/components/LycheeLoadingIcon.vue";
+import MaintenanceRow from "@/v8/components/maintenance/MaintenanceRow.vue";
 import MaintenanceService from "@/services/maintenance-service";
 import { useAppToast } from "@/v8/composables/useAppToast";
 import { trans } from "laravel-vue-i18n";

@@ -1,25 +1,20 @@
 <template>
-	<UCard v-if="data !== undefined && data !== 0" class="min-h-40 relative" :ui="{ body: 'h-full flex flex-col justify-between gap-4' }">
-		<template #header>
-			<div class="text-center">
-				{{ $t("maintenance.destroy-dismissed-faces.title") }}
-			</div>
-		</template>
-		<div class="w-full h-40 overflow-y-auto text-sm text-muted">
-			<div v-if="!loading" class="w-full ltr:text-left rtl:text-right" v-html="description"></div>
-			<Spinner v-if="loading" class="w-full" />
-		</div>
-		<div class="flex gap-4 mt-1">
-			<UButton v-if="data !== 0 && !loading" color="error" class="w-full font-bold justify-center" @click="exec">
+	<MaintenanceRow v-if="data !== undefined && data !== 0">
+		<template #title>{{ $t("maintenance.destroy-dismissed-faces.title") }}</template>
+		<span v-if="!loading" v-html="description"></span>
+		<LycheeLoadingIcon fast v-if="loading" class="inline-block text-2xl" />
+		<template #actions>
+			<UButton v-if="data !== 0 && !loading" color="error" variant="soft" @click="exec">
 				{{ $t("maintenance.destroy-dismissed-faces.action") }}
 			</UButton>
-		</div>
-	</UCard>
+		</template>
+	</MaintenanceRow>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import Spinner from "@/v8/components/Spinner.vue";
+import LycheeLoadingIcon from "@/v8/components/LycheeLoadingIcon.vue";
+import MaintenanceRow from "@/v8/components/maintenance/MaintenanceRow.vue";
 import { useAppToast } from "@/v8/composables/useAppToast";
 import { trans } from "laravel-vue-i18n";
 import { sprintf } from "sprintf-js";

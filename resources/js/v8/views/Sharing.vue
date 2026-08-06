@@ -1,4 +1,5 @@
 <template>
+	<LoadingProgress :loading="perms === undefined" />
 	<UHeader :toggle="false">
 		<template #left>
 			<OpenLeftMenu />
@@ -11,6 +12,8 @@
 			{{ $t("sharing.info") }}
 		</div>
 		<UButton
+			color="primary"
+			variant="solid"
 			class="w-full font-bold justify-center mt-4 mb-12"
 			:label="$t('sharing.bluk_share')"
 			icon="lucide:user-plus"
@@ -20,38 +23,45 @@
 				}
 			"
 		/>
-		<div class="flex flex-col text-highlighted">
-			<div class="flex items-center">
-				<div class="w-5/12 flex items-center">
-					<span class="w-full">{{ $t("sharing.album_title") }}</span>
-					<span class="w-full">{{ $t("sharing.username") }}</span>
+		<UTable v-if="perms && perms.length > 0" :data="perms" :columns="columns" sticky class="max-h-[65vh]" :ui="{ td: 'px-2 py-1', th: 'px-2' }">
+			<template #line-header>
+				<div class="flex items-center">
+					<div class="w-5/12 flex items-center">
+						<span class="w-full">{{ $t("sharing.album_title") }}</span>
+						<span class="w-full">{{ $t("sharing.username") }}</span>
+					</div>
+					<div class="w-1/2 flex items-center justify-around">
+						<UTooltip :text="$t('sharing.grants.read')"><UIcon name="lucide:eye" /></UTooltip>
+						<UTooltip :text="$t('sharing.grants.original')"><UIcon name="lucide:app-window" /></UTooltip>
+						<UTooltip :text="$t('sharing.grants.download')"><UIcon name="lucide:cloud-download" /></UTooltip>
+						<UTooltip :text="$t('sharing.grants.upload')"><UIcon name="lucide:upload" /></UTooltip>
+						<UTooltip :text="$t('sharing.grants.edit')"><UIcon name="lucide:file-edit" /></UTooltip>
+						<UTooltip :text="$t('sharing.grants.delete')"><UIcon name="lucide:trash" /></UTooltip>
+					</div>
+					<div class="w-1/6"></div>
 				</div>
-				<div class="w-1/2 flex items-center justify-around">
-					<UTooltip :text="$t('sharing.grants.read')"><UIcon name="lucide:eye" /></UTooltip>
-					<UTooltip :text="$t('sharing.grants.original')"><UIcon name="lucide:app-window" /></UTooltip>
-					<UTooltip :text="$t('sharing.grants.download')"><UIcon name="lucide:cloud-download" /></UTooltip>
-					<UTooltip :text="$t('sharing.grants.upload')"><UIcon name="lucide:upload" /></UTooltip>
-					<UTooltip :text="$t('sharing.grants.edit')"><UIcon name="lucide:file-edit" /></UTooltip>
-					<UTooltip :text="$t('sharing.grants.delete')"><UIcon name="lucide:trash" /></UTooltip>
-				</div>
-				<div class="w-1/6"></div>
-			</div>
-			<template v-if="perms?.length > 0">
-				<ShareLine v-for="(perm, idx) in perms" :key="'p' + (perm.id ?? idx)" :perm="perm" :with-album="true" @delete="deletePermission" />
 			</template>
-			<p v-else class="text-center">{{ $t("sharing.no_data") }}</p>
-		</div>
+			<template #line-cell="{ row }">
+				<ShareLine :perm="row.original" with-album @delete="deletePermission" />
+			</template>
+		</UTable>
+		<p v-else class="text-center text-highlighted">{{ $t("sharing.no_data") }}</p>
 	</UCard>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import ShareLine from "@/v8/components/forms/sharing/ShareLine.vue";
 import OpenLeftMenu from "@/v8/components/headers/OpenLeftMenu.vue";
+import LoadingProgress from "@/v8/components/loading/LoadingProgress.vue";
 import BulkSharingModal from "@/v8/components/forms/sharing/BulkSharingModal.vue";
 import SharingService from "@/services/sharing-service";
 import { useAppToast } from "@/v8/composables/useAppToast";
 import { trans } from "laravel-vue-i18n";
-import { onMounted } from "vue";
+import type { TableColumn } from "@nuxt/ui";
+
+type Permission = App.Http.Resources.Models.AccessPermissionResource;
+
+const columns: TableColumn<Permission>[] = [{ id: "line" }];
 
 const perms = ref<App.Http.Resources.Models.AccessPermissionResource[] | undefined>(undefined);
 const toast = useAppToast();
@@ -72,9 +82,14 @@ function deletePermission(id: number) {
 
 function load() {
 	perms.value = undefined;
-	SharingService.list().then((response) => {
-		perms.value = response.data;
-	});
+	SharingService.list()
+		.then((response) => {
+			perms.value = response.data;
+		})
+		.catch((e) => {
+			toast.add({ severity: "error", summary: trans("toasts.error"), detail: e.response?.data?.message, life: 3000 });
+			perms.value = [];
+		});
 }
 
 onMounted(() => {

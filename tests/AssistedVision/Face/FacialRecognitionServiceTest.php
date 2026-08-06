@@ -24,16 +24,16 @@ class FacialRecognitionServiceTest extends AbstractTestCase
 {
 	private function makeService(string $url = 'http://ai-vision:8000', string $key = 'test-key'): FacialRecognitionService
 	{
-		Config::set('features.ai-vision-service.face-url', $url);
-		Config::set('features.ai-vision-service.face-api-key', $key);
+		Config::set('services.face_recognition.base_url', $url);
+		Config::set('services.face_recognition.api_key', $key);
 
 		return new FacialRecognitionService();
 	}
 
 	private function makeUnconfiguredService(): FacialRecognitionService
 	{
-		Config::set('features.ai-vision-service.face-url', '');
-		Config::set('features.ai-vision-service.face-api-key', '');
+		Config::set('services.face_recognition.base_url', '');
+		Config::set('services.face_recognition.api_key', '');
 
 		return new FacialRecognitionService();
 	}
@@ -235,5 +235,77 @@ class FacialRecognitionServiceTest extends AbstractTestCase
 		self::assertIsArray($result);
 		self::assertArrayHasKey('model_name', $result);
 		self::assertArrayNotHasKey(0, $result);
+	}
+
+	// ── syncEmbeddingsBatch ─────────────────────────────────────
+
+	public function testSyncEmbeddingsBatchSendsDeleteRequest(): void
+	{
+		Http::fake([
+			'ai-vision:8000/embeddings/sync' => Http::response(['marked' => 2], 200),
+		]);
+
+		$service = $this->makeService();
+		$result = $service->syncEmbeddingsBatch(['face-1', 'face-2'], 0);
+
+		self::assertEquals(['marked' => 2], $result);
+		Http::assertSent(fn ($request) => $request->method() === 'DELETE' &&
+			$request->url() === 'http://ai-vision:8000/embeddings/sync' &&
+			$request['face_ids'] === ['face-1', 'face-2'] &&
+			$request['batch'] === 0 &&
+			$request->hasHeader('X-API-Key', 'test-key'));
+	}
+
+	public function testSyncEmbeddingsBatchReturnsNullWhenNotConfigured(): void
+	{
+		$service = $this->makeUnconfiguredService();
+
+		self::assertNull($service->syncEmbeddingsBatch(['face-1'], 0));
+	}
+
+	public function testSyncEmbeddingsBatchReturnsNullOnFailure(): void
+	{
+		Http::fake([
+			'ai-vision:8000/embeddings/sync' => Http::response(null, 500),
+		]);
+
+		$service = $this->makeService();
+
+		self::assertNull($service->syncEmbeddingsBatch(['face-1'], 0));
+	}
+
+	// ── purgeAbsentEmbeddings ───────────────────────────────────
+
+	public function testPurgeAbsentEmbeddingsSendsDeleteRequest(): void
+	{
+		Http::fake([
+			'ai-vision:8000/embeddings/purge' => Http::response(['deleted' => 3], 200),
+		]);
+
+		$service = $this->makeService();
+		$result = $service->purgeAbsentEmbeddings();
+
+		self::assertEquals(['deleted' => 3], $result);
+		Http::assertSent(fn ($request) => $request->method() === 'DELETE' &&
+			$request->url() === 'http://ai-vision:8000/embeddings/purge' &&
+			$request->hasHeader('X-API-Key', 'test-key'));
+	}
+
+	public function testPurgeAbsentEmbeddingsReturnsNullWhenNotConfigured(): void
+	{
+		$service = $this->makeUnconfiguredService();
+
+		self::assertNull($service->purgeAbsentEmbeddings());
+	}
+
+	public function testPurgeAbsentEmbeddingsReturnsNullOnFailure(): void
+	{
+		Http::fake([
+			'ai-vision:8000/embeddings/purge' => Http::response(null, 500),
+		]);
+
+		$service = $this->makeService();
+
+		self::assertNull($service->purgeAbsentEmbeddings());
 	}
 }

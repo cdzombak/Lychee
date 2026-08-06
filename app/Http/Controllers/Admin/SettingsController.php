@@ -32,6 +32,14 @@ class SettingsController extends Controller
 {
 	public const V8_CONFIGS = [
 		'site_logo',
+		'primary_color',
+		'enable_design_system',
+		'secondary_color',
+		'success_color',
+		'warning_color',
+		'error_color',
+		'info_color',
+		'neutral_color',
 		'landing_logo',
 		'landing_header_logo',
 		'breadcrumb_enabled',
@@ -40,6 +48,19 @@ class SettingsController extends Controller
 		'selection_border_enabled',
 		'selection_overlay_enabled',
 		'photo_share_card_enabled',
+		'flags_enabled',
+		'photo_flags_enabled',
+		'cover_id_flag_enabled',
+		'header_id_flag_enabled',
+		'highlighted_flag_enabled',
+		'validated_flag_enabled',
+		'smart_album_flags_enabled',
+		'album_flags_enabled',
+		'public_hidden_flag_enabled',
+		'public_visible_flag_enabled',
+		'password_flag_enabled',
+		'sensitive_flag_enabled',
+		'expert_album_settings',
 	];
 
 	/**

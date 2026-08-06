@@ -1,4 +1,5 @@
 <template>
+	<LoadingProgress :loading="!isReady || configs === undefined" />
 	<UHeader :toggle="false">
 		<template #left>
 			<OpenLeftMenu />
@@ -17,7 +18,7 @@
 				@ready="isReady = true"
 			/>
 			<template v-if="isReady && configs !== undefined">
-				<div v-if="tab !== 'all'" class="flex gap-4 flex-wrap lg:flex-nowrap">
+				<div v-if="tab !== 'all'" class="flex gap-4 flex-wrap lg:flex-nowrap mt-2">
 					<div class="w-full lg:w-3xs shrink-0">
 						<nav class="border-0 lg:sticky top-11 mt-2 flex flex-col">
 							<a
@@ -76,6 +77,7 @@
 </template>
 <script setup lang="ts">
 import OpenLeftMenu from "@/v8/components/headers/OpenLeftMenu.vue";
+import LoadingProgress from "@/v8/components/loading/LoadingProgress.vue";
 import { useAppToast } from "@/v8/composables/useAppToast";
 import { ref } from "vue";
 import { computed } from "vue";
@@ -161,10 +163,15 @@ const menuGroups = computed(() => {
 });
 
 function load() {
-	SettingsService.getAll().then((response) => {
-		configs.value = response.data as App.Http.Resources.Models.ConfigCategoryResource[];
-		hash.value = Math.random().toString(16).substring(2, 12);
-	});
+	SettingsService.getAll()
+		.then((response) => {
+			configs.value = response.data as App.Http.Resources.Models.ConfigCategoryResource[];
+			hash.value = Math.random().toString(16).substring(2, 12);
+		})
+		.catch((e) => {
+			toast.add({ severity: "error", summary: trans("settings.toasts.error"), detail: e.response?.data?.message, life: 3000 });
+			configs.value = [];
+		});
 }
 
 function update(configKey: string, value: string) {

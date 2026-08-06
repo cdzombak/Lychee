@@ -7,6 +7,7 @@
 				:config="dark_mode_enabled"
 				@filled="saveDarkMode"
 			/>
+			<ColorField v-if="primary_color" :config="primary_color" @filled="save" />
 			<SelectLang v-if="lang !== undefined" :label="$t('settings.system.language')" :config="lang" @filled="saveLang" />
 			<div class="flex flex-wrap justify-between">
 				<label for="pp_dialog_nsfw_visible" class="text-highlighted">{{ $t("settings.system.nsfw_album_visibility") }}</label>
@@ -39,8 +40,9 @@
 			</UFormField>
 			<UButton
 				v-if="!is_se_enabled"
-				class="w-1/4 justify-center font-bold bg-primary-500/20 hover:bg-primary-500"
-				color="neutral"
+				class="w-1/4 justify-center font-bold"
+				color="primary"
+				variant="soft"
 				:disabled="!isValidRegistrationForm"
 				@click="register"
 				>{{ $t("dialogs.register.register") }}
@@ -74,7 +76,7 @@
 			<UFormField class="w-full grow" :label="$t('settings.dropbox.api_key')">
 				<InputPassword id="api_key" v-model="dropbox_key" />
 			</UFormField>
-			<UButton color="neutral" class="w-full justify-center bg-primary-500/20 hover:bg-primary-500" @click="saveDropboxKey">{{
+			<UButton variant="solid" color="neutral" class="w-full justify-center bg-primary-500/20 hover:bg-primary-500" @click="saveDropboxKey">{{
 				$t("settings.dropbox.set_key")
 			}}</UButton>
 		</div>
@@ -263,6 +265,7 @@ import MaintenanceService from "@/services/maintenance-service";
 import { onMounted, watch } from "vue";
 import Fieldset from "@/v8/components/forms/basic/Fieldset.vue";
 import { loadLanguageAsync } from "laravel-vue-i18n";
+import ColorField from "../forms/settings/ColorField.vue";
 
 const toast = useAppToast();
 
@@ -272,6 +275,7 @@ const props = defineProps<{
 }>();
 const emits = defineEmits<{ refresh: [] }>();
 
+const primary_color = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 const dropbox_key = ref<string | undefined>(undefined);
 const photoSortingColumn = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
 const photoSortingOrder = ref<App.Http.Resources.Models.ConfigResource | undefined>(undefined);
@@ -346,6 +350,7 @@ function load(configs: App.Http.Resources.Models.ConfigCategoryResource[]) {
 	configs.forEach((config) => (config.configs as App.Http.Resources.Models.ConfigResource[]).forEach((value) => configurations.push(value)));
 
 	lang.value = configurations.find((config) => config.key === "lang");
+	primary_color.value = configurations.find((config) => config.key === "primary_color");
 	dark_mode_enabled.value = configurations.find((config) => config.key === "dark_mode_enabled");
 	nsfwVisible.value = configurations.find((config) => config.key === "nsfw_visible")?.value === "1";
 	dropbox_key.value = configurations.find((config) => config.key === "dropbox_key")?.value ?? "";

@@ -1,5 +1,4 @@
 <?php
-
 return [
     'button' => [
         /*
@@ -177,7 +176,8 @@ return [
         'visibility_public' => 'Ten album będzie publiczny (widoczny dla wszystkich)',
         'visibility_public_hidden' => 'Ten album będzie publiczny, ale ukryty z list',
         'visibility_inherit' => 'Ten album odziedziczy widoczność od albumu nadrzednego',
-        'visibility_inherit_no_parent' => 'Ten album będzie prywatny (brak albumu nadrzednego)',    ],
+        'visibility_inherit_no_parent' => 'Ten album będzie prywatny (brak albumu nadrzednego)',
+    ],
     'new_tag_album' => [
         'menu' => 'Utwórz album ze znacznikami',
         'info' => 'Wprowadź tytuł nowego tagu albumu:',
@@ -197,6 +197,7 @@ return [
         'confirmation_tag' => 'Czy na pewno chcesz usunąć album "%s"?',
         'confirmation_multiple' => 'Czy na pewno chcesz usunąć wszystkie %d wybrane albumy i wszystkie zawarte w nich zdjęcia?',
         'warning' => 'Tego działania nie można cofnąć!',
+        'type_to_confirm' => 'Wpisz "%s", aby potwierdzić.',
         'delete' => 'Usuwanie albumu i zdjęć',
     ],
     'transfer' => [

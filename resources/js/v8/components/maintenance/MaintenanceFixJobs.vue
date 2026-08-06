@@ -1,25 +1,20 @@
 <template>
-	<UCard v-if="data !== undefined && data > 0" class="min-h-40 relative" :ui="{ body: 'h-full flex flex-col justify-between gap-4' }">
-		<template #header>
-			<div class="text-center">
-				{{ $t("maintenance.fix-jobs.title") }}
-			</div>
-		</template>
-		<div class="w-full h-40 overflow-y-auto text-sm text-muted">
-			<div class="w-full text-center" v-html="description"></div>
-			<Spinner v-if="loading" class="w-full" />
-		</div>
-		<div class="flex gap-4 mt-1">
-			<UButton v-if="data > 0 && !loading" color="warning" class="w-full justify-center" @click="exec">
+	<MaintenanceRow v-if="data !== undefined && data > 0">
+		<template #title>{{ $t("maintenance.fix-jobs.title") }}</template>
+		<span v-html="description"></span>
+		<LycheeLoadingIcon fast v-if="loading" class="inline-block text-2xl" />
+		<template #actions>
+			<UButton variant="soft" v-if="data > 0 && !loading" color="warning" @click="exec">
 				{{ $t("maintenance.fix-jobs.button") }}
 			</UButton>
-		</div>
-	</UCard>
+		</template>
+	</MaintenanceRow>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue";
-import Spinner from "@/v8/components/Spinner.vue";
+import LycheeLoadingIcon from "@/v8/components/LycheeLoadingIcon.vue";
+import MaintenanceRow from "@/v8/components/maintenance/MaintenanceRow.vue";
 import { useAppToast } from "@/v8/composables/useAppToast";
 import MaintenanceService from "@/services/maintenance-service";
 import { sprintf } from "sprintf-js";
@@ -49,7 +44,8 @@ function exec() {
 		.catch((e) => {
 			toast.add({ severity: "error", summary: trans("toasts.error"), detail: e.response.data.message, life: 3000 });
 			loading.value = false;
-		});
+		})
+		.finally(load);
 }
 
 load();

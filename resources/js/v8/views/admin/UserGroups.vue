@@ -8,6 +8,7 @@
 		:user-list="allUsers"
 		@refresh="fetchUserGroups"
 	/>
+	<DeleteUserGroupDialog v-model:open="isDeleteVisible" :group="groupToDelete" @deleted="fetchUserGroups" />
 	<UHeader :toggle="false">
 		<template #left>
 			<OpenLeftMenu />
@@ -18,13 +19,12 @@
 		<div v-if="can_create_user_groups" class="w-full">
 			<p class="text-highlighted">{{ $t("user-groups.explanation") }}</p>
 			<div class="flex justify-end mt-8 mb-8">
-				<UButton color="primary" @click="create">{{ $t("user-groups.create_group") }}</UButton>
+				<UButton variant="solid" color="primary" @click="create">{{ $t("user-groups.create_group") }}</UButton>
 			</div>
 		</div>
-		<div v-if="userGroups === undefined">
-			<div class="text-center text-highlighted mt-4">
-				{{ $t("user-groups.loading") }}
-			</div>
+		<div v-if="userGroups === undefined" class="flex justify-center items-center gap-2 text-highlighted mt-4">
+			<LycheeLoadingIcon fast />
+			{{ $t("user-groups.loading") }}
 		</div>
 		<div v-else-if="userGroups.length === 0" class="text-center text-highlighted mt-4">
 			{{ $t("user-groups.empty") }}
@@ -103,10 +103,11 @@
 import { ref, onMounted } from "vue";
 import { UserGroupService } from "@/services/user-group-service";
 import OpenLeftMenu from "@/v8/components/headers/OpenLeftMenu.vue";
+import LycheeLoadingIcon from "@/v8/components/LycheeLoadingIcon.vue";
 import AddUserGroupModal from "@/v8/components/forms/group/AddUserGroupModal.vue";
+import DeleteUserGroupDialog from "@/v8/components/forms/group/DeleteUserGroupDialog.vue";
 import UsersService from "@/services/users-service";
 import { useAppToast } from "@/v8/composables/useAppToast";
-import { useConfirmDialog } from "@/v8/composables/useConfirmDialog";
 import { trans } from "laravel-vue-i18n";
 import { sprintf } from "sprintf-js";
 
@@ -123,7 +124,9 @@ const selectedGroupDescription = ref<string | undefined>(undefined);
 const selectedUserToAdd = ref<App.Http.Resources.Models.LightUserResource | undefined>(undefined);
 const allUsers = ref<App.Http.Resources.Models.LightUserResource[] | undefined>(undefined);
 
-const { confirm } = useConfirmDialog();
+const isDeleteVisible = ref(false);
+const groupToDelete = ref<App.Http.Resources.Models.UserGroupResource | undefined>(undefined);
+
 function confirmDelete(group: App.Http.Resources.Models.UserGroupResource) {
 	if (can_create_user_groups.value === false) {
 		toast.add({
@@ -135,18 +138,8 @@ function confirmDelete(group: App.Http.Resources.Models.UserGroupResource) {
 		return;
 	}
 
-	confirm({
-		title: trans("user-groups.confirm_delete_header"),
-		message: trans("user-groups.confirm_delete_message"),
-		acceptLabel: trans("user-groups.delete"),
-		rejectLabel: trans("user-groups.cancel"),
-		severity: "danger",
-	}).then((confirmed) => {
-		if (!confirmed) {
-			return;
-		}
-		UserGroupService.deleteUserGroup(group.id).then(fetchUserGroups);
-	});
+	groupToDelete.value = group;
+	isDeleteVisible.value = true;
 }
 
 function fetchUserGroups() {

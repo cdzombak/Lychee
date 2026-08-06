@@ -22,7 +22,7 @@
 				<UButton color="neutral" variant="soft" class="flex-1 justify-center font-bold" @click="close">
 					{{ $t("dialogs.button.cancel") }}
 				</UButton>
-				<UButton color="neutral" class="flex-1 justify-center font-bold" @click="execute">
+				<UButton color="neutral" variant="solid" class="flex-1 justify-center font-bold" @click="execute">
 					{{ $t("dialogs.photo_license.set_license") }}
 				</UButton>
 			</div>
@@ -61,7 +61,9 @@ const question = computed(() => {
 });
 
 function selectedLabel(option: SelectOption<App.Enum.LicenseType> | undefined): string {
-	return option ? trans(option.label) : "";
+	// A single space (matching USelectMenu's own placeholder fallback) keeps the
+	// trigger's line box at its normal height; an empty string collapses it.
+	return option ? trans(option.label) : " ";
 }
 
 const selectedLicense = ref<SelectOption<App.Enum.LicenseType> | undefined>(licenseOptions[0]);

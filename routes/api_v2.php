@@ -26,6 +26,13 @@ Route::get('/LandingPage', LandingPageController::class)->middleware(['cache_con
 Route::get('/Frame', [Gallery\FrameController::class, 'get']);
 
 /**
+ * ADMIN SETUP (v8, Feature 051).
+ * Unauthenticated by necessity (there is no admin yet); guarded internally by
+ * SetUpAdminRequest, which rejects once an admin user already exists.
+ */
+Route::post('/Admin::Setup', [ProfileController::class, 'store']);
+
+/**
  * CONTACT FORM.
  */
 Route::get('/Contact::Init', [Contact\ContactController::class, 'init'])->middleware(['cache_control', 'support:se']);
@@ -451,6 +458,8 @@ Route::middleware(['feature:ai-vision', 'feature:v8'])->group(function (): void 
 	Route::post('/Maintenance::syncFaceEmbeddings', [Admin\Maintenance\SyncFaceEmbeddings::class, 'do']);
 	Route::get('/Maintenance::resetFaceScanStatus', [Admin\Maintenance\ResetFaceScanStatus::class, 'check']);
 	Route::post('/Maintenance::resetFaceScanStatus', [Admin\Maintenance\ResetFaceScanStatus::class, 'do']);
+	Route::get('/Maintenance::purgeOrphanFaceEmbeddings', [Admin\Maintenance\PurgeOrphanFaceEmbeddings::class, 'check']);
+	Route::post('/Maintenance::purgeOrphanFaceEmbeddings', [Admin\Maintenance\PurgeOrphanFaceEmbeddings::class, 'do']);
 
 	/**
 	 * AI VISION — ALBUM PEOPLE.

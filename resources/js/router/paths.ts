@@ -19,6 +19,10 @@ export const paths: RoutePath[] = [
 		path: "/",
 	},
 	{
+		name: "admin-setup",
+		path: "/setup-admin",
+	},
+	{
 		name: "favourites",
 		path: "/gallery/favourites",
 	},
@@ -100,6 +104,10 @@ export const paths: RoutePath[] = [
 	{
 		name: "nsfw-config",
 		path: "/admin/nsfw-config",
+	},
+	{
+		name: "design-system",
+		path: "/admin/design",
 	},
 	{
 		name: "watermark-preview",

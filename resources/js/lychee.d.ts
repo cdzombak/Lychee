@@ -629,11 +629,22 @@ declare namespace App.Http.Resources.GalleryConfigs {
 		albums_infinite_scroll_threshold: number;
 		default_album_protection: App.Enum.DefaultAlbumProtectionType;
 		photos_star_visibility: App.Enum.PhotoHighlightVisibilityType;
+		expert_album_settings: boolean;
 		is_album_enhanced_display_enabled: boolean;
 		album_header_size: App.Enum.AlbumHeaderSize;
 		is_album_header_landing_title_enabled: boolean;
 		use_admin_dashboard: boolean;
 		is_person_album_enabled: boolean;
+		is_cover_id_flag_enabled: boolean;
+		is_header_id_flag_enabled: boolean;
+		is_highlighted_flag_enabled: boolean;
+		is_validated_flag_enabled: boolean;
+		is_smart_album_flags_enabled: boolean;
+		is_album_flags_enabled: boolean;
+		is_public_hidden_flag_enabled: boolean;
+		is_public_visible_flag_enabled: boolean;
+		is_password_flag_enabled: boolean;
+		is_sensitive_flag_enabled: boolean;
 	};
 	export type LandingPageResource = {
 		landing_page_enable: boolean;
@@ -1278,6 +1289,7 @@ declare namespace App.Http.Resources.Rights {
 		is_face_recognition_warning_enabled: boolean;
 		is_contact_enabled: boolean;
 		messages_count: number;
+		is_design_system_enabled: boolean;
 	};
 	export type PhotoRightsResource = {
 		can_edit: boolean;

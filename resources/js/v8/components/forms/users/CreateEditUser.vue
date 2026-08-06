@@ -6,7 +6,7 @@
 					<UInput id="username" v-model="username" class="w-full" aria-label="Username" :autofocus="true" />
 				</UFormField>
 				<UFormField :label="$t('users.password')">
-					<InputPassword id="password" v-model="password" aria-label="Password" />
+					<InputPassword id="password" v-model="password" aria-label="Password" has-check />
 				</UFormField>
 				<UCheckbox v-model="may_upload" class="w-full" :label="$t('users.create_edit.upload_rights')" :ui="{ label: 'text-muted' }" />
 				<UCheckbox
@@ -59,6 +59,7 @@
 				<UButton
 					v-if="!props.isEdit"
 					color="success"
+					variant="solid"
 					class="flex-1 justify-center font-bold"
 					:disabled="username === undefined || password === undefined || username === '' || password === ''"
 					@click="createUser"
@@ -68,6 +69,7 @@
 				<UButton
 					v-else
 					color="neutral"
+					variant="solid"
 					class="flex-1 justify-center font-bold"
 					:disabled="username === undefined || username === ''"
 					@click="editUser"
@@ -97,15 +99,15 @@ type TrustLevelOption = { value: App.Enum.UserUploadTrustLevel; label: string };
 const trustLevelOptions = computed<TrustLevelOption[]>(() => {
 	if (is_se_enabled.value || is_se_preview_enabled.value) {
 		return [
-			{ value: "trusted", label: "Trusted" },
-			{ value: "trust_but_verify", label: "Trust but Verify" },
-			{ value: "monitor", label: "Monitor" },
-			{ value: "check", label: "Check" },
+			{ value: "trusted", label: trans("users.create_edit.trust_level_options.trusted") },
+			{ value: "trust_but_verify", label: trans("users.create_edit.trust_level_options.trust_but_verify") },
+			{ value: "monitor", label: trans("users.create_edit.trust_level_options.monitor") },
+			{ value: "check", label: trans("users.create_edit.trust_level_options.check") },
 		];
 	} else {
 		return [
-			{ value: "trusted", label: "Trusted" },
-			{ value: "check", label: "Check" },
+			{ value: "trusted", label: trans("users.create_edit.trust_level_options.trusted") },
+			{ value: "check", label: trans("users.create_edit.trust_level_options.check") },
 		];
 	}
 });

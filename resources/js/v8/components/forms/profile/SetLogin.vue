@@ -34,11 +34,15 @@
 						<InputText id="username" v-model="username" />
 					</UFormField>
 					<UFormField class="mt-4" :label="$t('profile.login.new_password')">
-						<InputPassword id="password" v-model="password" />
+						<InputPassword id="password" v-model="password" has-check />
 					</UFormField>
 					<UFormField class="mt-4" :label="$t('profile.login.confirm_new_password')">
 						<InputPassword id="password_confirmation" v-model="password_confirmation" :invalid="password !== password_confirmation" />
 					</UFormField>
+					<div class="text-muted mt-2">
+						<UIcon name="lucide:circle-question-mark" class="inline-block size-4 text-info" />
+						<span v-html="$t('profile.login.password_strength_info')"></span>
+					</div>
 				</div>
 				<div class="w-full">
 					<div class="pb-4">
@@ -49,7 +53,7 @@
 					</UFormField>
 				</div>
 				<UFieldGroup class="w-full mt-4">
-					<UButton color="neutral" class="flex-1 font-bold justify-center" @click="save">
+					<UButton color="primary" variant="solid" class="flex-1 font-bold justify-center" @click="save">
 						{{ $t("profile.login.change") }}
 					</UButton>
 					<UButton
