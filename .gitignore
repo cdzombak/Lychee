@@ -40,6 +40,8 @@ storage/bootstrap/cache/*
 storage/image-jobs/*
 **/__pycache__/**
 .coverage
+typescript-transformer-manifest.json 
+
 
 # used by Vite
 public/hot
@@ -82,3 +84,11 @@ PRODUCT.md
 .github/hooks/impeccable.json
 .github/skills/impeccable/*
 .impeccable/
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+example.spec.ts

@@ -59,6 +59,8 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		is_album_border_enabled: false,
 		is_selection_border_enabled: false,
 		is_selection_overlay_enabled: true,
+		is_photo_highlight_on_hover: true,
+		is_photo_zoom_on_hover: true,
 
 		// Enhanced Album Display
 		is_album_enhanced_display_enabled: false,
@@ -89,6 +91,9 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 		dropbox_api_key: "disabled",
 		default_homepage: "gallery",
 		is_timeline_page_enabled: false,
+		is_contact_form_enabled: false,
+		is_contact_form_enabled_on_gallery: false,
+		is_contact_form_enabled_on_album: false,
 		is_embed_enabled: true,
 		is_photo_share_card_enabled: true,
 		site_owner: "",
@@ -224,6 +229,8 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 					this.is_album_border_enabled = data.is_album_border_enabled;
 					this.is_selection_border_enabled = data.is_selection_border_enabled;
 					this.is_selection_overlay_enabled = data.is_selection_overlay_enabled;
+					this.is_photo_highlight_on_hover = data.is_photo_highlight_on_hover;
+					this.is_photo_zoom_on_hover = data.is_photo_zoom_on_hover;
 					this.album_view_mode = data.album_layout;
 
 					this.is_raw_download_enabled = data.is_raw_download_enabled;
@@ -261,6 +268,9 @@ export const useLycheeStateStore = defineStore("lychee-store", {
 
 					this.default_homepage = data.default_homepage;
 					this.is_timeline_page_enabled = data.is_timeline_page_enabled;
+					this.is_contact_form_enabled = data.is_contact_form_enabled;
+					this.is_contact_form_enabled_on_gallery = data.is_contact_form_enabled_on_gallery;
+					this.is_contact_form_enabled_on_album = data.is_contact_form_enabled_on_album;
 					this.is_embed_enabled = data.is_embed_enabled;
 					this.is_photo_share_card_enabled = data.is_photo_share_card_enabled;
 					this.site_owner = data.site_owner;

@@ -69,7 +69,7 @@ class GetAllSettingsTest extends BaseApiWithDataTest
 			],
 		]);
 
-		// Mod Cache must be hidden by default (ENABLE_REQUEST_CACHING defaults to false).
+		// Mod Cache must be hidden by default (ENABLE_CACHING defaults to false).
 		$response->assertJsonMissing(['cat' => 'Mod Cache']);
 
 		$response = $this->actingAs($this->admin)->getJson('Settings::init');
@@ -86,7 +86,7 @@ class GetAllSettingsTest extends BaseApiWithDataTest
 
 	public function testModCacheVisibleWhenFeatureEnabled(): void
 	{
-		config(['features.enable-request-caching' => true]);
+		config(['features.enable-caching' => true]);
 
 		$response = $this->actingAs($this->admin)->getJson('Settings');
 		$this->assertOk($response);
@@ -95,10 +95,16 @@ class GetAllSettingsTest extends BaseApiWithDataTest
 
 	public function testModCacheHiddenWhenFeatureDisabled(): void
 	{
-		config(['features.enable-request-caching' => false]);
+		config(['features.enable-caching' => false]);
 
 		$response = $this->actingAs($this->admin)->getJson('Settings');
 		$this->assertOk($response);
-		$response->assertJsonMissing(['cat' => 'Mod Cache']);
+		// The response-cache-specific keys (Feature 040) are hidden...
+		$response->assertJsonMissing(['key' => 'cache_enabled']);
+		// ...but the managed-cache keys (Feature 052/053) stay visible regardless,
+		// since ManagedCacheService is fully independent of the response cache.
+		$response->assertJsonMissing(['key' => 'managed_cache_enabled']);
+		$response->assertJsonMissing(['key' => 'managed_cache_ttl']);
+		$response->assertJsonMissing(['key' => 'managed_cache_albums_enabled']);
 	}
 }

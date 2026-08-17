@@ -11,6 +11,7 @@ namespace App\Http\Controllers\Admin;
 use App\Actions\Diagnostics\Pipes\Infos\DockerVersionInfo;
 use App\Constants\FileSystem;
 use App\Enum\CacheTag;
+use App\Events\AlbumListingCacheFlushRequested;
 use App\Events\TaggedRouteCacheUpdated;
 use App\Exceptions\InsufficientFilesystemPermissions;
 use App\Http\Requests\Settings\GetAllConfigsRequest;
@@ -30,6 +31,21 @@ use Illuminate\Support\Facades\Storage;
  */
 class SettingsController extends Controller
 {
+	/**
+	 * Config keys whose change affects an album listing with no per-album row
+	 * to hook (global sort/pagination/feature-toggle config) — closes over
+	 * every cached album listing via one coarse, instance-wide flush.
+	 */
+	public const ALBUM_LISTING_COARSE_FLUSH_CONFIGS = [
+		'sorting_albums_col',
+		'sorting_albums_order',
+		'sorting_pinned_albums_col',
+		'sorting_pinned_albums_order',
+		'deduplicate_pinned_albums',
+		'ai_vision_face_enabled',
+		'albums_per_page',
+	];
+
 	public const V8_CONFIGS = [
 		'site_logo',
 		'primary_color',
@@ -47,6 +63,8 @@ class SettingsController extends Controller
 		'album_border_enabled',
 		'selection_border_enabled',
 		'selection_overlay_enabled',
+		'photo_highlight_on_hover',
+		'photo_zoom_on_hover',
 		'photo_share_card_enabled',
 		'flags_enabled',
 		'photo_flags_enabled',
@@ -61,6 +79,37 @@ class SettingsController extends Controller
 		'password_flag_enabled',
 		'sensitive_flag_enabled',
 		'expert_album_settings',
+		'sm_pinterest_url',
+		'sm_deviantart_url',
+		'sm_tumblr_url',
+		'sm_500px_url',
+		'sm_pixelfeed_url',
+		'sm_discord_url',
+		'sm_reddit_url',
+		'landing_layout',
+		'landing_intro_screen_enabled',
+		'landing_backdrop_opacity',
+		'landing_hero_text_position',
+		'landing_hero_text_color',
+		'landing_hero_text_opacity',
+		'landing_animation_preset',
+		'landing_about_enabled',
+		'landing_about_text',
+		'landing_featured_items_enabled',
+		'landing_featured_items_mode',
+		'landing_featured_items_count',
+		'landing_cta_text',
+		'landing_cta_position',
+		'landing_cta_shift_type',
+		'landing_cta_shift_x',
+		'landing_cta_shift_x_direction',
+		'landing_cta_shift_y',
+		'landing_cta_shift_y_direction',
+		'landing_meridian_explore_offset',
+		'landing_meridian_contact_offset',
+		'landing_meridian_explore_line_position',
+		'landing_meridian_contact_line_position',
+		'landing_login_position',
 	];
 
 	/**
@@ -78,7 +127,10 @@ class SettingsController extends Controller
 		$editable_configs = ConfigCategory::with([
 			'configs' => fn ($query) => $query
 				->when(config('features.hide-lychee-SE', false) === true, fn ($q) => $q->where('cat', '!=', 'lychee SE'))
-				->when(config('features.enable-request-caching') === false, fn ($q) => $q->where('cat', '!=', 'Mod Cache'))
+				->when(
+					config('features.enable-caching') === false,
+					fn ($q) => $q->where(fn ($q2) => $q2->where('cat', '!=', 'Mod Cache'))
+				)
 				->when($docker_info->isDocker(), fn ($q) => $q->where('not_on_docker', '!=', true))
 				->when(!$request->verify()->is_supporter() && !$request->configs()->getValueAsBool('enable_se_preview'), fn ($q) => $q->where('level', '=', 0))
 				->when(!$request->verify()->is_pro(), fn ($q) => $q->where('level', '<', 2))
@@ -104,6 +156,8 @@ class SettingsController extends Controller
 		$configs->each(function ($config): void {
 			Configs::query()->where('key', $config->key)->update(['value' => $config->value ?? '']);
 		});
+
+		AlbumListingCacheFlushRequested::dispatchIf($configs->pluck('key')->intersect(self::ALBUM_LISTING_COARSE_FLUSH_CONFIGS)->isNotEmpty());
 
 		$request->configs()->invalidateCache();
 		TaggedRouteCacheUpdated::dispatch(CacheTag::SETTINGS);
