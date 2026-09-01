@@ -125,6 +125,7 @@ return [
         'drag' => '(Ou glissez les fichiers sur la page)',
         'loading' => 'Chargement',
         'resume' => 'Reprendre',
+        'start' => 'Démarrer le téléversement',
         'uploading' => 'Téléversement',
         'finished' => 'Terminé',
         'failed_error' => 'Échec du téléversement. Le serveur a retourné une erreur !',
@@ -226,6 +227,7 @@ return [
         'password_required' => 'Cet album est protégé par un mot de passe. Entrez-le ci-dessous pour voir les photos :',
         'password' => 'Mot de passe',
         'unlock' => 'Déverrouiller',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'Entrez les étiquettes pour cette photo.',

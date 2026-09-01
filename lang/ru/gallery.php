@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'Закреплённые альбомы',
     'albums' => 'Альбомы',
     'root' => 'Альбомы',
+    'nav_tree' => [
+        'expand_all' => 'Развернуть все',
+        'collapse_all' => 'Свернуть все',
+    ],
     'set_focus' => 'Set Focus',
     'set_header_focus' => 'Set Header Focus',
     'done' => 'Done',
@@ -321,6 +324,16 @@ return [
         'consent' => 'Нажмите для согласия.',
     ],
     'menus' => [
+        'basket' => 'Basket',
+        'favourites' => 'Favourites',
+        'view_grid' => 'Grid View',
+        'view_list' => 'List View',
+        'search' => 'Search',
+        'metrics' => 'Live Metrics',
+        'se_preview' => 'Live Metrics (Preview)',
+        'help' => 'Keyboard Shortcuts',
+        'hide_nsfw' => 'Hide NSFW',
+        'show_nsfw' => 'Show NSFW',
         'highlight' => 'Добавить в избранное',
         'unhighlight' => 'Убрать из избранного',
         'highlight_all' => 'Добавить все в избранное',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'New Person Album',
         'upload_track' => 'Загрузить трек',
         'delete_track' => 'Удалить трек',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'Время загрузки',
         'photo_select_2' => 'Дата съемки',
         'photo_select_3' => 'Название (Nat)',
-        'photo_select_4' => 'Описание (Nat)',
-        'photo_select_3_strict' => 'Title (Lexico)',
-        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'Избранное',
         'photo_select_7' => 'Формат фото',
         'ascending' => 'По возрастанию',
         'descending' => 'По убыванию',
         'album_select_1' => 'Время создания',
         'album_select_2' => 'Название (Nat)',
-        'album_select_3' => 'Описание (Nat)',
-        'album_select_2_strict' => 'Title (Lexico)',
-        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'Самая поздняя дата съемки',
         'album_select_6' => 'Самая ранняя дата съемки',
     ],

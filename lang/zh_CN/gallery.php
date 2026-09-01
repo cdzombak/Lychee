@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => '置顶相册',
     'albums' => '相册',
     'root' => '相册',
+    'nav_tree' => [
+        'expand_all' => '展开全部',
+        'collapse_all' => '折叠全部',
+    ],
     'set_focus' => 'Set Focus',
     'set_header_focus' => 'Set Header Focus',
     'done' => 'Done',
@@ -321,6 +324,16 @@ return [
         'consent' => '点击确认查看。',
     ],
     'menus' => [
+        'basket' => 'Basket',
+        'favourites' => 'Favourites',
+        'view_grid' => 'Grid View',
+        'view_list' => 'List View',
+        'search' => 'Search',
+        'metrics' => 'Live Metrics',
+        'se_preview' => 'Live Metrics (Preview)',
+        'help' => 'Keyboard Shortcuts',
+        'hide_nsfw' => 'Hide NSFW',
+        'show_nsfw' => 'Show NSFW',
         'highlight' => '标星',
         'unhighlight' => '取消标星',
         'highlight_all' => '标星所选',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'New Person Album',
         'upload_track' => '上传轨迹',
         'delete_track' => '删除轨迹',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => '上传时间',
         'photo_select_2' => '拍摄日期',
         'photo_select_3' => '标题 (Nat)',
-        'photo_select_4' => '描述 (Nat)',
-        'photo_select_3_strict' => 'Title (Lexico)',
-        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => '标星',
         'photo_select_7' => '照片格式',
         'ascending' => '升序',
         'descending' => '降序',
         'album_select_1' => '创建时间',
         'album_select_2' => '标题 (Nat)',
-        'album_select_3' => '描述 (Nat)',
-        'album_select_2_strict' => 'Title (Lexico)',
-        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => '最新拍摄日期',
         'album_select_6' => '最早拍摄日期',
     ],

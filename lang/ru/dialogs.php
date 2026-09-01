@@ -124,6 +124,7 @@ return [
         'drag' => '(Или перетащите файлы на страницу)',
         'loading' => 'Загрузка',
         'resume' => 'Возобновить',
+        'start' => 'Start Upload',
         'uploading' => 'Загрузка',
         'finished' => 'Завершено',
         'failed_error' => 'Не удалось загрузить. Сервер вернул ошибку!',
@@ -225,6 +226,7 @@ return [
         'password_required' => 'Этот альбом защищен паролем. Введите пароль ниже для просмотра фотографий в этом альбоме:',
         'password' => 'Пароль',
         'unlock' => 'Разблокировать',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'Введите теги для этой фотографии.',

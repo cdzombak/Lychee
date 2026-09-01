@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'Избрани албуми',
     'albums' => 'Албуми',
     'root' => 'Албуми',
+    'nav_tree' => [
+        'expand_all' => 'Разгъни всички',
+        'collapse_all' => 'Свий всички',
+    ],
     'set_focus' => 'Задай фокус',
     'set_header_focus' => 'Задай фокус на заглавката',
     'done' => 'Готово',
@@ -321,6 +324,16 @@ return [
         'consent' => 'Докоснете, за да потвърдите.',
     ],
     'menus' => [
+        'basket' => 'Basket',
+        'favourites' => 'Favourites',
+        'view_grid' => 'Grid View',
+        'view_list' => 'List View',
+        'search' => 'Search',
+        'metrics' => 'Live Metrics',
+        'se_preview' => 'Live Metrics (Preview)',
+        'help' => 'Keyboard Shortcuts',
+        'hide_nsfw' => 'Hide NSFW',
+        'show_nsfw' => 'Show NSFW',
         'highlight' => 'Отбележи',
         'unhighlight' => 'Премахни отметка',
         'highlight_all' => 'Отбележи избраните',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'New Person Album',
         'upload_track' => 'Качи трак',
         'delete_track' => 'Изтрий трак',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'Време на качване',
         'photo_select_2' => 'Дата на заснемане',
         'photo_select_3' => 'Заглавие (естествено)',
-        'photo_select_4' => 'Описание (естествено)',
-        'photo_select_3_strict' => 'Заглавие (лексикално)',
-        'photo_select_4_strict' => 'Описание (лексикално)',
         'photo_select_6' => 'Оценка',
         'photo_select_7' => 'Формат на снимката',
         'ascending' => 'Възходящо',
         'descending' => 'Низходящо',
         'album_select_1' => 'Време на създаване',
         'album_select_2' => 'Заглавие (естествено)',
-        'album_select_3' => 'Описание (естествено)',
-        'album_select_2_strict' => 'Заглавие (лексикално)',
-        'album_select_3_strict' => 'Описание (лексикално)',
         'album_select_5' => 'Най-нова дата на заснемане',
         'album_select_6' => 'Най-стара дата на заснемане',
     ],

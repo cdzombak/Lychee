@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -15,6 +14,10 @@ return [
     'done' => 'Done',
     'cancel' => 'Cancel',
     'root' => 'Albums',
+    'nav_tree' => [
+        'expand_all' => 'Tümünü genişlet',
+        'collapse_all' => 'Tümünü daralt',
+    ],
     'tabs' => [
         'my_albums' => 'My Albums',
         'shared_with_me' => 'Shared with Me',
@@ -321,6 +324,16 @@ return [
         'consent' => 'Tap to consent.',
     ],
     'menus' => [
+        'basket' => 'Basket',
+        'favourites' => 'Favourites',
+        'view_grid' => 'Grid View',
+        'view_list' => 'List View',
+        'search' => 'Search',
+        'metrics' => 'Live Metrics',
+        'se_preview' => 'Live Metrics (Preview)',
+        'help' => 'Keyboard Shortcuts',
+        'hide_nsfw' => 'Hide NSFW',
+        'show_nsfw' => 'Show NSFW',
         'highlight' => 'Highlight',
         'unhighlight' => 'Unhighlight',
         'highlight_all' => 'Highlight Selected',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'New Person Album',
         'upload_track' => 'Upload track',
         'delete_track' => 'Delete track',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'Upload Time',
         'photo_select_2' => 'Take Date',
         'photo_select_3' => 'Title (Nat)',
-        'photo_select_4' => 'Description (Nat)',
-        'photo_select_3_strict' => 'Title (Lexico)',
-        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'Star',
         'photo_select_7' => 'Photo Format',
         'ascending' => 'Ascending',
         'descending' => 'Descending',
         'album_select_1' => 'Creation Time',
         'album_select_2' => 'Title (Nat)',
-        'album_select_3' => 'Description (Nat)',
-        'album_select_2_strict' => 'Title (Lexico)',
-        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'Latest Take Date',
         'album_select_6' => 'Oldest Take Date',
     ],

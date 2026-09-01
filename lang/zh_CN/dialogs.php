@@ -124,6 +124,7 @@ return [
         'drag' => '（或将文件拖到页面上）',
         'loading' => '加载中',
         'resume' => '继续',
+        'start' => 'Start Upload',
         'uploading' => '上传中',
         'finished' => '已完成',
         'failed_error' => '上传失败。服务器返回错误！',
@@ -225,6 +226,7 @@ return [
         'password_required' => '此相册受密码保护。请在下方输入密码以查看相册中的照片：',
         'password' => '密码',
         'unlock' => '解锁',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => '为此照片输入标签。',

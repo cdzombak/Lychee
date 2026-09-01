@@ -125,6 +125,7 @@ return [
         'drag' => '(Or drag files to the page)',
         'loading' => 'Loading',
         'resume' => 'Resume',
+        'start' => 'Start Upload',
         'uploading' => 'Uploading',
         'finished' => 'Finished',
         'failed_error' => 'Upload failed. The server returned an error!',
@@ -226,6 +227,7 @@ return [
         'password_required' => 'This album is protected by a password. Enter the password below to view the photos of this album:',
         'password' => 'Password',
         'unlock' => 'Unlock',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'Enter your tags for this photo.',

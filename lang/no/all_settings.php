@@ -439,6 +439,8 @@ return [
         'error_color' => 'Error color',
         'info_color' => 'Info color',
         'neutral_color' => 'Neutral color',
+        'embed_metadata_in_files_enabled' => 'Embed title, description, tags and owner rating into the original/RAW file.',
+        'embed_metadata_update_checksum_enabled' => 'Update stored checksum after embedding metadata.',
     ],
     'details' => [
         'contact_form_enabled' => '',
@@ -874,6 +876,8 @@ return [
         'error_color' => 'Pick a colour, the nearest colour palette will be used. If you leave this empty, the default color will be used.<br>Note: you will need to refresh the page to see the changes.',
         'info_color' => 'Pick a colour, the nearest colour palette will be used. If you leave this empty, the default color will be used.<br>Note: you will need to refresh the page to see the changes.',
         'neutral_color' => 'Pick a colour, the nearest colour palette will be used. If you leave this empty, the default color will be used.<br>Note: you will need to refresh the page to see the changes. Pick a near-gray color for best results — a saturated color will tint every gray in the interface.',
+        'embed_metadata_in_files_enabled' => '<span class="pi pi-exclamation-triangle text-orange-500 mr-1"></span> Enabling this rewrites the Original file (and RAW file, if present) whenever a photo\'s title, description, tags, or the owner\'s rating changes. This <b>changes the file\'s contents and checksum</b> — if you later re-import or rescan an untouched copy of the same source file, it will no longer be recognized as a duplicate of the photo already in your library. <b>Local storage only</b> — photos stored on S3 (or any other non-local storage disk) are skipped and never have metadata embedded.',
+        'embed_metadata_update_checksum_enabled' => 'When on, the photo\'s recorded checksum is updated to match the rewritten file, keeping the duplicate finder consistent. When off, the recorded checksum keeps pointing at the original pristine upload even after the file has changed — useful if you need the original checksum to stay a permanent fingerprint of what was first uploaded. Only has an effect when "Embed metadata" above is also enabled.',
     ],
     'category_name' => [
         'config' => 'Grunnleggende',
@@ -908,7 +912,7 @@ return [
     'category_description' => [
         'config' => '',
         'lychee SE' => 'Lås opp de fulle funksjonene i Lychee med <a href="https://lycheeorg.dev/get-supporter-edition/" class="text-primary-500 font-bold underline">Supporter Edition</a>. Få eksklusive funksjoner og støtt utviklingen av Lychee. Sponsoer LycheeOrg på GitHub og få lisensnøkkelen din <a href="https://github.com/sponsors/LycheeOrg" class="text-primary-500 font-bold underline">her</a>.',
-        'Gallery' => '<span class="text-warning-600 font-bold uppercase">Important:</span> Natural sorting and lexicographical sorting can produce different results.<br><span class="text-muted-color text-muted">Natural: img_1, img_2, img_10.<br>Lexicographical: img_1, img_10, img_2.<br>Lexicographical sorting is performed directly in the database, while natural sorting is performed in PHP after the database query runs. As a result, when natural sorting is combined with pagination, results are fetched from the database in an arbitrary order before being sorted, which can lead to unexpected results when browsing through pages. We recommend using natural sorting for a small number of photos, and lexicographical sorting for a large number of photos. Alternatively, you can prefix your numbers with 0s (e.g. img_01, img_02, img_10) so that both sorting methods produce the same result.</span>',
+        'Gallery' => '',
         'Mod Welcome' => 'Denne modulen aktiverer en landingsside. I stedet for å komme direkte til galleriet, gir den inngangen til nettstedet et snev av storslagenhet. Oppgi URL-en til bildet som skal vises, og angi tittelen. Vi anbefaler å bruke Landing Page-utvidelsen, som er tilgjengelig i admin-dashbordet, i stedet for disse individuelle innstillingene, siden den gir en direkte forhåndsvisning av endringene dine.',
         'Footer' => '',
         'Smart Albums' => '',

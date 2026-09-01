@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'Przypięte albumy',
     'albums' => 'Albumy',
     'root' => 'Albumy',
+    'nav_tree' => [
+        'expand_all' => 'Rozwiń wszystko',
+        'collapse_all' => 'Zwiń wszystko',
+    ],
     'set_focus' => 'Set Focus',
     'set_header_focus' => 'Set Header Focus',
     'done' => 'Done',
@@ -321,6 +324,16 @@ return [
         'consent' => 'Kliknij, aby wyrazić zgodę.',
     ],
     'menus' => [
+        'basket' => 'Basket',
+        'favourites' => 'Favourites',
+        'view_grid' => 'Grid View',
+        'view_list' => 'List View',
+        'search' => 'Search',
+        'metrics' => 'Live Metrics',
+        'se_preview' => 'Live Metrics (Preview)',
+        'help' => 'Keyboard Shortcuts',
+        'hide_nsfw' => 'Hide NSFW',
+        'show_nsfw' => 'Show NSFW',
         'highlight' => 'Wyróżnienie',
         'unhighlight' => 'Cofnij wyróżnienie',
         'highlight_all' => 'Wybrano wyróżnienie',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'New Person Album',
         'upload_track' => 'Prześlij ścieżkę',
         'delete_track' => 'Usuń ścieżkę',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'Czas przesyłania',
         'photo_select_2' => 'Czas wykonania',
         'photo_select_3' => 'Tytuł (Nat)',
-        'photo_select_4' => 'Opis (Nat)',
-        'photo_select_3_strict' => 'Title (Lexico)',
-        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'Wyróżnienie',
         'photo_select_7' => 'Format zdjęcia',
         'ascending' => 'Rosnąco',
         'descending' => 'Malejąco',
         'album_select_1' => 'Czas utworzenia',
         'album_select_2' => 'Tytuł (Nat)',
-        'album_select_3' => 'Opis (Nat)',
-        'album_select_2_strict' => 'Title (Lexico)',
-        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'Dane ostatniego użycia',
         'album_select_6' => 'Najstarsze',
     ],

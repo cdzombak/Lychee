@@ -124,6 +124,7 @@ return [
         'drag' => '(Или плъзнете файловете върху страницата)',
         'loading' => 'Зареждане',
         'resume' => 'Продължи',
+        'start' => 'Start Upload',
         'uploading' => 'Качване',
         'finished' => 'Завършено',
         'failed_error' => 'Качването не бе успешно. Сървърът върна грешка!',
@@ -225,6 +226,7 @@ return [
         'password_required' => 'Този албум е защитен с парола. Въведете паролата по-долу, за да видите снимките:',
         'password' => 'Парола',
         'unlock' => 'Отключи',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'Въведете тагове за тази снимка.',

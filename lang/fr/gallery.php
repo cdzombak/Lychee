@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'Albums épinglés',
     'albums' => 'Albums',
     'root' => 'Albums',
+    'nav_tree' => [
+        'expand_all' => 'Tout développer',
+        'collapse_all' => 'Tout réduire',
+    ],
     'set_focus' => 'Définir le point focal',
     'set_header_focus' => 'Définir le point focal de l’en-tête',
     'done' => 'Terminé',
@@ -321,6 +324,16 @@ return [
         'consent' => 'Appuyez pour consentir.',
     ],
     'menus' => [
+        'basket' => 'Panier',
+        'favourites' => 'Favoris',
+        'view_grid' => 'Vue en grille',
+        'view_list' => 'Vue en liste',
+        'search' => 'Rechercher',
+        'metrics' => 'Métriques en direct',
+        'se_preview' => 'Métriques en direct (Aperçu)',
+        'help' => 'Raccourcis clavier',
+        'hide_nsfw' => 'Masquer le contenu sensible',
+        'show_nsfw' => 'Afficher le contenu sensible',
         'highlight' => 'Favori',
         'unhighlight' => 'Retirer des favoris',
         'highlight_all' => 'Mettre en favoris',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'Nouvel album de personne',
         'upload_track' => 'Téléverser une trace',
         'delete_track' => 'Supprimer la trace',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'Date de téléversement',
         'photo_select_2' => 'Date de prise de vue',
         'photo_select_3' => 'Titre (Nat)',
-        'photo_select_4' => 'Description (Nat)',
-        'photo_select_3_strict' => 'Titre (Lexico)',
-        'photo_select_4_strict' => 'Description (Lexico)',
         'photo_select_6' => 'Favori',
         'photo_select_7' => 'Format de la photo',
         'ascending' => 'Croissant',
         'descending' => 'Décroissant',
         'album_select_1' => 'Date de création',
         'album_select_2' => 'Titre (Nat)',
-        'album_select_3' => 'Description (Nat)',
-        'album_select_2_strict' => 'Titre (Lexico)',
-        'album_select_3_strict' => 'Description (Lexico)',
         'album_select_5' => 'Date de prise la plus récente',
         'album_select_6' => 'Date de prise la plus ancienne',
     ],

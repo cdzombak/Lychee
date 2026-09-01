@@ -124,6 +124,7 @@ return [
         'drag' => '(Oder Dateien auf die Seite ziehen)',
         'loading' => 'Laden',
         'resume' => 'Fortfahren',
+        'start' => 'Start Upload',
         'uploading' => 'Hochladen',
         'finished' => 'Fertig',
         'failed_error' => 'Hochladen fehlgeschlagen. Der Server hat einen Fehler zurückgegeben!',
@@ -225,6 +226,7 @@ return [
         'password_required' => 'Dieses Album ist durch ein Passwort geschützt. Passwort unten eingeben, um die Fotos dieses Albums zu sehen:',
         'password' => 'Passwort',
         'unlock' => 'freischalten',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'Tags für dieses Foto eingeben.',

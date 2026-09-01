@@ -124,6 +124,7 @@ return [
         'drag' => '（或將文件拖曳到頁面上）',
         'loading' => '載入中',
         'resume' => '恢復',
+        'start' => 'Start Upload',
         'uploading' => '上傳中',
         'finished' => '已完成',
         'failed_error' => '上傳失敗。伺服器回傳錯誤！',
@@ -225,6 +226,7 @@ return [
         'password_required' => '此相簿被密碼保護。請在下方輸入密碼來瀏覽此相簿中的相片：',
         'password' => '密碼',
         'unlock' => '解鎖',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => '輸入此相片的標籤。',

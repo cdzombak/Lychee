@@ -124,6 +124,7 @@ return [
         'drag' => '(Of sleep bestanden naar de pagina)',
         'loading' => 'Laden',
         'resume' => 'Hervatten',
+        'start' => 'Upload starten',
         'uploading' => 'Uploaden',
         'finished' => 'Klaar',
         'failed_error' => 'Upload mislukt. De server gaf een foutmelding terug!',
@@ -225,6 +226,7 @@ return [
         'password_required' => 'Dit album is beschermd met een wachtwoord. Voer het wachtwoord hieronder in om de foto’s van dit album te bekijken:',
         'password' => 'Wachtwoord',
         'unlock' => 'Ontgrendelen',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'Voer uw tags voor deze foto in.',

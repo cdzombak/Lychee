@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'الألبومات المثبتة',
     'albums' => 'الألبومات',
     'root' => 'الألبومات',
+    'nav_tree' => [
+        'expand_all' => 'توسيع الكل',
+        'collapse_all' => 'طي الكل',
+    ],
     'set_focus' => 'ضبط التركيز',
     'set_header_focus' => 'ضبط تركيز الرأس',
     'done' => 'تم',
@@ -321,6 +324,16 @@ return [
         'consent' => 'اضغط للموافقة.',
     ],
     'menus' => [
+        'basket' => 'السلة',
+        'favourites' => 'المفضلة',
+        'view_grid' => 'عرض شبكي',
+        'view_list' => 'عرض قائمة',
+        'search' => 'بحث',
+        'metrics' => 'الإحصائيات المباشرة',
+        'se_preview' => 'الإحصائيات المباشرة (معاينة)',
+        'help' => 'اختصارات لوحة المفاتيح',
+        'hide_nsfw' => 'إخفاء المحتوى الحساس',
+        'show_nsfw' => 'إظهار المحتوى الحساس',
         'highlight' => 'تمييز',
         'unhighlight' => 'إلغاء التمييز',
         'highlight_all' => 'تمييز المحدد',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'ألبوم شخص جديد',
         'upload_track' => 'رفع مقطع',
         'delete_track' => 'حذف المقطع',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'وقت الرفع',
         'photo_select_2' => 'تاريخ الالتقاط',
         'photo_select_3' => 'العنوان',
-        'photo_select_4' => 'الوصف',
-        'photo_select_3_strict' => 'العنوان (أبجدي)',
-        'photo_select_4_strict' => 'الوصف (أبجدي)',
         'photo_select_6' => 'تمييز',
         'photo_select_7' => 'صيغة الصورة',
         'ascending' => 'تصاعدي',
         'descending' => 'تنازلي',
         'album_select_1' => 'وقت الإنشاء',
         'album_select_2' => 'العنوان',
-        'album_select_3' => 'الوصف',
-        'album_select_2_strict' => 'العنوان (أبجدي)',
-        'album_select_3_strict' => 'الوصف (أبجدي)',
         'album_select_5' => 'أحدث تاريخ التقاط',
         'album_select_6' => 'أقدم تاريخ التقاط',
     ],

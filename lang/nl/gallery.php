@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'Vastgepinde albums',
     'albums' => 'Albums',
     'root' => 'Albums',
+    'nav_tree' => [
+        'expand_all' => 'Alles uitklappen',
+        'collapse_all' => 'Alles inklappen',
+    ],
     'set_focus' => 'Focus instellen',
     'set_header_focus' => 'Focus van albumkop instellen',
     'done' => 'Klaar',
@@ -321,6 +324,16 @@ return [
         'consent' => 'Tik om toestemming te geven.',
     ],
     'menus' => [
+        'basket' => 'Winkelmand',
+        'favourites' => 'Favorieten',
+        'view_grid' => 'Rasterweergave',
+        'view_list' => 'Lijstweergave',
+        'search' => 'Zoeken',
+        'metrics' => 'Live statistieken',
+        'se_preview' => 'Live statistieken (Voorbeeld)',
+        'help' => 'Toetsenbord sneltoetsen',
+        'hide_nsfw' => 'Gevoelige inhoud verbergen',
+        'show_nsfw' => 'Gevoelige inhoud tonen',
         'highlight' => 'Ster',
         'unhighlight' => 'Ster verwijderen',
         'highlight_all' => 'Alles sterren',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'Nieuw persoonsalbum',
         'upload_track' => 'Track uploaden',
         'delete_track' => 'Track verwijderen',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'Uploadtijd',
         'photo_select_2' => 'Opnamedatum',
         'photo_select_3' => 'Titel (Nat)',
-        'photo_select_4' => 'Beschrijving (Nat)',
-        'photo_select_3_strict' => 'Titel (Lexico)',
-        'photo_select_4_strict' => 'Beschrijving (Lexico)',
         'photo_select_6' => 'Markering',
         'photo_select_7' => 'Fotoformaat',
         'ascending' => 'Oplopend',
         'descending' => 'Aflopend',
         'album_select_1' => 'Aanmaaktijd',
         'album_select_2' => 'Titel (Nat)',
-        'album_select_3' => 'Beschrijving (Nat)',
-        'album_select_2_strict' => 'Titel (Lexico)',
-        'album_select_3_strict' => 'Beschrijving (Lexico)',
         'album_select_5' => 'Nieuwste opnamedatum',
         'album_select_6' => 'Oudste opnamedatum',
     ],

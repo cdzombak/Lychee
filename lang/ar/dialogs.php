@@ -125,6 +125,7 @@ return [
         'drag' => '(أو اسحب الملفات إلى الصفحة)',
         'loading' => 'جارٍ التحميل',
         'resume' => 'استئناف',
+        'start' => 'بدء التحميل',
         'uploading' => 'جارٍ التحميل',
         'finished' => 'منتهي',
         'failed_error' => 'فشل التحميل. الخادم أعاد خطأ!',
@@ -226,6 +227,7 @@ return [
         'password_required' => 'هذا الألبوم محمي بكلمة مرور. أدخل كلمة المرور أدناه لعرض صور هذا الألبوم:',
         'password' => 'كلمة المرور',
         'unlock' => 'فتح',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'أدخل العلامات لهذه الصورة.',

@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'آلبوم‌های سنجاق‌شده',
     'albums' => 'آلبوم‌ها',
     'root' => 'آلبوم‌ها',
+    'nav_tree' => [
+        'expand_all' => 'باز کردن همه',
+        'collapse_all' => 'بستن همه',
+    ],
     'set_focus' => 'تنظیم فوکوس',
     'set_header_focus' => 'تنظیم فوکوس هدر',
     'done' => 'انجام شد',
@@ -321,6 +324,16 @@ return [
         'consent' => 'برای تأیید لمس کنید.',
     ],
     'menus' => [
+        'basket' => 'سبد خرید',
+        'favourites' => 'علاقه‌مندی‌ها',
+        'view_grid' => 'نمای شبکه‌ای',
+        'view_list' => 'نمای لیستی',
+        'search' => 'جستجو',
+        'metrics' => 'آمار زنده',
+        'se_preview' => 'آمار زنده (پیش‌نمایش)',
+        'help' => 'میانبرهای صفحه‌کلید',
+        'hide_nsfw' => 'پنهان کردن محتوای حساس',
+        'show_nsfw' => 'نمایش محتوای حساس',
         'highlight' => 'ستاره‌دار',
         'unhighlight' => 'بدون ستاره',
         'highlight_all' => 'ستاره‌دار کردن انتخاب شده‌ها',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'آلبوم شخص جدید',
         'upload_track' => 'بارگذاری ترک',
         'delete_track' => 'حذف ترک',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'زمان بارگذاری',
         'photo_select_2' => 'تاریخ ثبت',
         'photo_select_3' => 'عنوان',
-        'photo_select_4' => 'توضیحات',
-        'photo_select_3_strict' => 'عنوان (حروف‌الفبایی)',
-        'photo_select_4_strict' => 'توضیحات (حروف‌الفبایی)',
         'photo_select_6' => 'ستاره',
         'photo_select_7' => 'فرمت عکس',
         'ascending' => 'صعودی',
         'descending' => 'نزولی',
         'album_select_1' => 'زمان ایجاد',
         'album_select_2' => 'عنوان',
-        'album_select_3' => 'توضیحات',
-        'album_select_2_strict' => 'عنوان (حروف‌الفبایی)',
-        'album_select_3_strict' => 'توضیحات (حروف‌الفبایی)',
         'album_select_5' => 'جدیدترین تاریخ ثبت',
         'album_select_6' => 'قدیمی‌ ترین تاریخ ثبت',
     ],

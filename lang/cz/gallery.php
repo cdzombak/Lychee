@@ -1,5 +1,4 @@
 <?php
-
 return [
     /*
     |--------------------------------------------------------------------------
@@ -11,6 +10,10 @@ return [
     'pinned_albums' => 'Připnutá alba',
     'albums' => 'Alba',
     'root' => 'Alba',
+    'nav_tree' => [
+        'expand_all' => 'Rozbalit vše',
+        'collapse_all' => 'Sbalit vše',
+    ],
     'set_focus' => 'Zaměřit',
     'set_header_focus' => 'Zaměřit hlavičku',
     'done' => 'Hotovo',
@@ -321,6 +324,16 @@ return [
         'consent' => 'Klepnutím vyjádříte souhlas.',
     ],
     'menus' => [
+        'basket' => 'Basket',
+        'favourites' => 'Favourites',
+        'view_grid' => 'Grid View',
+        'view_list' => 'List View',
+        'search' => 'Search',
+        'metrics' => 'Live Metrics',
+        'se_preview' => 'Live Metrics (Preview)',
+        'help' => 'Keyboard Shortcuts',
+        'hide_nsfw' => 'Hide NSFW',
+        'show_nsfw' => 'Show NSFW',
         'highlight' => 'Označit hvězdičkou',
         'unhighlight' => 'Zrušit označení hvězdičkou',
         'highlight_all' => 'Označit vybrané',
@@ -368,23 +381,18 @@ return [
         'new_person_album' => 'New Person Album',
         'upload_track' => 'Nahrát stopu',
         'delete_track' => 'Odstranit stopu',
+        'add' => 'Add',
     ],
     'sort' => [
         'photo_select_1' => 'Čas nahrání',
         'photo_select_2' => 'Datum pořízení',
         'photo_select_3' => 'Název (Nat)',
-        'photo_select_4' => 'Popis (Nat)',
-        'photo_select_3_strict' => 'Název (Lexico)',
-        'photo_select_4_strict' => 'Popis (Lexico)',
         'photo_select_6' => 'Hvězdička',
         'photo_select_7' => 'Formát fotografie',
         'ascending' => 'Vzestupně',
         'descending' => 'Sestupně',
         'album_select_1' => 'Čas vytvoření',
         'album_select_2' => 'Název (Nat)',
-        'album_select_3' => 'Popis (Nat)',
-        'album_select_2_strict' => 'Název (Lexico)',
-        'album_select_3_strict' => 'Popis (Lexico)',
         'album_select_5' => 'Nejnovější datum pořízení',
         'album_select_6' => 'Nejstarší datum pořízení',
     ],

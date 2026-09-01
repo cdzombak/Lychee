@@ -124,6 +124,7 @@ return [
         'drag' => '(یا فایل‌ها را به صفحه بکشید)',
         'loading' => 'در حال بارگذاری',
         'resume' => 'ادامه',
+        'start' => 'شروع بارگذاری',
         'uploading' => 'در حال بارگذاری',
         'finished' => 'پایان یافته',
         'failed_error' => 'بارگذاری با بازگرداندن خطا از سمت سرور نا تمام ماند!',
@@ -225,6 +226,7 @@ return [
         'password_required' => 'این آلبوم با یک رمز محافظت شده است. برای مشاهده عکس‌های این آلبوم، رمز را در زیر وارد کنید:',
         'password' => 'رمز',
         'unlock' => 'باز کردن قفل',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'برچسب‌های خود را برای این عکس وارد کنید.',

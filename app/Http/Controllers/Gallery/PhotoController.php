@@ -42,6 +42,7 @@ use App\Http\Resources\Models\PhotoResource;
 use App\Image\Files\NativeLocalFile;
 use App\Image\Files\ProcessableJobFile;
 use App\Image\Files\UploadedFile;
+use App\Jobs\EmbedMetadataJob;
 use App\Jobs\ExtractZip;
 use App\Jobs\ProcessImageJob;
 use App\Jobs\WatermarkerJob;
@@ -49,9 +50,11 @@ use App\Models\Extensions\BaseAlbum;
 use App\Models\Photo;
 use App\Models\SizeVariant;
 use App\Models\Tag;
+use App\Models\User;
 use App\Policies\AlbumPolicy;
 use App\Policies\PhotoPolicy;
 use App\Repositories\ConfigManager;
+use App\Services\TitleSplitter;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -67,6 +70,8 @@ class PhotoController extends Controller
 {
 	/**
 	 * Upload a picture.
+	 *
+	 * @throws ConflictingPropertyException
 	 */
 	public function upload(UploadPhotoRequest $request): UploadMetaResource
 	{
@@ -77,10 +82,13 @@ class PhotoController extends Controller
 		$meta->extension ??= '.' . pathinfo($meta->file_name, PATHINFO_EXTENSION);
 		$meta->uuid_name ??= strtr(base64_encode(random_bytes(12)), '+/', '-_') . $meta->extension;
 
+		$is_last_chunk = $meta->chunk_number >= $meta->total_chunks;
+
 		$final = new NativeLocalFile(Storage::disk(FileSystem::IMAGE_UPLOAD)->path($meta->uuid_name));
 		$final->append($file->read());
+		$request->completeChunkUpload($meta->uuid_name, $meta->chunk_number, $is_last_chunk);
 
-		if ($meta->chunk_number < $meta->total_chunks) {
+		if (!$is_last_chunk) {
 			// Not the last chunk
 			return $meta;
 		}
@@ -163,6 +171,9 @@ class PhotoController extends Controller
 	{
 		$photo = $request->photo();
 		$photo->title = $request->title();
+		$title_split = TitleSplitter::split($photo->title);
+		$photo->title_base = $title_split->base;
+		$photo->title_index = $title_split->index;
 		$photo->description = $request->description();
 		$photo->created_at = $request->uploadDate();
 
@@ -176,6 +187,8 @@ class PhotoController extends Controller
 		$photo->taken_at = $request->takenAt() ?? $photo->initial_taken_at;
 
 		$photo->save();
+
+		EmbedMetadataJob::dispatchIf($request->configs()->getValueAsBool('embed_metadata_in_files_enabled'), $photo);
 
 		return new PhotoResource(
 			photo: $photo,
@@ -210,7 +223,7 @@ class PhotoController extends Controller
 	 */
 	public function rate(SetPhotoRatingRequest $request, Rating $rating): PhotoResource
 	{
-		/** @var \App\Models\User $user */
+		/** @var User $user */
 		$user = Auth::user();
 
 		$photo = $rating->do(
@@ -218,6 +231,12 @@ class PhotoController extends Controller
 			$user,
 			$request->rating()
 		);
+
+		// Only the photo owner's own rating gets embedded into the file —
+		// EXIF/XMP has room for exactly one "Rating" value, and only the
+		// owner's opinion is authoritative for what gets embedded.
+		$shoud_dispatch = $user->id === $photo->owner_id && $request->configs()->getValueAsBool('embed_metadata_in_files_enabled');
+		EmbedMetadataJob::dispatchIf($shoud_dispatch, $photo);
 
 		return new PhotoResource(
 			photo: $photo,
@@ -281,6 +300,9 @@ class PhotoController extends Controller
 	{
 		$photo = $request->photo();
 		$photo->title = $request->title();
+		$title_split = TitleSplitter::split($photo->title);
+		$photo->title_base = $title_split->base;
+		$photo->title_index = $title_split->index;
 		$photo->save();
 	}
 
@@ -311,6 +333,10 @@ class PhotoController extends Controller
 			DB::commit();
 		});
 		PhotoTagsChanged::dispatch($photo_ids->all());
+
+		if ($request->configs()->getValueAsBool('embed_metadata_in_files_enabled')) {
+			$photos->each(fn (Photo $photo) => EmbedMetadataJob::dispatch($photo));
+		}
 	}
 
 	/**
@@ -338,6 +364,7 @@ class PhotoController extends Controller
 	public function albums(GetPhotoAlbumsRequest $request): Collection
 	{
 		$photo = $request->photo();
+		/** @var ?User $user */
 		$user = Auth::user();
 		$album_policy = resolve(AlbumPolicy::class);
 

@@ -124,6 +124,7 @@ return [
         'drag' => '(Lub przeciągnij pliki na stronę)',
         'loading' => 'Ładowanie',
         'resume' => 'Wznowienie',
+        'start' => 'Start Upload',
         'uploading' => 'Przesyłanie',
         'finished' => 'Zakończono',
         'failed_error' => 'Przesyłanie nie powiodło się. Serwer zwrócił błąd!',
@@ -225,6 +226,7 @@ return [
         'password_required' => 'Ten album jest chroniony hasłem. Wprowadź hasło poniżej, aby wyświetlić zdjęcia z tego albumu:',
         'password' => 'Hasło',
         'unlock' => 'Odblokowanie',
+        'invalid_password' => 'Incorrect password for this album. Please try again.',
     ],
     'photo_tags' => [
         'question' => 'Wprowadź tagi dla tego zdjęcia.',
