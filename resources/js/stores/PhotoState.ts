@@ -1,5 +1,7 @@
 import { defineStore } from "pinia";
 import { usePhotosStore } from "./PhotosState";
+import { useAlbumStore } from "./AlbumState";
+import { useTimelineStore } from "./TimelineState";
 
 export enum ImageViewMode {
 	Original = "original",
@@ -53,6 +55,44 @@ export const usePhotoStore = defineStore("photo-store", {
 				return;
 			}
 			this.photo = photosState.photos.find((p) => p.id === this.photoId);
+
+			// On-demand tier-3 (`details`) fetch (G5), gated on `isPhotoSoaActive`
+			// (Q-065-05, Option A): only fires on the SoA path, where the tile
+			// found above is a lightweight, `ratios`-derived object still
+			// missing description/EXIF/size-variant-URL/etc. On the v2 path
+			// (or a TagAlbum/PersonAlbum/filtered view) `this.photo` is already
+			// a full `PhotoResource` — calling `loadPhotoDetails()` there would
+			// either 404 (Feature 064's endpoints reject non-Album parents) or
+			// be a wasted round trip against already-complete data, so it is
+			// never called at all in that case. Neighbor ids improve
+			// swipe-transition preview quality, mirroring how v2's own
+			// already-fully-loaded page gives adjacent photos' full data for
+			// free — `previous_photo_id`/`next_photo_id` are already correct at
+			// this point (`loadPhotosV3()` runs `rebuildNavigationLinks()`
+			// immediately after populating the array).
+			//
+			// Feature 066: a Timeline-sourced tile is exactly as
+			// `ratios`-lightweight (`adaptPhotoTile()` is reused unmodified,
+			// FR-066-11) and needs the same on-demand tier-3 resolution — routed
+			// to `timelineStore.loadPhotoDetailsV3()` instead, gated on
+			// `photo.album_id === "timeline"` (the literal id every
+			// Timeline-adapted tile carries) rather than on the current route,
+			// so this stays correct even mid-transition between views. The two
+			// gates are mutually exclusive in practice (a v3 album tile's
+			// `album_id` is never `"timeline"`), but checked as a clean
+			// `else if` regardless — never both in the same call.
+			if (this.photo !== undefined) {
+				const albumStore = useAlbumStore();
+				const timelineStore = useTimelineStore();
+				const ids = [this.photo.id, this.photo.previous_photo_id, this.photo.next_photo_id].filter(
+					(id): id is string => id !== null && id !== undefined,
+				);
+				if (albumStore.isPhotoSoaActive) {
+					void albumStore.loadPhotoDetails(ids);
+				} else if (timelineStore.isTimelineSoaActive && this.photo.album_id === "timeline") {
+					void timelineStore.loadPhotoDetailsV3(ids);
+				}
+			}
 		},
 	},
 	getters: {

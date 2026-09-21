@@ -18,6 +18,7 @@ use App\Contracts\Models\AbstractAlbum;
 use App\Enum\FileStatus;
 use App\Enum\SizeVariantType;
 use App\Events\PhotoHighlightToggled;
+use App\Events\PhotoSaved;
 use App\Events\PhotoTagsChanged;
 use App\Exceptions\ConfigurationException;
 use App\Exceptions\ConflictingPropertyException;
@@ -45,6 +46,7 @@ use App\Image\Files\UploadedFile;
 use App\Jobs\EmbedMetadataJob;
 use App\Jobs\ExtractZip;
 use App\Jobs\ProcessImageJob;
+use App\Jobs\RecomputePhotoBucketsJob;
 use App\Jobs\WatermarkerJob;
 use App\Models\Extensions\BaseAlbum;
 use App\Models\Photo;
@@ -170,6 +172,16 @@ class PhotoController extends Controller
 	public function update(EditPhotoRequest $request): PhotoResource
 	{
 		$photo = $request->photo();
+
+		// Captured before any mutation below: by the time PhotoSaved is
+		// dispatched (after save()), the DB row already holds the new
+		// values, so this is the only place the PREVIOUS Timeline sort date
+		// is still available - see PhotoSaved::$previous_dates.
+		$previous_dates = [
+			'created_at' => $photo->getRawOriginal('created_at'),
+			'taken_at' => $photo->getRawOriginal('taken_at'),
+		];
+
 		$photo->title = $request->title();
 		$title_split = TitleSplitter::split($photo->title);
 		$photo->title_base = $title_split->base;
@@ -178,15 +190,31 @@ class PhotoController extends Controller
 		$photo->created_at = $request->uploadDate();
 
 		$existing_tags = Tag::from($request->tags());
+		$old_tag_ids = $photo->tags()->pluck('tags.id')->all();
 		$photo->tags()->sync($existing_tags->pluck('id'));
 		$photo->load('tags');
-		PhotoTagsChanged::dispatch([$photo->id]);
+		PhotoTagsChanged::dispatch([$photo->id], array_values(array_unique([...$old_tag_ids, ...$existing_tags->pluck('id')->all()])));
 		$photo->license = $request->license()->value;
 
 		// if the request takenAt is null, then we set the initial value back.
 		$photo->taken_at = $request->takenAt() ?? $photo->initial_taken_at;
 
 		$photo->save();
+
+		// title/title_base/created_at/taken_at are all bucket-relevant
+		// columns - created_at is writable here via uploadDate() above, not
+		// immutable - recompute every album this photo is linked into
+		// whenever any of them actually changed. Explicit call site, not an
+		// Eloquent hook, per repo convention.
+		$bucket_relevant_changed = $photo->wasChanged(['title', 'title_base', 'created_at', 'taken_at']);
+		RecomputePhotoBucketsJob::dispatchIf($bucket_relevant_changed, $photo->id);
+
+		// RecomputePhotoBucketsJob (above) only reaches real albums via their
+		// `photo_album` pivot rows - Timeline is a smart album with no such
+		// row, so its own cached buckets/ratios/details need this separate,
+		// explicit signal whenever the sort date may have moved this photo
+		// into a different Timeline bucket.
+		PhotoSaved::dispatchIf($bucket_relevant_changed, [$photo->id], [$photo->id => $previous_dates]);
 
 		EmbedMetadataJob::dispatchIf($request->configs()->getValueAsBool('embed_metadata_in_files_enabled'), $photo);
 
@@ -205,6 +233,10 @@ class PhotoController extends Controller
 		foreach ($request->photos() as $photo) {
 			$photo->is_highlighted = $request->isHighlighted();
 			$photo->save();
+
+			// is_highlighted is a bucket-relevant column - recompute every
+			// album this photo is linked into whenever it actually changed.
+			RecomputePhotoBucketsJob::dispatchIf($photo->wasChanged('is_highlighted'), $photo->id);
 		}
 		$photo_ids = $request->photos()->map(fn (Photo $photo) => $photo->id)->all();
 
@@ -304,6 +336,10 @@ class PhotoController extends Controller
 		$photo->title_base = $title_split->base;
 		$photo->title_index = $title_split->index;
 		$photo->save();
+
+		// title/title_base are bucket-relevant columns - recompute every
+		// album this photo is linked into whenever either actually changed.
+		RecomputePhotoBucketsJob::dispatchIf($photo->wasChanged(['title', 'title_base']), $photo->id);
 	}
 
 	/**
@@ -317,6 +353,12 @@ class PhotoController extends Controller
 
 		// Fetch existing tags
 		$existing_tags = Tag::from($tags);
+
+		// Captured before the mutation below - PhotoTagsChanged::$tag_ids
+		// must carry the union of old and new tag IDs (a tag removed by
+		// `shall_override` is otherwise unrecoverable once the delete below
+		// has run), mirroring PhotoPersonsChanged::$person_ids exactly.
+		$old_tag_ids = DB::table('photos_tags')->whereIn('photo_id', $photo_ids)->distinct()->pluck('tag_id')->all();
 
 		DB::transaction(function () use ($request, $existing_tags, $photo_ids): void {
 			if ($request->shall_override) {
@@ -332,7 +374,7 @@ class PhotoController extends Controller
 			});
 			DB::commit();
 		});
-		PhotoTagsChanged::dispatch($photo_ids->all());
+		PhotoTagsChanged::dispatch($photo_ids->all(), array_values(array_unique([...$old_tag_ids, ...$existing_tags->pluck('id')->all()])));
 
 		if ($request->configs()->getValueAsBool('embed_metadata_in_files_enabled')) {
 			$photos->each(fn (Photo $photo) => EmbedMetadataJob::dispatch($photo));

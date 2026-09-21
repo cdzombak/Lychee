@@ -5,6 +5,14 @@ import { modKey, shiftKeyState } from "@/utils/keybindings-utils";
 import { useAlbumActions } from "./albumActions";
 import { AlbumsStore } from "@/stores/AlbumsState";
 import { PhotosStore } from "@/stores/PhotosState";
+import { useLycheeStateStore } from "@/stores/LycheeState";
+import { useAlbumStore } from "@/stores/AlbumState";
+import { computeAlbumTileGeometry, resolveBreakpoint } from "@/v8/composables/album/albumTileWidth";
+import { buildVirtualAlbumRows, LIST_ROW_HEIGHT } from "@/v8/composables/album/virtualAlbumRows";
+import { aspectRatioCssToNumber } from "@/v8/utils/aspectRatioNumber";
+import { filterBucketedTiles } from "@/v8/utils/albumBucketBoundaries";
+import { computeVisiblePhotoLayout, type PhotoLayoutMode } from "@/v8/composables/photo/analyticPhotoLayout";
+import { useLayoutStore } from "@/stores/LayoutState";
 
 const { canInteractAlbum, canInteractPhoto } = useAlbumActions();
 
@@ -36,6 +44,10 @@ export function useDragAndSelect(
 ) {
 	const initialPosition = ref<InitialPosition | undefined>(undefined);
 	const position = ref<Position | undefined>(undefined);
+
+	const lycheeStore = useLycheeStateStore();
+	const albumStore = useAlbumStore();
+	const layoutStore = useLayoutStore();
 
 	const cache = {
 		max_height: 0,
@@ -140,8 +152,8 @@ export function useDragAndSelect(
 
 		cache.max_height = get_max_height();
 		cache.max_width = get_max_width();
-		cache.photo_boxes = getBoxes("data-photo-id");
-		cache.album_boxes = getBoxes("data-album-id");
+		cache.photo_boxes = albumStore.isPhotoSoaActive ? getPhotoBoxesV3() : getBoxes("data-photo-id");
+		cache.album_boxes = lycheeStore.is_struct_of_array_enabled ? getAlbumBoxesV3() : getBoxes("data-album-id");
 		// We use slice to Copy the array: https://stackoverflow.com/questions/7486085/copy-array-by-value
 		// Otherwise that would be a reference to the original array and we would modify it.
 		cache.currentPhotoSelectionIds = togglableStore.selectedPhotosIds.slice();
@@ -198,6 +210,203 @@ export function useDragAndSelect(
 		});
 
 		return ret;
+	}
+
+	/**
+	 * Flag-on replacement for `getBoxes("data-album-id")` —
+	 * virtualization only ever mounts the tiles near the viewport, so a DOM
+	 * query would miss every off-screen album a drag rectangle could still
+	 * cover. Instead this reproduces the exact geometry
+	 * AlbumThumbGridVirtual.vue/AlbumListViewVirtual.vue (sub-album children)
+	 * or AlbumRootGridVirtual.vue/AlbumRootListViewVirtual.vue (root gallery
+	 * own/shared, 2026-09-02 root-SoA addendum) lay their tiles out with —
+	 * same `computeAlbumTileGeometry`/`buildVirtualAlbumRows` pure functions,
+	 * same inputs — and anchors it via `getBounding()` on each mounted grid
+	 * root (`[data-album-grid-root]`, always in the DOM even when its tiles
+	 * aren't), so the result lands in the exact same coordinate system
+	 * `getBoxes()` itself uses, whatever `#galleryView`'s own scroll model
+	 * turns out to be — no need to duplicate that math here.
+	 *
+	 * Queries *every* `[data-album-grid-root]`, not just the first: the root
+	 * gallery's non-tabbed SHOW mode can mount two independent grids
+	 * simultaneously (own + shared, `[data-album-grid-scope="own"|"shared"]`)
+	 * — a drag spanning both must select tiles from both. The sub-album path
+	 * never sets `data-album-grid-scope` at all, so it's distinguished from
+	 * either root scope by that attribute's absence.
+	 */
+	function getAlbumBoxesV3(): Bounding[] {
+		const gridRootEls = document.querySelectorAll<HTMLElement>("[data-album-grid-root]");
+		const boxes: Bounding[] = [];
+
+		gridRootEls.forEach((gridRootEl) => {
+			const scope = gridRootEl.getAttribute("data-album-grid-scope");
+			const tiles = scope === "own" ? albumsStore.albums : scope === "shared" ? albumsStore.sharedAlbumsV3 : albumsStore.albums;
+			const boundariesV3 =
+				scope === "own" ? albumsStore.ownBoundariesV3 : scope === "shared" ? albumsStore.sharedBoundariesV3 : albumStore.boundariesV3;
+			// Also gated on `is_album_timeline_enabled` — must match whichever
+			// grid/list component actually laid these tiles out
+			// (AlbumThumbGridVirtual.vue/AlbumRootGridVirtual.vue and their list
+			// forks), since a mismatched `showHeaders` here would reserve/drop
+			// header row space this scope's real DOM layout doesn't, drifting
+			// every computed hit-box.
+			const isAlbumTimelineEnabled =
+				scope === "own" || scope === "shared"
+					? (albumsStore.rootConfig?.is_album_timeline_enabled ?? false)
+					: (albumStore.config?.is_album_timeline_enabled ?? false);
+			const bucketableV3 =
+				(scope === "own" ? albumsStore.ownBucketableV3 : scope === "shared" ? albumsStore.sharedBucketableV3 : albumStore.bucketableV3) &&
+				isAlbumTimelineEnabled;
+
+			const isListMode = lycheeStore.album_view_mode === "list";
+			const viewportWidth = window.innerWidth;
+			const containerWidth = gridRootEl.getBoundingClientRect().width;
+
+			let itemsPerRow: number;
+			let tileWidth: number;
+			let gap: number;
+			let aspectRatioNumber: number;
+			if (isListMode) {
+				itemsPerRow = 1;
+				tileWidth = LIST_ROW_HEIGHT;
+				gap = 0;
+				aspectRatioNumber = 1;
+			} else {
+				const breakpoint = resolveBreakpoint(viewportWidth);
+				const geometry = computeAlbumTileGeometry(viewportWidth, containerWidth, breakpoint, lycheeStore.number_albums_per_row_mobile);
+				itemsPerRow = geometry.itemsPerRow;
+				tileWidth = geometry.tileWidth;
+				gap = geometry.gap;
+				aspectRatioNumber = aspectRatioCssToNumber(
+					scope === null ? albumStore.config?.album_thumb_css_aspect_ratio : albumsStore.rootConfig?.album_thumb_css_aspect_ratio,
+				);
+			}
+
+			const boundaries =
+				bucketableV3 && boundariesV3 !== null ? boundariesV3 : [{ bucketId: "all", label: "", startIndex: 0, count: tiles.length }];
+			// `separate_shared_only` only ever separates *directly* shared albums
+			// (`is_public === false`) from publicly-visible ones — the `shared`
+			// scope drops public albums before `buildVirtualAlbumRows()`
+			// (AlbumRootGridVirtual.vue/AlbumRootListViewVirtual.vue's own
+			// `isDirectlySharedOnly` filter), so this must reproduce that same
+			// exclusion or the boxes below drift out of sync with what's rendered.
+			const isDirectlySharedOnly = scope === "shared" && albumsStore.rootConfig?.shared_albums_visibility_mode === "separate_shared_only";
+			// Filter NSFW-hidden tiles out *before* row-chunking, same as
+			// AlbumThumbGridVirtual.vue/AlbumRootGridVirtual.vue/the list forks —
+			// buildVirtualAlbumRows() bakes bucket counts into fixed-size rows, so
+			// skipping a hidden tile's box afterwards (at emit time) leaves every
+			// later tile's real DOM row one slot ahead of what getTileBox(i) still
+			// reports, drifting every following hit-box.
+			const { tiles: visibleTiles, boundaries: visibleBoundaries } = filterBucketedTiles(
+				tiles,
+				boundaries,
+				(album) => (!album.is_nsfw || lycheeStore.are_nsfw_visible) && (!isDirectlySharedOnly || !album.is_public),
+			);
+
+			const { getTileBox } = buildVirtualAlbumRows(
+				visibleTiles.map((a) => a.id),
+				visibleBoundaries,
+				bucketableV3,
+				itemsPerRow,
+				tileWidth,
+				aspectRatioNumber,
+				gap,
+			);
+
+			const gridBox = getBounding(gridRootEl, "root");
+
+			visibleTiles.forEach((album, i) => {
+				const box = getTileBox(i);
+				const top = gridBox.top + box.top;
+				const left = gridBox.left + box.left;
+				// List-mode rows render full-width (title/metadata extend past the
+				// 40px thumbnail, see AlbumListItemVirtual.vue) — `box.width` here is
+				// only `tileWidth` (=LIST_ROW_HEIGHT) reused to derive row height, not
+				// the row's actual rendered width, so the hit-box must reach
+				// `gridBox.right` or drags hovering the title/metadata miss the row.
+				const right = isListMode ? gridBox.right : left + box.width;
+				boxes.push({
+					id: album.id,
+					top: top,
+					left: left,
+					right: right,
+					bottom: top + box.height,
+				});
+			});
+		});
+
+		return boxes;
+	}
+
+	/**
+	 * Flag-on (`isPhotoSoaActive`) replacement for `getBoxes("data-photo-id")`
+	 * — a single, mode-agnostic function covering all five layout modes
+	 * (FR-065-16), mirroring `getAlbumBoxesV3()`'s own precedent exactly:
+	 * re-derives every photo's box analytically via
+	 * `computeVisiblePhotoLayout()` (the same shared function
+	 * `PhotoGridVirtual.vue` renders from — including its rating-filter-aware
+	 * boundary recompute, Q-065-05/FR-065-19), anchored via `getBounding()` on
+	 * the mounted `[data-photo-grid-root]` marker element (always in the DOM
+	 * even when individual tiles are virtualized away). No DOM-query fallback
+	 * for any mode — box geometry is always known the moment tier 2 resolves.
+	 */
+	function getPhotoBoxesV3(): Bounding[] {
+		const gridRootEl = document.querySelector<HTMLElement>("[data-photo-grid-root]");
+		if (gridRootEl === null) {
+			return [];
+		}
+
+		const mode = layoutStore.layout as PhotoLayoutMode;
+		const containerWidth = gridRootEl.getBoundingClientRect().width;
+		const config = layoutStore.config;
+		const target =
+			config === undefined
+				? 0
+				: mode === "justified"
+					? config.photo_layout_justified_row_height
+					: mode === "square"
+						? config.photo_layout_square_column_width
+						: mode === "masonry"
+							? config.photo_layout_masonry_column_width
+							: mode === "grid"
+								? config.photo_layout_grid_column_width
+								: 0;
+		const gap = config === undefined ? 0 : config.photo_layout_gap;
+
+		const ratingFilterActive = photosStore.photoRatingFilter !== null;
+		const filteredPhotoIds = ratingFilterActive ? new Set(photosStore.filteredPhotos.map((p) => p.id)) : null;
+
+		// Also gated on `is_photo_timeline_enabled` — must match
+		// PhotoGridVirtual.vue's own identical `showHeaders`, since a mismatch
+		// here would reserve/drop header row space the real DOM layout
+		// doesn't, drifting every computed hit-box.
+		const showHeaders = albumStore.photoBucketableV3 && (albumStore.config?.is_photo_timeline_enabled ?? false);
+
+		const { positioned } = computeVisiblePhotoLayout(
+			mode,
+			photosStore.photos,
+			albumStore.photoRatiosV3,
+			albumStore.photoBoundariesV3,
+			showHeaders,
+			ratingFilterActive,
+			filteredPhotoIds,
+			containerWidth,
+			target,
+			gap,
+		);
+
+		const gridBox = getBounding(gridRootEl, "root");
+
+		return positioned.map(({ photo, box }) => {
+			const top = gridBox.top + box.top;
+			const left = gridBox.left + box.left;
+			return {
+				id: photo.id,
+				top: top,
+				left: left,
+				right: left + box.width,
+				bottom: top + box.height,
+			};
+		});
 	}
 
 	function applySelection() {

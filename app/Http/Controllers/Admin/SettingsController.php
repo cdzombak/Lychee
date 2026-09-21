@@ -12,6 +12,8 @@ use App\Actions\Diagnostics\Pipes\Infos\DockerVersionInfo;
 use App\Constants\FileSystem;
 use App\Enum\CacheTag;
 use App\Events\AlbumListingCacheFlushRequested;
+use App\Events\MapListingCacheFlushRequested;
+use App\Events\PhotoBucketsRecomputed;
 use App\Events\TaggedRouteCacheUpdated;
 use App\Exceptions\InsufficientFilesystemPermissions;
 use App\Http\Requests\Settings\GetAllConfigsRequest;
@@ -20,6 +22,7 @@ use App\Http\Requests\Settings\SetCSSSettingRequest;
 use App\Http\Requests\Settings\SetJSSettingRequest;
 use App\Http\Resources\GalleryConfigs\SettingsConfig;
 use App\Http\Resources\Models\ConfigCategoryResource;
+use App\Jobs\RecomputeRootAlbumBucketsJob;
 use App\Models\ConfigCategory;
 use App\Models\Configs;
 use Illuminate\Routing\Controller;
@@ -44,6 +47,66 @@ class SettingsController extends Controller
 		'deduplicate_pinned_albums',
 		'ai_vision_face_enabled',
 		'albums_per_page',
+		'timeline_albums_granularity',
+		'title_bucket_mode',
+		'title_bucket_prefix_length',
+	];
+
+	/**
+	 * Config keys whose change governs root albums' `own`-scope `bucket_id`
+	 * — closes the dispatch gap {@see \App\Jobs\RecomputeChildAlbumBucketsJob}
+	 * deliberately doesn't cover (parent-scoped only):
+	 * root albums have no parent whose settings would otherwise trigger a recompute.
+	 */
+	public const ROOT_ALBUM_BUCKET_RECOMPUTE_CONFIGS = [
+		'sorting_albums_col',
+		'sorting_albums_order',
+		'timeline_albums_granularity',
+		'title_bucket_mode',
+		'title_bucket_prefix_length',
+	];
+
+	/**
+	 * Config keys whose change affects `TimelineAlbum`'s photo-listing
+	 * cache with no per-photo event to hook (visibility/sort/access
+	 * toggles read fresh on every request) - closes the coarse tag via
+	 * {@see PhotoBucketsRecomputed} (T-066-20; no blanket config-change
+	 * cache-flush mechanism existed for photo listings prior to this
+	 * feature - {@see self::ALBUM_LISTING_COARSE_FLUSH_CONFIGS}/
+	 * {@see AlbumListingCacheFlushRequested} is this const's own structural
+	 * precedent, for album listings).
+	 */
+	public const TIMELINE_PHOTO_LISTING_COARSE_FLUSH_CONFIGS = [
+		'hide_nsfw_in_timeline',
+		'timeline_photos_order',
+		'timeline_photos_granularity',
+		'timeline_page_enabled',
+		'timeline_photos_public',
+	];
+
+	/**
+	 * Config keys whose change affects the Map's cache with no per-photo
+	 * event to hook (visibility/sub-album-inclusion toggles read fresh on
+	 * every request) - Feature 067's FR-067-24, mirroring
+	 * {@see self::TIMELINE_PHOTO_LISTING_COARSE_FLUSH_CONFIGS}'s own
+	 * precedent (itself mirroring {@see self::ALBUM_LISTING_COARSE_FLUSH_CONFIGS}/
+	 * {@see \App\Events\AlbumListingCacheFlushRequested}, Q-053-05).
+	 *
+	 * `file_name_hidden` included: `QueryMapPhotos` blanks `titles[]` for
+	 * guests only when it actually computes a response
+	 * (`$hide_titles = ... && $user === null`) - the cache key it's stored
+	 * under carries no `file_name_hidden` dimension, so a warm guest-scoped
+	 * entry cached while the setting was off keeps serving real titles to
+	 * guests after an admin turns it on, until TTL expiry (CWE-200). Flushing
+	 * on change closes that window the same way the other three keys already
+	 * close theirs.
+	 */
+	public const MAP_LISTING_COARSE_FLUSH_CONFIGS = [
+		'hide_nsfw_in_map',
+		'map_include_subalbums',
+		'map_display',
+		'map_display_public',
+		'file_name_hidden',
 	];
 
 	public const V8_CONFIGS = [
@@ -66,6 +129,9 @@ class SettingsController extends Controller
 		'photo_ken_burns_on_hover_enabled',
 		'photo_ken_burns_on_hover_scale',
 		'photo_ken_burns_on_hover_duration',
+		'timeline_lens_height',
+		'timeline_lens_falloff',
+		'timeline_lens_magnification',
 		'photo_share_card_enabled',
 		'flags_enabled',
 		'photo_flags_enabled',
@@ -159,6 +225,9 @@ class SettingsController extends Controller
 		});
 
 		AlbumListingCacheFlushRequested::dispatchIf($configs->pluck('key')->intersect(self::ALBUM_LISTING_COARSE_FLUSH_CONFIGS)->isNotEmpty());
+		RecomputeRootAlbumBucketsJob::dispatchIf($configs->pluck('key')->intersect(self::ROOT_ALBUM_BUCKET_RECOMPUTE_CONFIGS)->isNotEmpty());
+		PhotoBucketsRecomputed::dispatchIf($configs->pluck('key')->intersect(self::TIMELINE_PHOTO_LISTING_COARSE_FLUSH_CONFIGS)->isNotEmpty(), ['timeline']);
+		MapListingCacheFlushRequested::dispatchIf($configs->pluck('key')->intersect(self::MAP_LISTING_COARSE_FLUSH_CONFIGS)->isNotEmpty());
 
 		$request->configs()->invalidateCache();
 		TaggedRouteCacheUpdated::dispatch(CacheTag::SETTINGS);

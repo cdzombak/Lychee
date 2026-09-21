@@ -23,6 +23,7 @@ use App\Actions\Album\Unlock;
 use App\Enum\AlbumTitleColor;
 use App\Enum\AlbumTitlePosition;
 use App\Enum\SizeVariantType;
+use App\Events\AlbumChildrenChanged;
 use App\Events\AlbumRouteCacheUpdated;
 use App\Events\AlbumSaved;
 use App\Events\AlbumTagsChanged;
@@ -55,7 +56,9 @@ use App\Http\Requests\Traits\HasVisitorIdTrait;
 use App\Http\Resources\Editable\EditableBaseAlbumResource;
 use App\Http\Resources\Models\TargetAlbumResource;
 use App\Http\Resources\Models\Utils\AlbumProtectionPolicy;
+use App\Jobs\RecomputeAlbumPhotoBucketsJob;
 use App\Jobs\RecomputeAlbumUserThumbsJob;
+use App\Jobs\RecomputeChildAlbumBucketsJob;
 use App\Jobs\WatermarkerJob;
 use App\Models\Album;
 use App\Models\Extensions\BaseAlbum;
@@ -130,6 +133,10 @@ class AlbumController extends Controller
 		$album->album_sorting = $request->albumSortingCriterion();
 		$album->photo_layout = $request->photoLayout();
 		$album->is_pinned = $request->is_pinned();
+		$album->cover_id = $request->coverPhoto()?->id;
+		if ($request->publishedAtProvided()) {
+			$album->published_at = $request->publishedAt();
+		}
 
 		$album->album_timeline = $request->album_timeline();
 		$album->photo_timeline = $request->photo_timeline();
@@ -147,6 +154,36 @@ class AlbumController extends Controller
 			photo: $request->photo(),
 			shall_override: true
 		);
+
+		// The parent's own sort column/order or timeline granularity governs
+		// its *direct children's* bucket_id, not its own — so a change to any
+		// of the three needs to recompute every direct child, not just this album.
+		$sorting_or_timeline_changed = $album->wasChanged(['album_sorting_col', 'album_sorting_order', 'album_timeline']);
+		RecomputeChildAlbumBucketsJob::dispatchIf($sorting_or_timeline_changed, $album->id);
+		// The job above bulk-`upsert()`s every direct child's `bucket_id`,
+		// bypassing Eloquent events entirely - AlbumSaved below invalidates
+		// $album's own tag and its *parent's* children-listing tag, neither
+		// of which covers $album's own children-listing cache (the one the
+		// bucket recompute actually affects). Invalidate it explicitly.
+		AlbumChildrenChanged::dispatchIf($sorting_or_timeline_changed, [$album->id]);
+
+		// This album's own *photo*-sort settings
+		// (`sorting_col`/`sorting_order`/`photo_timeline`) govern its direct
+		// photos' `bucket_id`, mirroring the album-bucket trigger above -
+		// a change to any of the three needs to recompute every direct
+		// photo's `photo_album.bucket_id`, not just this album's own.
+		// Unlike `album_sorting_col`/`album_timeline` above (columns on
+		// `albums` itself), these three columns live on `base_albums`,
+		// written via `ForwardsToParentImplementation::setAttribute()`'s
+		// forwarding to `$album->base_class` - so the dirty-tracking that
+		// matters here is `base_class`'s own, not `$album`'s.
+		$photo_sorting_or_timeline_changed = $album->base_class->wasChanged(['sorting_col', 'sorting_order', 'photo_timeline']);
+		// The job bulk-`upsert()`s every direct photo's `bucket_id`,
+		// bypassing Eloquent events entirely - it dispatches its own
+		// `AlbumPhotoSortingChanged` cache-invalidation signal internally,
+		// after that write actually lands, so eviction can't race ahead of
+		// this queued (possibly-delayed) job the way firing it here would.
+		RecomputeAlbumPhotoBucketsJob::dispatchIf($photo_sorting_or_timeline_changed, $album->id);
 
 		AlbumSaved::dispatch([$album->id], [$album->parent_id]);
 

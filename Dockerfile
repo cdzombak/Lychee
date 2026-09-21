@@ -5,7 +5,7 @@ ARG NODE_ENV=production
 # ============================================================================
 # Stage 1: Composer Dependencies
 # ============================================================================
-FROM composer:2.10.2@sha256:4d71c3c2109c61d5415544264b59ad4087e4c5b7244481723664138fd36d5040 AS composer
+FROM composer:2.10.3@sha256:d8f6343d3fae98107426bc49163ccad46ef85aabd4a27d80a74401fab4aba332 AS composer
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ RUN composer install \
 # ============================================================================
 # Stage 2: Node.js Build for Frontend Assets
 # ============================================================================
-FROM node:26-alpine@sha256:2d984a15c9b54fd0aeb608b8e0d0d83529eb34d2966db27a1fb4f1edc3d298a3 AS node
+FROM node:26-alpine@sha256:ef24c5053d50fdc3e4e56eb4e7ddb7861874ab0fdc797046ba897581deb8e868 AS node
 
 # Build argument to control dev vs production build
 ARG NODE_ENV
@@ -88,8 +88,13 @@ RUN apt-get update \
     gosu \
 	ghostscript \
     # Update with respect to vulnerabilities detected with Trivy
+    gzip \
     libgssapi-krb5-2 \
     libssh2-1t64 \
+    perl \
+    libperl5.40 \
+    perl-modules-5.40 \
+    libsqlite3-0 \
 	&& sed -i '/<\/policymap>/i \  <policy domain="coder" rights="read|write" pattern="PDF" \/>' /etc/ImageMagick-7/policy.xml \
     && install-php-extensions \
     pdo_mysql \

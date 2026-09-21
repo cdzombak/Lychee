@@ -170,7 +170,8 @@
 				{{ $t("gallery.photo.details.location") }}
 			</h2>
 			<MapInclude
-				v-if="props.isMapVisible"
+				v-if="props.isMapVisible && photoStore.photo!.precomputed.has_location"
+				:key="photoStore.photo!.id"
 				:latitude="photoStore.photo!.precomputed.latitude"
 				:longitude="photoStore.photo!.precomputed.longitude"
 			/>
@@ -267,7 +268,7 @@
 			</div>
 			<FaceAssignmentModal
 				v-if="faceForAssignment"
-				v-model:open="isFaceAssignmentOpen"
+				v-model:open="is_face_assignment_visible"
 				:face="faceForAssignment"
 				@assigned="onFaceUpdated"
 				@dismissed="onFaceUpdated"
@@ -312,7 +313,7 @@ const props = defineProps<{
 	isMapVisible: boolean;
 }>();
 
-const { are_details_open, is_full_screen } = storeToRefs(togglableStore);
+const { are_details_open, is_full_screen, is_face_assignment_visible } = storeToRefs(togglableStore);
 
 const lycheeState = useLycheeStateStore();
 const { is_details_links_enabled, is_face_recognition_enabled } = storeToRefs(lycheeState);
@@ -380,7 +381,6 @@ watch(
 
 // Face circles section
 const faceForAssignment = ref<App.Http.Resources.Models.FaceResource | undefined>(undefined);
-const isFaceAssignmentOpen = ref(false);
 const ctrlHeld = ref(false);
 const facesStore = usePhotoFacesStore();
 const photoFaces = computed(() => facesStore.get(photoStore.photo?.id ?? "").faces);
@@ -413,7 +413,7 @@ onUnmounted(() => {
 
 function openFaceAssignment(face: App.Http.Resources.Models.FaceResource) {
 	faceForAssignment.value = face;
-	isFaceAssignmentOpen.value = true;
+	is_face_assignment_visible.value = true;
 }
 
 function removeFaceFromPhoto(faceId: string) {

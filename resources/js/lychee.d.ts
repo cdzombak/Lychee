@@ -46,12 +46,13 @@ declare namespace App {
 		export type AlbumDecorationType = "none" | "layers" | "album" | "photo" | "all";
 		export type AlbumHeaderSize = "half_screen" | "full_screen";
 		export type AlbumLayoutType = "list" | "grid";
+		export type AlbumListingScope = "own" | "shared";
 		export type AlbumTitleColor = "white" | "black" | "colour_1" | "colour_2" | "colour_3" | "colour_4" | "colour_5";
 		export type AlbumTitlePosition = "top_left" | "top_right" | "bottom_left" | "bottom_right" | "center";
 		export type AspectRatioCSSType = "aspect-5x4" | "aspect-4x5" | "aspect-3x2" | "aspect-square" | "aspect-2x3" | "aspect-video";
 		export type AspectRatioType = "5/4" | "3/2" | "1/1" | "2/3" | "4/5" | "16/9";
 		export type CacheTag = "gallery" | "auth" | "user" | "settings" | "statistics" | "users";
-		export type ColumnSortingAlbumType = "owner_id" | "created_at" | "title" | "min_taken_at" | "max_taken_at";
+		export type ColumnSortingAlbumType = "created_at" | "title" | "min_taken_at" | "max_taken_at";
 		export type ColumnSortingPhotoType = "owner_id" | "created_at" | "title" | "taken_at" | "is_highlighted" | "type" | "rating_avg";
 		export type ColumnSortingType =
 			"owner_id" | "created_at" | "title" | "min_taken_at" | "max_taken_at" | "taken_at" | "is_highlighted" | "type" | "rating_avg";
@@ -154,7 +155,18 @@ declare namespace App {
 		export type NsfwSensitiveNoAlbumAction = "skip" | "moderate";
 		export type NsfwStatus = "pending" | "failed" | "review" | "visible";
 		export type OauthProvidersType =
-			"amazon" | "apple" | "authelia" | "authentik" | "facebook" | "github" | "google" | "mastodon" | "microsoft" | "nextcloud" | "keycloak";
+			| "amazon"
+			| "apple"
+			| "authelia"
+			| "authentik"
+			| "facebook"
+			| "github"
+			| "google"
+			| "kanidm"
+			| "mastodon"
+			| "microsoft"
+			| "nextcloud"
+			| "keycloak";
 		export type OgImageAlbumSourceType = "header" | "cover";
 		export type OmnipayProviderType = "Dummy" | "Mollie" | "PayPal" | "Stripe";
 		export type OrderSortingType = "ASC" | "DESC";
@@ -190,12 +202,14 @@ declare namespace App {
 			| "five_stars"
 			| "best_pictures"
 			| "my_rated_pictures"
-			| "my_best_pictures";
+			| "my_best_pictures"
+			| "timeline";
 		export type StorageDiskType = "images" | "s3";
 		export type ThumbAlbumSubtitleType =
 			"disabled" | "description" | "takedate" | "creation" | "oldstyle" | "num_photos" | "num_albums" | "num_photos_albums";
 		export type TimelineAlbumGranularity = "default" | "disabled" | "year" | "month" | "day";
 		export type TimelinePhotoGranularity = "default" | "disabled" | "year" | "month" | "day" | "hour";
+		export type TitleBucketMode = "date_prefix" | "alphabetical";
 		export type UpdateStatus = 0 | 1 | 2 | 3;
 		export type UserGroupRole = "member" | "admin";
 		export type UserSharedAlbumsVisibility = "default" | "show" | "separate" | "separate_shared_only" | "hide";
@@ -422,6 +436,7 @@ declare namespace App {
 					cover_id: string | null;
 					album_timeline: App.Enum.TimelineAlbumGranularity | null;
 					photo_timeline: App.Enum.TimelinePhotoGranularity | null;
+					published_at: string | null;
 					tags: string[];
 					persons: App.Http.Resources.Models.Utils.PersonNameResource[];
 					is_and: boolean;
@@ -528,6 +543,8 @@ declare namespace App {
 					is_nsfw_warning_visible: boolean;
 					is_breadcrumb_enabled: boolean;
 					album_thumb_css_aspect_ratio: App.Enum.AspectRatioCSSType;
+					date_format_album_thumb: string;
+					thumb_min_max_order: App.Enum.DateOrderingType;
 					photo_layout: App.Enum.PhotoLayoutType;
 					is_album_timeline_enabled: boolean;
 					is_photo_timeline_enabled: boolean;
@@ -614,6 +631,10 @@ declare namespace App {
 					slideshow_timeout: number;
 					is_slideshow_enabled: boolean;
 					is_timeline_left_border_visible: boolean;
+					timeline_lens_height: number;
+					timeline_lens_falloff: number;
+					timeline_lens_magnification: number;
+					is_flow_opt_in_strategy: boolean;
 					title: string;
 					site_logo: string;
 					dropbox_api_key: string;
@@ -743,7 +764,9 @@ declare namespace App {
 					is_album_timeline_enabled: boolean;
 					is_search_accessible: boolean;
 					show_keybinding_help_button: boolean;
-					album_thumb_css_aspect_ratio: App.Enum.AspectRatioType;
+					album_thumb_css_aspect_ratio: App.Enum.AspectRatioCSSType;
+					date_format_album_thumb: string;
+					thumb_min_max_order: App.Enum.DateOrderingType;
 					back_button_enabled: boolean;
 					back_button_text: string;
 					back_button_url: string;
@@ -757,6 +780,9 @@ declare namespace App {
 					default_old_settings: boolean;
 					default_expert_settings: boolean;
 					default_all_settings: boolean;
+				};
+				export type TemporaryLinkMacConfig = {
+					mac: string;
 				};
 				export type UploadConfig = {
 					upload_processing_limit: number;
@@ -1096,6 +1122,7 @@ declare namespace App {
 					rating: App.Http.Resources.Models.PhotoRatingResource | null;
 					face_count: number;
 					is_validated: boolean;
+					owner_id?: number;
 				};
 				export type PhotoStatisticsResource = {
 					visit_count: number;
@@ -1167,6 +1194,7 @@ declare namespace App {
 					is_public: boolean;
 					is_link_required: boolean;
 					is_password_required: boolean;
+					is_locked: boolean;
 					is_tag_album: boolean;
 					is_person_album: boolean;
 					has_subalbum: boolean;
@@ -1676,7 +1704,7 @@ declare namespace App {
 				};
 			}
 			namespace V3 {
-				export type AlbumAccessPermissionListResource = {
+				export type AlbumAccessPermissionResource = {
 					album_ids: string[];
 					album_titles: string[];
 					_lft: number[];
@@ -1693,6 +1721,43 @@ declare namespace App {
 					grants_uploads: (boolean | null)[];
 					grants_edits: (boolean | null)[];
 					grants_deletes: (boolean | null)[];
+				};
+				export type AlbumBucketResource = {
+					bucket_ids: string[];
+					counts: number[];
+					labels: string[];
+					bucketable: boolean;
+				};
+				export type AlbumCategoryResource = {
+					ids: string[];
+					titles: string[];
+					cover_ids: (string | null)[];
+					owner_ids: string[];
+				};
+				export type AlbumCategoryRightsResource = {
+					ids: string[];
+					grants_edit: boolean[];
+					grants_download: boolean[];
+					grants_delete: boolean[];
+				};
+				export type AlbumDataResource = {
+					ids: string[];
+					titles: string[];
+					descriptions: string[];
+					cover_ids: (string | null)[];
+					bucket_ids: string[];
+					owner_ids: string[];
+					is_password_requireds: boolean[];
+					is_nsfws: boolean[];
+					is_pinneds: boolean[];
+					is_publics: boolean[];
+					is_link_requireds: boolean[];
+					has_subalbums: boolean[];
+					num_photos: number[];
+					num_subalbums: number[];
+					created_ats: string[];
+					min_taken_ats: (string | null)[];
+					max_taken_ats: (string | null)[];
 				};
 				export type AlbumListBulkEditFieldsResource = {
 					owner_ids: number[];
@@ -1724,6 +1789,98 @@ declare namespace App {
 					cover_ids: (string | null)[];
 					parent_ids: (string | null)[] | null;
 					bulk_edit: App.Http.Resources.V3.AlbumListBulkEditFieldsResource | null;
+				};
+				export type AlbumRightsResource = {
+					owner_id?: string;
+					can_delete_children: boolean;
+					can_move_children: boolean;
+					ids: string[];
+					grants_edit: boolean[];
+					grants_download: boolean[];
+				};
+				export type FlowListResource = {
+					ids: string[];
+					titles: string[];
+					descriptions: string[];
+					cover_ids: (string | null)[];
+					owner_names: (string | null)[];
+					is_nsfws: boolean[];
+					num_photos: number[];
+					num_children: number[];
+					min_max_texts: (string | null)[];
+					published_created_ats: string[];
+					diff_published_created_ats: string[];
+					statistics: (App.Http.Resources.Models.AlbumStatisticsResource | null)[];
+				};
+				export type MapBucketResource = {
+					bucket_ids: string[];
+					counts: number[];
+					centroid_latitudes: number[];
+					centroid_longitudes: number[];
+				};
+				export type MapPhotoResource = {
+					ids: string[];
+					album_ids: (string | null)[];
+					titles: string[];
+					taken_ats: (string | null)[];
+					latitudes: number[];
+					longitudes: number[];
+				};
+				export type PhotoBucketResource = {
+					bucket_ids: string[];
+					counts: number[];
+					labels: string[];
+					bucketable: boolean;
+				};
+				export type PhotoDetailResource = {
+					ids: string[];
+					descriptions: (string | null)[];
+					tags: string[][];
+					rating_avgs: (number | null)[];
+					licenses: string[];
+					owner_ids: number[];
+					nsfw_statuses: (string | null)[];
+					checksums: string[];
+					original_checksums: string[];
+					updated_ats: string[];
+					live_photo_checksums: (string | null)[];
+					live_photo_content_ids: (string | null)[];
+					live_photo_urls: (string | null)[];
+					face_counts: number[];
+					palette: (App.Http.Resources.Models.ColourPaletteResource | null)[];
+					size_variants: (App.Http.Resources.Models.SizeVariantsResouce | null)[];
+					statistics: (App.Http.Resources.Models.PhotoStatisticsResource | null)[];
+					makes?: (string | null)[];
+					models?: (string | null)[];
+					lenses?: (string | null)[];
+					apertures?: (string | null)[];
+					shutters?: (string | null)[];
+					focals?: (string | null)[];
+					isos?: (string | null)[];
+					latitudes?: (number | null)[];
+					longitudes?: (number | null)[];
+					altitudes?: (number | null)[];
+					locations?: (string | null)[];
+				};
+				export type PhotoRatioResource = {
+					ids: string[];
+					titles: string[];
+					types: string[];
+					bucket_ids: string[];
+					ratios: number[];
+					owner_ids: number[];
+					is_highlighteds: boolean[];
+					is_validateds: boolean[];
+					is_videos: boolean[];
+					is_raws: boolean[];
+					is_live_photos: boolean[];
+					taken_ats: (string | null)[];
+					created_ats: string[];
+					taken_at_orig_tzs: (string | null)[];
+					rating_avgs?: number[];
+					rating_users?: (number | null)[];
+					thumb_infos?: (string | null)[];
+					tags?: string[][];
 				};
 			}
 		}

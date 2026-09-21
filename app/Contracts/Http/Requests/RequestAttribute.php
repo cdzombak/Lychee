@@ -29,6 +29,7 @@ class RequestAttribute
 
 	public const FROM_ID_ATTRIBUTE = 'from_id';
 	public const ALBUM_ID_ATTRIBUTE = 'album_id';
+	public const SCOPE_ATTRIBUTE = 'scope';
 	public const ALBUM_IDS_ATTRIBUTE = 'album_ids';
 	public const TRACK_ID_ATTRIBUTE = 'track_id';
 	public const ALBUM_DECORATION_ATTRIBUTE = 'album_decoration';
@@ -36,8 +37,13 @@ class RequestAttribute
 
 	public const PHOTO_ID_ATTRIBUTE = 'photo_id';
 	public const PHOTO_IDS_ATTRIBUTE = 'photo_ids';
+	public const BUCKET_ID_ATTRIBUTE = 'bucket_id';
+	public const BUCKET_IDS_ATTRIBUTE = 'bucket_ids';
+	public const LIMIT_ATTRIBUTE = 'limit';
+	public const PUBLISHED_AT_ATTRIBUTE = 'published_at';
 	public const SIZE_VARIANT_TOKEN_ATTRIBUTE = 'size_variant';
 	public const HEADER_ID_ATTRIBUTE = 'header_id';
+	public const COVER_ID_ATTRIBUTE = 'cover_id';
 
 	public const TITLE_ATTRIBUTE = 'title';
 	public const DATE_ATTRIBUTE = 'date';
@@ -85,6 +91,12 @@ class RequestAttribute
 	public const GRANTS_DELETE_ATTRIBUTE = 'grants_delete';
 
 	public const IS_AND_ATTRIBUTE = 'is_and';
+
+	public const NORTH_ATTRIBUTE = 'north';
+	public const SOUTH_ATTRIBUTE = 'south';
+	public const EAST_ATTRIBUTE = 'east';
+	public const WEST_ATTRIBUTE = 'west';
+	public const ZOOM_ATTRIBUTE = 'zoom';
 
 	public const ALL_ATTRIBUTE = 'all';
 	public const INCLUDE_PENDING_ATTRIBUTE = 'include_pending';

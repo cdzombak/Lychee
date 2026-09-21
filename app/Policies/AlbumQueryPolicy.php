@@ -639,6 +639,17 @@ class AlbumQueryPolicy
 			$columns[] = $prefix . 'base_albums.created_at';
 			$columns[] = $prefix . 'base_albums.description';
 			$columns[] = $prefix . 'base_albums.published_at';
+			// Feature 068: `published_at`'s timezone companion column — needed
+			// to correctly re-derive the original recorded timezone for a raw
+			// (non-Eloquent-hydrated) `published_at` value, the same way
+			// `DateTimeWithTimezoneCast::get()` does for a fully-hydrated model.
+			$columns[] = $prefix . 'base_albums.published_at_orig_tz';
+			// The children-data endpoint needs is_nsfw off this same already-necessary join
+			// (applyVisibilityFilter() always joins base_albums via this method) — adding it here
+			// avoids that endpoint needing a second, otherwise-redundant join.
+			$columns[] = $prefix . 'base_albums.is_nsfw';
+			// Same reasoning, for is_pinned.
+			$columns[] = $prefix . 'base_albums.is_pinned';
 		}
 
 		$query->joinSub(

@@ -54,6 +54,8 @@
 					class="border-none! hover:scale-800 hover:ltr:-translate-x-full hover:rtl:translate-x-full ltr:origin-left rtl:origin-right hover:z-30 top-0 left-0"
 					:thumb="album.thumb"
 					:is-password-protected="album.is_password_required"
+					:album-id="album.id"
+					:cover-id="album.cover_id"
 				/>
 			</template>
 			<AlbumThumbImage
@@ -61,6 +63,8 @@
 				class="border-none! hover:scale-800 hover:ltr:-translate-x-full hover:rtl:translate-x-full ltr:origin-left rtl:origin-right hover:z-30 top-0 left-0"
 				:thumb="album.thumb"
 				:is-password-protected="album.is_password_required"
+				:album-id="album.id"
+				:cover-id="album.cover_id"
 			/>
 		</router-link>
 
@@ -95,8 +99,8 @@
 			<ListBadge v-if="showSensitiveFlag" :class="ALBUM_BADGE_FILL.nsfw" icon="warning" />
 			<ListBadge v-if="showPublicHiddenFlag" :class="ALBUM_BADGE_FILL.link" icon="eye" />
 			<ListBadge v-if="showPublicVisibleFlag" :class="ALBUM_BADGE_FILL.success" icon="eye" />
-			<ListBadge v-if="showPasswordFlag && album.thumb === null" :class="ALBUM_BADGE_FILL.link" icon="lock-locked" />
-			<ListBadge v-if="showPasswordFlag && album.thumb !== null" :class="ALBUM_BADGE_FILL.danger" icon="lock-unlocked" />
+			<ListBadge v-if="showPasswordFlag && album.is_locked" :class="ALBUM_BADGE_FILL.link" icon="lock-locked" />
+			<ListBadge v-if="showPasswordFlag && !album.is_locked" :class="ALBUM_BADGE_FILL.danger" icon="lock-unlocked" />
 			<ListBadge v-if="scopeFlagsEnabled && album.is_tag_album" :class="ALBUM_BADGE_FILL.success" icon="tags" />
 			<ListBadge v-if="scopeFlagsEnabled && album.is_person_album" :class="ALBUM_BADGE_FILL.success" icon="users" />
 		</div>
@@ -124,7 +128,9 @@ const { is_touch_select_mode } = storeToRefs(togglableStore);
 const { is_nsfw_background_blurred, is_smart_album_flags_enabled } = storeToRefs(lycheeStore);
 
 const props = defineProps<{
-	album: App.Http.Resources.Models.ThumbAlbumResource;
+	// `cover_id` optional — see AlbumThumb.vue's
+	// matching widened `album` prop type for the full explanation.
+	album: App.Http.Resources.Models.ThumbAlbumResource & { cover_id?: string | null };
 	isSelected: boolean;
 }>();
 
