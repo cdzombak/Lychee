@@ -15,11 +15,24 @@ import InitService from "../services/init-service";
 let cachedMac: string | null = null;
 let macFetched = false;
 
+declare module "axios" {
+	interface AxiosRequestConfig {
+		// Opt-in: retry this request up to N times (exponential backoff) when the server answers
+		// 409 because a server-side lock could not be acquired in time. Only set it on requests
+		// where a 409 guarantees nothing was written (e.g. album creation), so a retry is safe.
+		conflictRetries?: number;
+	}
+}
+
 // Marks a request that already went through the mac-invalidate-and-retry path below, so a
 // second 401 (e.g. the feature was disabled meanwhile) is reported instead of retried forever.
+// `__conflictAttempt` counts the 409 retries already performed for `conflictRetries`.
 interface MacRetryConfig extends InternalAxiosRequestConfig {
 	__macRetried?: boolean;
+	__conflictAttempt?: number;
 }
+
+const CONFLICT_RETRY_BASE_DELAY_MS = 500;
 
 /**
  * Requests made with `responseType: "blob"` (thumb assets, zip/photo downloads) still get their
@@ -44,6 +57,14 @@ async function extractErrorData(data: unknown): Promise<{ message?: string } & R
 	return (data ?? {}) as { message?: string };
 }
 
+/**
+ * Binary image routes needing the temporary-link signature: `Asset/...` (Feature 056)
+ * and the face-scoped photo `Faces/{id}/photo/{variant}` (Feature 093, ADR-093-01).
+ */
+function needsMac(url: string | undefined): boolean {
+	return url !== undefined && (url.includes("Asset/") || /Faces\/[^/]+\/photo\//.test(url));
+}
+
 const AxiosConfig = {
 	axiosSetUp() {
 		setupCache(axios);
@@ -61,7 +82,7 @@ const AxiosConfig = {
 					// return Promise.reject("session_expired");
 				}
 
-				if (config.url?.includes("Asset/")) {
+				if (needsMac(config.url)) {
 					if (!macFetched) {
 						const { data } = await InitService.fetchMac();
 						cachedMac = data.mac || null;
@@ -89,8 +110,23 @@ const AxiosConfig = {
 					return Promise.reject(error);
 				}
 
+				// Retry before reporting anything: the error overlay only shows once retries are exhausted.
+				const retryConfig = error.config as MacRetryConfig | undefined;
+				const conflictAttempt = retryConfig?.__conflictAttempt ?? 0;
+				if (error.response.status === 409 && retryConfig !== undefined && conflictAttempt < (retryConfig.conflictRetries ?? 0)) {
+					retryConfig.__conflictAttempt = conflictAttempt + 1;
+					await new Promise((resolve) => setTimeout(resolve, CONFLICT_RETRY_BASE_DELAY_MS * 2 ** conflictAttempt));
+					return axios(retryConfig);
+				}
+
 				const data = await extractErrorData(error.response.data);
 				const message = data.message || "An error occurred";
+
+				// The gallery password screen takes over (see useGalleryLock): no error overlay.
+				if (error.response.status === 401 && message === "Gallery password required") {
+					window.dispatchEvent(new CustomEvent("gallery_locked"));
+					return Promise.reject(error);
+				}
 
 				if (
 					data.message &&
@@ -111,7 +147,7 @@ const AxiosConfig = {
 				// window). Invalidate it and retry once - if the retry also 401s (e.g. the
 				// feature was disabled meanwhile), __macRetried stops this from looping.
 				const config = error.config as MacRetryConfig | undefined;
-				if (error.response.status === 401 && config?.url?.includes("Asset/") && !config.__macRetried) {
+				if (error.response.status === 401 && config !== undefined && needsMac(config.url) && !config.__macRetried) {
 					cachedMac = null;
 					macFetched = false;
 					config.__macRetried = true;

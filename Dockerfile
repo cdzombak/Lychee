@@ -5,12 +5,33 @@ ARG NODE_ENV=production
 # ============================================================================
 # Stage 1: Composer Dependencies
 # ============================================================================
-FROM composer:2.10.3@sha256:d8f6343d3fae98107426bc49163ccad46ef85aabd4a27d80a74401fab4aba332 AS composer
+FROM composer:2.10.3@sha256:af98f42dfff7c68ba8d53c2164fd9fde1087b7d449514baa38c418b1f6bc4bac AS composer
 
 WORKDIR /app
 
 # Copy composer files first for layer caching
 COPY composer.json composer.lock ./
+
+# Telemetry flavor: add the OpenTelemetry SDK, the OTLP exporter and the
+# auto-instrumentation packages, which composer.json only suggests.
+# The GitHub VCS repositories are dropped first: resolving against them
+# needs authenticated GitHub API calls, and the packages they provide stay
+# pinned by composer.lock anyway (only the new packages are resolved).
+ARG TELEMETRY=false
+RUN if [ "$TELEMETRY" = "true" ]; then \
+    composer config --unset repositories && \
+    composer require \
+    --no-install \
+    --no-interaction \
+    --no-progress \
+    --no-scripts \
+    --ignore-platform-reqs \
+    open-telemetry/sdk:^1.15 \
+    open-telemetry/exporter-otlp:^1.4 \
+    open-telemetry/opentelemetry-auto-laravel:^1.8 \
+    open-telemetry/opentelemetry-auto-guzzle:^1.4 \
+    open-telemetry/opentelemetry-auto-pdo:^0.5.0; \
+    fi
 
 # Install dependencies (no dev packages for production)
 # Remove markdown and test directories to slim down the image
@@ -29,7 +50,7 @@ RUN composer install \
 # ============================================================================
 # Stage 2: Node.js Build for Frontend Assets
 # ============================================================================
-FROM node:26-alpine@sha256:ef24c5053d50fdc3e4e56eb4e7ddb7861874ab0fdc797046ba897581deb8e868 AS node
+FROM node:26-alpine@sha256:143494b1da2945f061539253adc65e4f1569ddf07da2d384c022c791a9d90a4a AS node
 
 # Build argument to control dev vs production build
 ARG NODE_ENV
@@ -56,7 +77,7 @@ RUN npm run build
 # ============================================================================
 # Stage 3: Production FrankenPHP Image
 # ============================================================================
-FROM dunglas/frankenphp:1.12.7-php8-trixie@sha256:f92d81eb3fe4fd18b35d3d58192b7cc3acc8943817bbf39f2fcf0be02a3916dc
+FROM dunglas/frankenphp:1.13.1-php8-trixie@sha256:a052ae7cccd4a025eca17767e7acac57a4fc660a4f3dfc790be9b9cd5182d6e6
 
 ARG USER=appuser
 
@@ -113,13 +134,20 @@ RUN apt-get update \
 	&& apt-get clean -qy \
     && rm -rf /var/lib/apt/lists/*
 
+# Telemetry flavor: native OpenTelemetry hooks and protobuf encoding
+ARG TELEMETRY=false
+RUN if [ "$TELEMETRY" = "true" ]; then \
+    install-php-extensions opentelemetry protobuf; \
+    fi
+
 WORKDIR /app
 
 # Copy application code
 COPY --chown=www-data:www-data . .
 
-# Copy vendor from composer stage
+# Copy vendor and the matching composer files from composer stage
 COPY --from=composer --chown=www-data:www-data /app/vendor ./vendor
+COPY --from=composer --chown=www-data:www-data /app/composer.json /app/composer.lock ./
 
 # Copy built frontend assets from node stage
 COPY --from=node --chown=www-data:www-data /app/public/build ./public/build

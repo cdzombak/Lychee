@@ -51,6 +51,7 @@ class RequestAttribute
 	public const TAKEN_DATE_ATTRIBUTE = 'taken_at';
 	public const DESCRIPTION_ATTRIBUTE = 'description';
 	public const LICENSE_ATTRIBUTE = 'license';
+	public const IS_360_ATTRIBUTE = 'is_360';
 	public const ASPECT_RATIO_ATTRIBUTE = 'aspect_ratio';
 	public const ALBUM_ASPECT_RATIO_ATTRIBUTE = 'album_aspect_ratio';
 
@@ -72,6 +73,7 @@ class RequestAttribute
 	public const ALBUM_PHOTO_LAYOUT = 'photo_layout';
 	public const ALBUM_TIMELINE_ALBUM = 'album_timeline';
 	public const ALBUM_TIMELINE_PHOTO = 'photo_timeline';
+	public const ALBUM_DATE_SCRUBBER = 'is_date_scrubber_enabled';
 	public const ALBUM_TITLE_COLOR_ATTRIBUTE = 'title_color';
 	public const ALBUM_TITLE_POSITION_ATTRIBUTE = 'title_position';
 	public const HEADER_PHOTO_FOCUS_ATTRIBUTE = 'header_photo_focus';
@@ -80,6 +82,7 @@ class RequestAttribute
 
 	public const PERMISSION_ID = 'perm_id';
 	public const IS_COMPACT_ATTRIBUTE = 'is_compact';
+	public const IS_MAP_HEADER_ATTRIBUTE = 'is_map_header';
 	public const IS_NSFW_ATTRIBUTE = 'is_nsfw';
 	public const IS_PINNED_ATTRIBUTE = 'is_pinned';
 	public const IS_PUBLIC_ATTRIBUTE = 'is_public';
@@ -89,6 +92,7 @@ class RequestAttribute
 	public const GRANTS_UPLOAD_ATTRIBUTE = 'grants_upload';
 	public const GRANTS_EDIT_ATTRIBUTE = 'grants_edit';
 	public const GRANTS_DELETE_ATTRIBUTE = 'grants_delete';
+	public const GRANTS_MOVE_ATTRIBUTE = 'grants_move';
 
 	public const IS_AND_ATTRIBUTE = 'is_and';
 

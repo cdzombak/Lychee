@@ -36,7 +36,7 @@
 			</a>
 		</div>
 		<template v-if="is_basic_auth_enabled">
-			<UFormField :label="$t('dialogs.login.username')">
+			<UFormField :label="identifierLabel">
 				<UInput id="username" v-model="username" autocomplete="username" :autofocus="true" class="w-full" />
 			</UFormField>
 			<UFormField :label="$t('dialogs.login.password')">
@@ -76,7 +76,7 @@
 	</form>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
+import { computed, ref } from "vue";
 import AuthService from "@/services/auth-service";
 import InputPassword from "@/v8/components/forms/basic/InputPassword.vue";
 import AlbumService from "@/services/album-service";
@@ -85,7 +85,7 @@ import { storeToRefs } from "pinia";
 import { useTogglablesStateStore } from "@/stores/ModalsState";
 import { onMounted } from "vue";
 import { trans } from "laravel-vue-i18n";
-import { sprintf } from "sprintf-js";
+import { sprintf } from "@/utils/sprintf";
 import { useUserStore } from "@/stores/UserState";
 import { useAlbumListStore } from "@/stores/AlbumListState";
 
@@ -112,9 +112,12 @@ const userStore = useUserStore();
 const albumListStore = useAlbumListStore();
 const togglableStore = useTogglablesStateStore();
 const lycheeStore = useLycheeStateStore();
-const { is_basic_auth_enabled, is_webauthn_enabled } = storeToRefs(lycheeStore);
+const { is_basic_auth_enabled, is_webauthn_enabled, is_email_login_enabled } = storeToRefs(lycheeStore);
 const { is_login_open, is_webauthn_open } = storeToRefs(togglableStore);
 const invalidPassword = ref(false);
+
+// With `email_login_enabled` the field accepts a username or an email address.
+const identifierLabel = computed(() => trans(is_email_login_enabled.value ? "dialogs.login.username_or_email" : "dialogs.login.username"));
 
 const oauths = ref<OauthProvider[] | undefined>(undefined);
 
@@ -126,7 +129,18 @@ function login() {
 			invalidPassword.value = false;
 			AlbumService.clearCache();
 			albumListStore.invalidate();
-			emits("logged-in");
+			// Init data depends on the user (e.g. face recognition availability).
+			// Kept out of this chain: its failures are not authentication errors.
+			// load() reports its own errors and leaves is_init false, in which case we must not
+			// continue with the guest data.
+			void lycheeStore
+				.refresh()
+				.then(() => {
+					if (lycheeStore.is_init) {
+						emits("logged-in");
+					}
+				})
+				.catch(() => {});
 		})
 		.catch((e) => {
 			if (e.response && e.response.status === 401) {

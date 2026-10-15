@@ -53,12 +53,6 @@ return [
         'description' => 'اگر کندی در نصب خود مشاهده می‌کنید، ممکن است پایگاه داده شما همه ایندکس های لازم را نداشته باشد.',
         'button' => 'بهینه سازی پایگاه داده',
     ],
-    'update' => [
-        'title' => 'به‌روزرسانی‌ها',
-        'check-button' => 'بررسی به‌روزرسانی',
-        'update-button' => 'به‌روزرسانی',
-        'no-pending-updates' => 'به‌روزرسانی معوقه‌ای وجود ندارد.',
-    ],
     'missing-palettes' => [
         'title' => 'پالت‌های گمشده',
         'description' => '%d پالت گمشده یافت شد.',
@@ -162,10 +156,10 @@ return [
     ],
 
         'purge-orphan-face-embeddings' => [
-            'title' => 'Purge Orphan Face Embeddings',
-            'description' => 'The AI Vision service may be holding up to %d embedding(s) that no longer exist in Lychee. Purging will push the current list of faces to AI Vision and permanently delete anything left over.',
-            'action' => 'Purge Now',
-            'success' => 'Orphaned face embeddings purged successfully.',
+            'title' => 'پاک‌سازی بردارهای چهره یتیم',
+            'description' => 'سرویس AI Vision ممکن است تا %d بردار چهره را نگه دارد که دیگر در Lychee وجود ندارند. پاک‌سازی، فهرست فعلی چهره‌ها را به AI Vision ارسال کرده و هر چه باقی مانده باشد را برای همیشه حذف می‌کند.',
+            'action' => 'پاک‌سازی اکنون',
+            'success' => 'بردارهای چهره یتیم با موفقیت پاک‌سازی شدند.',
         ],
         'bulk-scan-nsfw' => [
         'title' => 'اسکن گروهی محتوای نامناسب',

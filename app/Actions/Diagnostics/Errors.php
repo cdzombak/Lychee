@@ -33,14 +33,15 @@ use App\Actions\Diagnostics\Pipes\Checks\OldLicenseCheck;
 use App\Actions\Diagnostics\Pipes\Checks\OpCacheCheck;
 use App\Actions\Diagnostics\Pipes\Checks\PHPVersionCheck;
 use App\Actions\Diagnostics\Pipes\Checks\PlaceholderExistsCheck;
+use App\Actions\Diagnostics\Pipes\Checks\RecomputeQueueCheck;
 use App\Actions\Diagnostics\Pipes\Checks\SecurityAdvisoriesCheck;
 use App\Actions\Diagnostics\Pipes\Checks\SmallMediumExistsCheck;
 use App\Actions\Diagnostics\Pipes\Checks\StatisticsIntegrityCheck;
 use App\Actions\Diagnostics\Pipes\Checks\SupporterCheck;
 use App\Actions\Diagnostics\Pipes\Checks\TimezoneCheck;
-use App\Actions\Diagnostics\Pipes\Checks\UpdatableCheck;
 use App\Actions\Diagnostics\Pipes\Checks\WatermarkerEnabledCheck;
 use App\Actions\Diagnostics\Pipes\Checks\WebshopCheck;
+use App\Actions\Diagnostics\Pipes\Checks\WorkerCacheCheck;
 use App\DTO\DiagnosticData;
 use Illuminate\Pipeline\Pipeline;
 
@@ -69,7 +70,6 @@ class Errors
 		PHPVersionCheck::class,
 		OpCacheCheck::class,
 		TimezoneCheck::class,
-		UpdatableCheck::class,
 		ForeignKeyListInfo::class,
 		DBIntegrityCheck::class,
 		SmallMediumExistsCheck::class,
@@ -83,6 +83,8 @@ class Errors
 		AiVisionNsfwServiceCheck::class,
 		LocalGeoDecodingServiceCheck::class,
 		StatisticsIntegrityCheck::class,
+		RecomputeQueueCheck::class,
+		WorkerCacheCheck::class,
 		WebshopCheck::class,
 		SecurityAdvisoriesCheck::class,
 	];

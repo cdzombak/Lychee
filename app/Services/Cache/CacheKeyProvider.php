@@ -9,6 +9,7 @@
 namespace App\Services\Cache;
 
 use App\DTO\MapViewport;
+use App\DTO\Search\SearchToken;
 use App\DTO\SortingCriterion;
 use App\Enum\AlbumListingScope;
 use App\Enum\ColumnSortingType;
@@ -110,8 +111,9 @@ class CacheKeyProvider
 
 	/**
 	 * Coarse tag carried by every cached entry across all six listing
-	 * query types, in addition to its own specific tag(s); evicting it
-	 * alone is sufficient to flush the whole album-listing cache.
+	 * query types and the root and child `buckets`/`data`/`rights` tiers,
+	 * in addition to its own specific tag(s); evicting it alone is
+	 * sufficient to flush the whole album-listing cache (FR-092-13).
 	 */
 	public function albumListingGlobalTag(): string
 	{
@@ -423,6 +425,17 @@ class CacheKeyProvider
 	}
 
 	/**
+	 * Coarse tag carried by every cached photo-listing entry of every album
+	 * — sufficient alone to flush the whole photo-listing cache when an
+	 * instance-wide bucket setting changes (FR-092-13), mirroring
+	 * {@see self::albumListingGlobalTag()}.
+	 */
+	public function photoListingGlobalTag(): string
+	{
+		return 'photo-listing-global';
+	}
+
+	/**
 	 * @param string[] $album_ids
 	 *
 	 * @return string[]
@@ -571,6 +584,113 @@ class CacheKeyProvider
 		return "{$tag}:details:{$scope_digest}:{$user_tag}:unlocked:{$unlocked_digest}";
 	}
 
+	// ── Search listing (Feature 069) ────────────────────────────────
+
+	/**
+	 * Coarse tag carried by every cached v3 search entry, across every tier,
+	 * term and user identity. Search is a cross-album scope with no natural
+	 * per-album partition — any photo or album mutation anywhere can change any
+	 * search result — so unlike the album/photo listing caches there is no finer
+	 * tag worth maintaining: eviction is all-or-nothing by design.
+	 */
+	public function searchListingTag(): string
+	{
+		return 'search-listing';
+	}
+
+	/**
+	 * Deterministic digest of everything that distinguishes one search from
+	 * another: the parsed token list, the optional origin album, and the sort.
+	 *
+	 * Digests the **parsed** tokens rather than the raw term, and hashes the
+	 * result, so no user-entered search text is ever written into a cache key
+	 * or a cache-event log line (spec.md Telemetry & Observability).
+	 *
+	 * @param array<int,SearchToken> $tokens
+	 */
+	public function searchScopeDigest(array $tokens, ?string $origin_id, ?string $sorting_column, ?string $sorting_order): string
+	{
+		$parts = [];
+		foreach ($tokens as $token) {
+			$parts[] = implode("\x1f", [
+				$token->modifier ?? '',
+				$token->sub_modifier ?? '',
+				$token->operator ?? '',
+				$token->value,
+				$token->is_prefix ? '1' : '0',
+			]);
+		}
+		// Token order is part of the identity: the tokens are AND-ed, so a
+		// reordering is semantically identical, but treating it as a distinct
+		// key merely costs one extra cache entry — far cheaper than sorting
+		// here and risking two genuinely different searches colliding.
+		$parts[] = 'origin:' . ($origin_id ?? '');
+		$parts[] = 'sort:' . ($sorting_column ?? '') . ':' . ($sorting_order ?? '');
+
+		return hash('sha256', implode("\x1e", $parts));
+	}
+
+	/**
+	 * Cache key for `GET /api/v3/Search/Photos`.
+	 *
+	 * @param string $unlocked_digest see {@see self::unlockedAlbumsDigest()}
+	 */
+	public function searchPhotosKey(string $scope_digest, int|string|null $user_id, string $unlocked_digest): string
+	{
+		$tag = $this->searchListingTag();
+		$user_tag = $this->userTag($user_id);
+
+		return "{$tag}:photos:{$scope_digest}:{$user_tag}:unlocked:{$unlocked_digest}";
+	}
+
+	/**
+	 * Cache key for `GET /api/v3/Search/Photos/details`. Carries an extra
+	 * digest of the requested id set, which is what distinguishes two details
+	 * requests for the same search.
+	 */
+	public function searchPhotoDetailsKey(string $scope_digest, string $ids_digest, int|string|null $user_id, string $unlocked_digest): string
+	{
+		$tag = $this->searchListingTag();
+		$user_tag = $this->userTag($user_id);
+
+		return "{$tag}:details:{$scope_digest}:{$ids_digest}:{$user_tag}:unlocked:{$unlocked_digest}";
+	}
+
+	/**
+	 * Digest of a requested `photo_ids[]` set. Sorted first, so the same set
+	 * requested in a different order hits the same entry.
+	 *
+	 * @param string[] $photo_ids
+	 */
+	public function searchPhotoIdsDigest(array $photo_ids): string
+	{
+		sort($photo_ids);
+
+		return hash('sha256', implode(',', $photo_ids));
+	}
+
+	/**
+	 * Cache key for `GET /api/v3/Search/albums`.
+	 */
+	public function searchAlbumsKey(string $scope_digest, int|string|null $user_id, string $unlocked_digest): string
+	{
+		$tag = $this->searchListingTag();
+		$user_tag = $this->userTag($user_id);
+
+		return "{$tag}:albums:{$scope_digest}:{$user_tag}:unlocked:{$unlocked_digest}";
+	}
+
+	/**
+	 * Cache key for `GET /api/v3/Search/albums/rights`.
+	 */
+	public function searchAlbumRightsKey(string $scope_digest, int|string|null $user_id, string $unlocked_digest): string
+	{
+		$tag = $this->searchListingTag();
+		$user_tag = $this->userTag($user_id);
+
+		return "{$tag}:albums-rights:{$scope_digest}:{$user_tag}:unlocked:{$unlocked_digest}";
+	}
+
 	// ── Map listing (Feature 067) ───────────────────────────────────
 
 	/**
@@ -635,6 +755,20 @@ class CacheKeyProvider
 		$user_tag = $this->userTag($user_id);
 
 		return "{$tag}:tracks:{$user_tag}:unlocked:{$unlocked_digest}";
+	}
+
+	/**
+	 * Cache key for `GET /api/v3/Map/album` (Feature 086) — viewport-independent,
+	 * like {@see self::mapTracksKey()}. `$include_sub_albums` is part of the key
+	 * so a setting change never serves the other scope.
+	 */
+	public function mapAlbumPointsKey(string $album_id, bool $include_sub_albums, int|string|null $user_id, string $unlocked_digest): string
+	{
+		$tag = $this->mapListingTag($album_id);
+		$user_tag = $this->userTag($user_id);
+		$sub_albums = $include_sub_albums ? 'with-sub-albums' : 'own';
+
+		return "{$tag}:points:{$sub_albums}:{$user_tag}:unlocked:{$unlocked_digest}";
 	}
 
 	/**

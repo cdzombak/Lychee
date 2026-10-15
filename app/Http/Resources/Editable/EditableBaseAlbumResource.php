@@ -39,6 +39,7 @@ class EditableBaseAlbumResource extends Data
 	public ?string $cover_id;
 	public ?TimelineAlbumGranularity $album_timeline;
 	public ?TimelinePhotoGranularity $photo_timeline;
+	public ?bool $is_date_scrubber_enabled;
 	// Feature 068 (FR-068-15): ISO-8601 string with offset, or null. Only ever
 	// set for a real Album (Flow/Landing Page both only ever query Album, never
 	// TagAlbum/PersonAlbum) - null for the other two, same as license/header_id/etc above.
@@ -68,6 +69,7 @@ class EditableBaseAlbumResource extends Data
 		$this->photo_layout = $album->photo_layout;
 		$this->album_timeline = null;
 		$this->photo_timeline = $album->photo_timeline;
+		$this->is_date_scrubber_enabled = $album->is_date_scrubber_enabled;
 		$this->is_pinned = $album->is_pinned;
 		$this->published_at = null;
 
@@ -75,7 +77,7 @@ class EditableBaseAlbumResource extends Data
 			$this->is_model_album = true;
 			$this->license = $album->license;
 			$this->album_sorting = $album->album_sorting;
-			$this->header_id = $album->header_id;
+			$this->header_id = $album->header_id !== null ? trim($album->header_id) : null;
 			$this->cover_id = $album->cover_id;
 			$this->aspect_ratio = $album->album_thumb_aspect_ratio;
 			$this->album_timeline = $album->album_timeline;

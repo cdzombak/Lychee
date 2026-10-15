@@ -52,12 +52,6 @@ return [
         'description' => 'Wenn die Performance Ihrer Installation nachlässt, könnte dies an fehlenden Datenbankindizes liegen.',
         'button' => 'Datenbank optimieren',
     ],
-    'update' => [
-        'title' => 'Updates',
-        'check-button' => 'Auf Updates prüfen',
-        'update-button' => 'Update',
-        'no-pending-updates' => 'Keine Updates verfügbar.',
-    ],
     'missing-palettes' => [
         'title' => 'Fehlende Paletten',
         'description' => '%d fehlende Paletten gefunden.',
@@ -108,7 +102,7 @@ return [
         'no_faces' => 'Keine verdächtigen Gesichter. Alles sieht gut aus!',
         'col_face' => 'Macht',
         'col_person' => 'Person',
-        'col_cluster' => 'Cluster',
+        'col_cluster' => 'Gruppe',
         'col_confidence' => 'Selbstvertrauen',
         'col_blur' => 'Unschärfe-Wert',
         'col_actions' => 'Maßnahmen',
@@ -159,10 +153,10 @@ return [
         'success' => 'Die Status der Gesichtsscans wurden erfolgreich zurückgesetzt.',
     ],
     'purge-orphan-face-embeddings' => [
-        'title' => 'Purge Orphan Face Embeddings',
-        'description' => 'The AI Vision service may be holding up to %d embedding(s) that no longer exist in Lychee. Purging will push the current list of faces to AI Vision and permanently delete anything left over.',
-        'action' => 'Purge Now',
-        'success' => 'Orphaned face embeddings purged successfully.',
+        'title' => 'Verwaiste Gesichts-Embeddings bereinigen',
+        'description' => 'Der AI Vision-Dienst enthält möglicherweise bis zu %d Embedding(s), die in Lychee nicht mehr existieren. Beim Bereinigen wird die aktuelle Liste der Gesichter an AI Vision übertragen und alles Übrige endgültig gelöscht.',
+        'action' => 'Jetzt bereinigen',
+        'success' => 'Verwaiste Gesichts-Embeddings erfolgreich bereinigt.',
     ],
     'bulk-scan-nsfw' => [
         'title' => 'NSFW-Massen-Scan',

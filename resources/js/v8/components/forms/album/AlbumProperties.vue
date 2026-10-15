@@ -55,6 +55,7 @@
 						<USelectMenu v-model="header_id" :items="headersOptions" label-key="title" class="w-72">
 							<template #item-leading="{ item }">
 								<UIcon v-if="item.id === 'compact'" name="lucide:shrink" />
+								<UIcon v-else-if="item.id === 'map'" name="lucide:map" />
 								<img v-else :src="item.thumb ?? undefined" alt="poster" class="w-4 rounded-sm" />
 							</template>
 						</USelectMenu>
@@ -132,6 +133,12 @@
 					</USelectMenu>
 				</UFormField>
 			</div>
+			<UFormField :label="$t('gallery.album.properties.date_scrubber')">
+				<USelectMenu v-model="dateScrubber" :items="dateScrubberOptions" label-key="label" class="w-72">
+					<template #default="{ modelValue }">{{ selectedLabel(modelValue) }}</template>
+					<template #item-label="{ item }">{{ $t(item.label) }}</template>
+				</USelectMenu>
+			</UFormField>
 
 			<div v-if="!is_person_album && (!is_model_album || is_expert_mode)" class="flex flex-col gap-2">
 				<UFormField :label="$t(is_model_album ? 'gallery.album.properties.tags' : 'gallery.album.properties.show_tags')">
@@ -165,6 +172,7 @@ import Constants from "@/services/constants";
 import { computed, onMounted, ref, watch, nextTick } from "vue";
 import { useDebounceFn } from "@vueuse/core";
 import AlbumService, { UpdateAbumData, UpdateTagAlbumData, UpdatePersonAlbumData } from "@/services/album-service";
+import { useAlbumListStore } from "@/stores/AlbumListState";
 import PersonsInput from "@/v8/components/forms/basic/PersonsInput.vue";
 import {
 	photoSortingColumnsOptions,
@@ -201,6 +209,7 @@ const props = defineProps<{
 
 const LycheeState = useLycheeStateStore();
 const albumStore = useAlbumStore();
+const albumListStore = useAlbumListStore();
 const { is_se_enabled, is_se_preview_enabled, is_flow_opt_in_strategy } = storeToRefs(LycheeState);
 
 const photosStore = usePhotosStore();
@@ -266,6 +275,27 @@ const albumSortingOrder = ref<SelectOption<App.Enum.OrderSortingType> | undefine
 const photoLayout = ref<SelectOption<App.Enum.PhotoLayoutType> | undefined>(undefined);
 const photoTimeline = ref<SelectOption<App.Enum.TimelinePhotoGranularity> | undefined>(undefined);
 const albumTimeline = ref<SelectOption<App.Enum.TimelineAlbumGranularity> | undefined>(undefined);
+
+// Feature 071 (FR-071-02): per-album date scrubber override — Default follows the gallery setting.
+type DateScrubberChoice = "default" | "enabled" | "disabled";
+const dateScrubberOptions: SelectOption<DateScrubberChoice>[] = [
+	{ value: "default", label: "gallery.album.properties.date_scrubber_default" },
+	{ value: "enabled", label: "gallery.album.properties.date_scrubber_enabled" },
+	{ value: "disabled", label: "gallery.album.properties.date_scrubber_disabled" },
+];
+const dateScrubber = ref<SelectOption<DateScrubberChoice> | undefined>(undefined);
+function toDateScrubberChoice(value: boolean | null | undefined): DateScrubberChoice {
+	if (value === true) {
+		return "enabled";
+	}
+	return value === false ? "disabled" : "default";
+}
+function fromDateScrubberChoice(choice: DateScrubberChoice | undefined): boolean | null {
+	if (choice === "enabled") {
+		return true;
+	}
+	return choice === "disabled" ? false : null;
+}
 const license = ref<SelectOption<App.Enum.LicenseType> | undefined>(undefined);
 const copyright = ref<string | undefined>(undefined);
 const tags = ref<string[]>([]);
@@ -339,6 +369,9 @@ const headersOptions = computed(() => {
 			title: trans("gallery.album.properties.compact_header"),
 		},
 	];
+	if (albumStore.config?.is_map_accessible === true || header_id.value?.id === "map") {
+		list.push({ id: "map", title: trans("gallery.album.properties.map_header") });
+	}
 	list.push(
 		...photosStore.photos.map((photo) => ({
 			id: photo.id,
@@ -355,6 +388,9 @@ function buildHeaderId(value: string | null, photos: App.Http.Resources.Models.P
 	}
 	if (value === "compact") {
 		return { id: "compact" };
+	}
+	if (value === "map") {
+		return { id: "map", title: trans("gallery.album.properties.map_header") };
 	}
 	const photo = photos.find((photo) => photo.id === value);
 	if (photo === undefined) {
@@ -408,6 +444,7 @@ function load(editable: App.Http.Resources.Editable.EditableBaseAlbumResource, p
 	aspectRatio.value = SelectBuilders.buildAspectRatio(editable.aspect_ratio ?? undefined);
 	albumTimeline.value = SelectBuilders.buildTimelineAlbumGranularity(editable.album_timeline ?? undefined);
 	photoTimeline.value = SelectBuilders.buildTimelinePhotoGranularity(editable.photo_timeline ?? undefined);
+	dateScrubber.value = dateScrubberOptions.find((o) => o.value === toDateScrubberChoice(editable.is_date_scrubber_enabled));
 	header_id.value = buildHeaderId(editable.header_id, photos);
 	cover_id.value = buildCoverId(editable.cover_id, photos);
 	tags.value = editable.tags;
@@ -471,12 +508,14 @@ function saveAlbum() {
 		album_aspect_ratio: aspectRatio.value?.value ?? null,
 		copyright: copyright.value ?? null,
 		tags: tags.value,
-		header_id: header_id.value?.id === "compact" ? null : (header_id.value?.id ?? null),
+		header_id: header_id.value?.id === "compact" || header_id.value?.id === "map" ? null : (header_id.value?.id ?? null),
 		cover_id: cover_id.value?.id ?? null,
 		is_compact: header_id.value?.id === "compact",
+		is_map_header: header_id.value?.id === "map",
 		photo_layout: photoLayout.value?.value ?? null,
 		album_timeline: albumTimeline.value?.value ?? null,
 		photo_timeline: photoTimeline.value?.value ?? null,
+		is_date_scrubber_enabled: fromDateScrubberChoice(dateScrubber.value?.value),
 		is_pinned: albumStore.tagOrModelAlbum?.editable?.is_pinned ?? false,
 		published_at:
 			is_published_at_enabled.value && publishedAtDate.value !== undefined
@@ -486,6 +525,7 @@ function saveAlbum() {
 	AlbumService.updateAlbum(data).then(() => {
 		toast.add({ severity: "success", summary: trans("toasts.success"), life: 3000 });
 		AlbumService.clearCache(albumId.value);
+		albumListStore.invalidate();
 		albumStore.loadHead();
 	});
 }
@@ -507,6 +547,7 @@ function saveTagAlbum() {
 		copyright: copyright.value ?? null,
 		photo_layout: photoLayout.value?.value ?? null,
 		photo_timeline: photoTimeline.value?.value ?? null,
+		is_date_scrubber_enabled: fromDateScrubberChoice(dateScrubber.value?.value),
 		is_pinned: albumStore.tagOrModelAlbum?.editable?.is_pinned ?? false,
 		is_and: is_and.value,
 	};
@@ -534,6 +575,7 @@ function savePersonAlbum() {
 		copyright: copyright.value ?? null,
 		photo_layout: photoLayout.value?.value ?? null,
 		photo_timeline: photoTimeline.value?.value ?? null,
+		is_date_scrubber_enabled: fromDateScrubberChoice(dateScrubber.value?.value),
 		is_pinned: albumStore.tagOrModelAlbum?.editable?.is_pinned ?? false,
 		is_and: is_and.value,
 	};
@@ -571,6 +613,7 @@ watch(
 		photoLayout,
 		photoTimeline,
 		albumTimeline,
+		dateScrubber,
 		license,
 		copyright,
 		aspectRatio,

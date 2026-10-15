@@ -9,9 +9,11 @@
 | Linked tasks | `docs/specs/4-architecture/features/066-timeline-struct-of-arrays/tasks.md` |
 | Roadmap entry | #066 |
 
-> Guardrail: This specification is the single normative source of truth for the feature. Track high- and medium-impact questions in [docs/specs/4-architecture/open-questions.md](../../open-questions.md), encode resolved answers directly in the Requirements/NFR/Behaviour/UI/Telemetry sections below (no per-feature `## Clarifications` sections), and use ADRs under `docs/specs/5-decisions/` for architecturally significant clarifications.
+> Guardrail: This specification is the single normative source of truth for the feature. Track high- and medium-impact questions in [open-questions.md](open-questions.md), encode resolved answers directly in the Requirements/NFR/Behaviour/UI/Telemetry sections below (no per-feature `## Clarifications` sections), and use ADRs under `docs/specs/6-decisions/` for architecturally significant clarifications.
 
 ## Overview
+
+> Feature 092 ([spec](../092-bucketing-refactor/spec.md)) supersedes this spec's live Timeline bucket computation: ids come from `photos.taken_key` (capture-local, FR-092-01) or `created_at` through `BucketScheme` (FR-092-06), windows are key ranges (FR-092-07), and cache invalidation resolves buckets from `taken_key` (FR-092-17).
 
 The v8 global Timeline (`/timeline`, the cross-album "all photos by date" view) still runs on the
 v2 paginated API (`GET /api/Timeline`, page-based, a "count-youngers-then-resolve-page" trick for

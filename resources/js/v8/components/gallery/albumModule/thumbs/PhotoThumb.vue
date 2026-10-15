@@ -9,6 +9,7 @@
 		:data-width="props.photo.size_variants.original?.width"
 		:data-height="props.photo.size_variants.original?.height"
 		:data-photo-id="props.photo.id"
+		data-drag-select-start="true"
 		@mouseenter="prefetchFaces"
 	>
 		<span
@@ -83,7 +84,7 @@
 			v-if="props.photo.precomputed.is_video"
 			class="w-full top-0 h-full absolute hover:opacity-70 transition-opacity duration-300 flex justify-center items-center"
 		>
-			<img class="absolute aspect-square w-fit h-fit" alt="play" :src="srcPlay" />
+			<img class="absolute aspect-square w-fit h-fit" alt="play" :src="srcPlay" draggable="false" />
 		</div>
 		<!-- Touch select mode indicator -->
 		<div
@@ -104,6 +105,7 @@
 			<ThumbBadge v-if="showCoverIdFlag" class="bg-yellow-500" icon="folder-cover" />
 			<ThumbBadge v-if="showHeaderIdFlag" class="bg-slate-400 hidden sm:block" pi="lucide:image" />
 			<ThumbBadge v-if="showValidatedFlag" class="bg-neutral-800" border-color="border-none" pi="lucide:shield text-amber-500 text-shadow-md" />
+			<ThumbBadge v-if="props.photo.precomputed.is_360" class="bg-sky-700" pi="lucide:rotate-3d" />
 		</div>
 		<!-- Rating Overlay -->
 		<ThumbRatingOverlay v-if="rating_album_view_mode !== 'never' && props.photo.rating !== null" :rating="props.photo.rating" />

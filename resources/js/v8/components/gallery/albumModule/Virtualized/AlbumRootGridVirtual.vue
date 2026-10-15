@@ -1,5 +1,5 @@
 <template>
-	<div class="w-full px-4 sm:px-6">
+	<div class="w-full px-4 sm:px-6 pt-4">
 		<div
 			ref="containerRef"
 			data-album-grid-root
@@ -12,10 +12,10 @@
 			     component is its root-scope fork, 2026-09-02 addendum). -->
 			<div
 				v-if="activeHeaderLabel !== null"
-				class="sticky top-(--ui-header-height) z-10 pointer-events-none"
+				class="sticky top-(--ui-header-height) z-10 pointer-events-none -mx-4 sm:-mx-6"
 				:style="{ height: `${HEADER_ROW_HEIGHT}px`, marginBottom: `-${HEADER_ROW_HEIGHT}px` }"
 			>
-				<div class="w-full h-full flex items-center font-semibold text-toned text-lg bg-default/50 backdrop-blur">
+				<div class="w-full h-full flex items-center px-4 sm:px-6 font-semibold text-toned text-lg bg-default/50 backdrop-blur">
 					{{ activeHeaderLabel }}
 				</div>
 			</div>
@@ -177,7 +177,7 @@ const virtualizer = useWindowVirtualizer(
 	computed(() => ({
 		count: rowsResult.value.rows.length,
 		estimateSize: (index: number) => rowsResult.value.rowHeights[index] ?? 0,
-		overscan: 4,
+		overscan: 8,
 		getItemKey: (index: number) => rowsResult.value.rows[index]?.key ?? index,
 		scrollMargin: scrollMargin.value,
 	})),

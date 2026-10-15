@@ -71,6 +71,8 @@ class ConfigIntegrity
 		'live_metrics_enabled',
 		'live_metrics_access',
 		'live_metrics_max_time',
+		'live_metrics_result_limit',
+		'live_metrics_cleanup',
 		'enable_colour_extractions',
 		'colour_extraction_driver',
 		'renamer_enabled',
@@ -124,6 +126,7 @@ class ConfigIntegrity
 		'ai_vision_nsfw_monitor_hide_on_scan',
 		'ai_vision_nsfw_trust_but_verify_hide_on_scan',
 		'ai_vision_nsfw_trust_hide_on_scan',
+		'moderation_history_log_nsfw_holds',
 	];
 
 	public const PRO_FIELDS = [

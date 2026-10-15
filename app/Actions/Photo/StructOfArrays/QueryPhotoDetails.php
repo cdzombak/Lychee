@@ -11,27 +11,25 @@ namespace App\Actions\Photo\StructOfArrays;
 use App\Contracts\Models\AbstractAlbum;
 use App\Eloquent\FixedQueryBuilder;
 use App\Enum\MetricsAccess;
+use App\Facades\Helpers;
 use App\Http\Resources\Models\ColourPaletteResource;
+use App\Http\Resources\Models\PanoramaResource;
 use App\Http\Resources\Models\PhotoStatisticsResource;
 use App\Http\Resources\Models\SizeVariantsResouce;
 use App\Http\Resources\V3\PhotoDetailResource;
-use App\Models\Album;
 use App\Models\Photo;
 use App\Models\User;
-use App\Policies\PhotoPolicy;
 use App\Repositories\ConfigManager;
-use App\Services\PhotoBucketComputer;
-use App\SmartAlbums\TimelineAlbum;
+use GrahamCampbell\Markdown\Facades\Markdown;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Gate;
 use Spatie\LaravelData\Optional;
 
 /**
  * Query logic for `GET /api/v3/Albums/{album_id}/Photos/details`.
  *
  * Unlike {@see QueryPhotoBuckets}/{@see QueryPhotoRatios}, this tier does
- * use Eloquent hydration (with `size_variants`/`palette`/`statistics`/
- * `tags`/`albums` eager-loaded) — a deliberate, scoped exception to the
+ * use Eloquent hydration (with `size_variants`/`palette`/`statistics`/`tags`
+ * eager-loaded) — a deliberate, scoped exception to the
  * other two tiers' `toBase()`-only discipline: reusing
  * `SizeVariantsResouce`/`ColourPaletteResource`/`PhotoStatisticsResource`
  * exactly as-is requires those classes' hydrated-`Photo`-model constructor,
@@ -48,7 +46,7 @@ class QueryPhotoDetails
 
 	public function __construct(
 		private readonly ConfigManager $config_manager,
-		private readonly PhotoBucketComputer $bucket_computer,
+		private readonly ResolvesPhotoGrants $resolve_photo_grants,
 	) {
 	}
 
@@ -60,96 +58,45 @@ class QueryPhotoDetails
 		$query = $this->resolvePhotoQuery($album, $user)->select('photos.*');
 
 		if ($bucket_id !== null) {
-			if ($album instanceof Album) {
-				// The literal "unknown" sentinel maps to a NULL bucket_id -
-				// uncapped, resolves every matching row.
-				if ($bucket_id === 'unknown') {
-					$query->whereNull('photo_album.bucket_id');
-				} else {
-					$query->where('photo_album.bucket_id', '=', $bucket_id);
-				}
-			} elseif ($album instanceof TimelineAlbum) {
-				// SQL-pushdown bounded (NFR-066-01) - never the full-library
-				// PHP row scan self::resolveLiveBucketPhotoIds() uses for
-				// TagAlbum/PersonAlbum (left untouched, see below).
-				$this->applyTimelineBucketFilter($query, $album, $bucket_id);
-			} else {
-				// TagAlbum/PersonAlbum/BaseSmartAlbum have no stored
-				// `bucket_id` to filter by in SQL - resolve the matching ids
-				// live first (mirrors QueryPhotoBuckets/QueryPhotoRatios),
-				// then curate the main query down to exactly those rows.
-				$query->whereIn('photos.id', $this->resolveLiveBucketPhotoIds($album, $user, $bucket_id));
-			}
+			// One bucket window in SQL for every source (FR-092-07).
+			$scheme = $this->resolveScheme($album, $this->resolveEffectiveSorting($album));
+			$this->applyBucketWindow($query, $album, $scheme, [$bucket_id]);
 		} else {
 			// Ids not actually in this album or not visible to the caller
 			// are silently curated away, never a 4xx.
 			$query->whereIn('photos.id', $photo_ids ?? []);
 		}
 
-		/** @var Collection<int,Photo> $photos */
-		$photos = $query->with(['size_variants', 'palette', 'statistics', 'tags', 'albums'])->get();
+		$photos = $query->with(['size_variants', 'palette', 'statistics', 'tags'])->get();
 
 		return $this->buildResource($photos, $user);
 	}
 
 	/**
-	 * Lean pass over this album's candidate photos to resolve exactly which
-	 * ids live-compute to `$bucket_id` (or to `NULL`/"unknown" if
-	 * `$bucket_id === 'unknown'`) - see {@see ResolvesPhotoSource} for why a
-	 * non-`Album` source has no stored `bucket_id` column to filter by
-	 * directly in SQL.
+	 * Entry point for a photo source that is not an album at all — Feature
+	 * 069's search tiers, whose candidate set comes from
+	 * {@see \App\Actions\Search\StructOfArrays\SearchPhotoSource} rather than
+	 * from {@see ResolvesPhotoSource}.
 	 *
-	 * @return string[]
-	 */
-	private function resolveLiveBucketPhotoIds(AbstractAlbum $album, ?User $user, string $bucket_id): array
-	{
-		$sorting = $this->resolveEffectiveSorting($album);
-		$granularity = $this->bucket_computer->resolveGranularity($this->resolvePhotoTimeline($album));
-
-		$query = $this->resolvePhotoQuery($album, $user);
-		$rows = $query->select([
-			'photos.id', 'photos.title', 'photos.title_base', 'photos.created_at', 'photos.taken_at',
-			'photos.is_highlighted', 'photos.type', 'photos.rating_avg',
-		])->toBase()->get();
-
-		$matching_ids = [];
-		foreach ($rows as $row) {
-			$row_bucket_id = $this->liveBucketId($sorting->column, $granularity, $row) ?? 'unknown';
-			if ($row_bucket_id === $bucket_id) {
-				$matching_ids[] = $row->id;
-			}
-		}
-
-		return $matching_ids;
-	}
-
-	/**
-	 * Curates `$query` (already scoped to {@see TimelineAlbum}'s candidate
-	 * photos by {@see ResolvesPhotoSource::resolvePhotoQuery()}) down to
-	 * exactly `$bucket_id`'s rows via a direct `WHERE` range on the raw
-	 * sort column - `PhotoBucketComputer::bucketDateRange()`'s SQL-pushdown
-	 * `[start, end)`, or `whereNull()` for the `"unknown"` sentinel - bounded
-	 * by the requested bucket's own size, never the full library
-	 * (NFR-066-01, FR-066-07).
+	 * Strictly additive: {@see self::do()} is untouched, and both entry points
+	 * converge on the same {@see self::buildResource()} projection, so the two
+	 * tiers can never drift apart in shape. There is no `bucket_id` branch here
+	 * because search has no bucket tier (spec.md NG1) — the caller always scopes
+	 * by an explicit, already-capped `photo_ids[]`.
 	 *
-	 * @param FixedQueryBuilder<Photo> $query
+	 * @param FixedQueryBuilder<Photo> $query     a query already filtered to the caller's visible candidate set
+	 * @param string[]                 $photo_ids ids not in the candidate set are silently curated away, never a 4xx
 	 */
-	private function applyTimelineBucketFilter(FixedQueryBuilder $query, TimelineAlbum $album, string $bucket_id): void
+	public function fromQuery(FixedQueryBuilder $query, ?User $user, array $photo_ids): PhotoDetailResource
 	{
-		$sorting = $this->resolveEffectiveSorting($album);
+		/** @var Collection<int,Photo> $photos */
+		$photos = $query
+			->select('photos.*')
+			->whereIn('photos.id', $photo_ids)
+			->with(['size_variants', 'palette', 'statistics', 'tags'])
+			->get();
 
-		if ($bucket_id === 'unknown') {
-			$query->whereNull($sorting->column->value);
-
-			return;
-		}
-
-		$granularity = $this->bucket_computer->resolveGranularity($this->resolvePhotoTimeline($album));
-		[$start, $end] = $this->bucket_computer->bucketDateRange($bucket_id, $granularity);
-
-		$query
-			->where($sorting->column->value, '>=', $start)
-			->where($sorting->column->value, '<', $end);
+		return $this->buildResource($photos, $user);
 	}
 
 	/**
@@ -165,8 +112,14 @@ class QueryPhotoDetails
 		$metrics_enabled = $this->config_manager->getValueAsBool('metrics_enabled');
 		$metrics_access = $this->config_manager->getValueAsEnum('metrics_access', MetricsAccess::class);
 
+		// One grouped query for the whole page, replacing a per-photo policy
+		// evaluation that lazy-loaded each containing album's
+		// `access_permissions` (6 queries for 4 photos, measured).
+		$should_downgrade_by_id = $this->resolve_photo_grants->downgradeMap($photos, $user);
+
 		$ids = [];
 		$descriptions = [];
+		$preformatted_descriptions = [];
 		$tags = [];
 		$rating_avgs = [];
 		$licenses = [];
@@ -178,7 +131,10 @@ class QueryPhotoDetails
 		$live_photo_checksums = [];
 		$live_photo_content_ids = [];
 		$live_photo_urls = [];
+		$panoramas = [];
 		$face_counts = [];
+		$is_camera_dates = [];
+		$is_taken_at_modifieds = [];
 		$palette = [];
 		$size_variants = [];
 		$statistics = [];
@@ -189,6 +145,8 @@ class QueryPhotoDetails
 		$shutters = [];
 		$focals = [];
 		$isos = [];
+		$durations = [];
+		$fps = [];
 		$latitudes = [];
 		$longitudes = [];
 		$altitudes = [];
@@ -197,6 +155,9 @@ class QueryPhotoDetails
 		foreach ($photos as $photo) {
 			$ids[] = $photo->id;
 			$descriptions[] = $photo->description;
+			// Same conversion as `PreformattedPhotoData::$description`; the
+			// client injects this one via `v-html`, never the raw text.
+			$preformatted_descriptions[] = ($photo->description ?? '') === '' ? '' : Markdown::convert($photo->description)->getContent();
 			$tags[] = $photo->tags->pluck('name')->all();
 			$rating_avgs[] = $photo->rating_avg !== null ? (float) $photo->rating_avg : null;
 			$licenses[] = $photo->license->value;
@@ -208,11 +169,18 @@ class QueryPhotoDetails
 			$live_photo_checksums[] = $photo->live_photo_checksum;
 			$live_photo_content_ids[] = $photo->live_photo_content_id;
 			$live_photo_urls[] = $photo->live_photo_url;
+			$panoramas[] = PanoramaResource::fromPhoto($photo);
 			$face_counts[] = $photo->face_count;
+			// Same derivation as `PreComputedPhotoData`.
+			$is_camera_dates[] = $photo->taken_at !== null;
+			$is_taken_at_modifieds[] = $photo->taken_at !== null && ($photo->initial_taken_at === null || $photo->taken_at->notEqualTo($photo->initial_taken_at));
 
 			$palette[] = ColourPaletteResource::fromModel($photo->palette);
-			$should_downgrade = !Gate::check(PhotoPolicy::CAN_ACCESS_FULL_PHOTO, [Photo::class, $photo]);
-			$size_variants[] = new SizeVariantsResouce($photo, $should_downgrade);
+			// Batched equivalent of `PhotoPolicy::canAccessFullPhoto()`, resolved
+			// for the whole page in one query by `ResolvesPhotoGrants`.
+			// `canSee()` needs no check here - every row reaching this point
+			// survived the tier's own visibility-filtered candidate query.
+			$size_variants[] = new SizeVariantsResouce($photo, $should_downgrade_by_id[$photo->id] ?? true);
 
 			// The one genuinely per-row (not per-request) gate here -
 			// `metrics_access=owner` depends on *this row's* owner_id, not
@@ -234,6 +202,9 @@ class QueryPhotoDetails
 				$shutters[] = $photo->shutter;
 				$focals[] = $photo->focal;
 				$isos[] = $photo->iso;
+				// Same formatting as `PreformattedPhotoData`.
+				$durations[] = Helpers::secondsToHMS(intval($photo->duration));
+				$fps[] = $photo->fps !== null && $photo->fps !== '' ? $photo->fps . ' fps' : '';
 			}
 
 			if ($gps_on) {
@@ -250,6 +221,7 @@ class QueryPhotoDetails
 		return new PhotoDetailResource(
 			ids: $ids,
 			descriptions: $descriptions,
+			preformatted_descriptions: $preformatted_descriptions,
 			tags: $tags,
 			rating_avgs: $rating_avgs,
 			licenses: $licenses,
@@ -261,7 +233,10 @@ class QueryPhotoDetails
 			live_photo_checksums: $live_photo_checksums,
 			live_photo_content_ids: $live_photo_content_ids,
 			live_photo_urls: $live_photo_urls,
+			panoramas: $panoramas,
 			face_counts: $face_counts,
+			is_camera_dates: $is_camera_dates,
+			is_taken_at_modifieds: $is_taken_at_modifieds,
 			palette: $palette,
 			size_variants: $size_variants,
 			statistics: $statistics,
@@ -272,6 +247,8 @@ class QueryPhotoDetails
 			shutters: $include_exif ? $shutters : Optional::create(),
 			focals: $include_exif ? $focals : Optional::create(),
 			isos: $include_exif ? $isos : Optional::create(),
+			durations: $include_exif ? $durations : Optional::create(),
+			fps: $include_exif ? $fps : Optional::create(),
 			latitudes: $gps_on ? $latitudes : Optional::create(),
 			longitudes: $gps_on ? $longitudes : Optional::create(),
 			altitudes: $gps_on ? $altitudes : Optional::create(),

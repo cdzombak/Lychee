@@ -31,7 +31,7 @@ class PhotoRatioResource extends Data
 	 * @param string[]                 $ids
 	 * @param string[]                 $titles            guest-blanked identically to {@see \App\Http\Resources\Models\PhotoResource::$title}'s `file_name_hidden` rule
 	 * @param string[]                 $types             raw photo `type` enum value
-	 * @param string[]                 $bucket_ids        `"unknown"` for a `null` `photo_album.bucket_id`
+	 * @param string[]                 $bucket_ids        `"unknown"` for a `null` bucket key
 	 * @param float[]                  $ratios            aspect ratio, `width/height`
 	 * @param int[]                    $owner_ids
 	 * @param bool[]                   $is_highlighteds
@@ -39,6 +39,7 @@ class PhotoRatioResource extends Data
 	 * @param bool[]                   $is_videos
 	 * @param bool[]                   $is_raws
 	 * @param bool[]                   $is_live_photos
+	 * @param bool[]                   $is_360s           Feature 082 `photos.is_360`, `NULL` (never checked) reads as false
 	 * @param (string|null)[]          $taken_ats         raw ISO 8601, never Carbon-formatted
 	 * @param string[]                 $created_ats       raw ISO 8601, never Carbon-formatted
 	 * @param (string|null)[]          $taken_at_orig_tzs
@@ -59,6 +60,7 @@ class PhotoRatioResource extends Data
 		public array $is_videos,
 		public array $is_raws,
 		public array $is_live_photos,
+		public array $is_360s,
 		public array $taken_ats,
 		public array $created_ats,
 		public array $taken_at_orig_tzs,

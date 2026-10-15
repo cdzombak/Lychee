@@ -53,12 +53,6 @@ return [
         'description' => 'إذا لاحظت تباطؤًا في التثبيت الخاص بك، فقد يكون ذلك بسبب عدم وجود جميع الفهارس المطلوبة في قاعدة البيانات.',
         'button' => 'تحسين قاعدة البيانات',
     ],
-    'update' => [
-        'title' => 'التحديثات',
-        'check-button' => 'التحقق من التحديثات',
-        'update-button' => 'تحديث',
-        'no-pending-updates' => 'لا توجد تحديثات معلقة.',
-    ],
     'missing-palettes' => [
         'title' => 'لوحات الألوان المفقودة',
         'description' => 'تم العثور على %d لوحة ألوان مفقودة.',
@@ -162,10 +156,10 @@ return [
     ],
 
         'purge-orphan-face-embeddings' => [
-            'title' => 'Purge Orphan Face Embeddings',
-            'description' => 'The AI Vision service may be holding up to %d embedding(s) that no longer exist in Lychee. Purging will push the current list of faces to AI Vision and permanently delete anything left over.',
-            'action' => 'Purge Now',
-            'success' => 'Orphaned face embeddings purged successfully.',
+            'title' => 'تنظيف بصمات الوجوه اليتيمة',
+            'description' => 'قد تحتفظ خدمة AI Vision بما يصل إلى %d من بصمات الوجوه التي لم تعد موجودة في Lychee. سيؤدي التنظيف إلى إرسال القائمة الحالية للوجوه إلى AI Vision وحذف كل ما تبقى نهائيًا.',
+            'action' => 'تنظيف الآن',
+            'success' => 'تم تنظيف بصمات الوجوه اليتيمة بنجاح.',
         ],
         'bulk-scan-nsfw' => [
         'title' => 'فحص جماعي للمحتوى الحساس (NSFW)',

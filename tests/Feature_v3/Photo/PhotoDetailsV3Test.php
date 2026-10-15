@@ -18,12 +18,14 @@
 
 namespace Tests\Feature_v3\Photo;
 
+use App\Facades\Helpers;
 use App\Jobs\RecomputeAlbumPhotoBucketsJob;
 use App\Models\AccessPermission;
 use App\Models\Album;
 use App\Models\Photo;
 use App\Models\Statistics;
 use App\Models\Tag;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Tests\Feature_v3\Base\BaseApiWithDataTest;
 
@@ -195,6 +197,88 @@ class PhotoDetailsV3Test extends BaseApiWithDataTest
 		$this->assertSame($photo->license->value, $details['licenses'][0]);
 	}
 
+	// ── Video info and date flags (parity with PreformattedPhotoData / PreComputedPhotoData) ──
+
+	public function testDurationsAndFpsMatchPreformattedPhotoData(): void
+	{
+		$album = Album::factory()->as_root()->owned_by($this->userMayUpload1)->create();
+		$photo = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create(['duration' => 65, 'fps' => '30']);
+
+		$details = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", ['photo_ids' => [$photo->id]])->assertOk()->json();
+
+		$this->assertSame(Helpers::secondsToHMS(65), $details['durations'][0]);
+		$this->assertSame('30 fps', $details['fps'][0]);
+	}
+
+	public function testDurationsAndFpsEmptyWhenAbsent(): void
+	{
+		$album = Album::factory()->as_root()->owned_by($this->userMayUpload1)->create();
+		$photo = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create(['duration' => null, 'fps' => null]);
+
+		$details = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", ['photo_ids' => [$photo->id]])->assertOk()->json();
+
+		$this->assertSame('', $details['fps'][0]);
+	}
+
+	public function testExifGateOffOmitsDurationsAndFps(): void
+	{
+		DB::table('configs')->where('key', '=', 'display_exif_data')->update(['value' => '0']);
+		$album = Album::factory()->as_root()->owned_by($this->userMayUpload1)->create();
+		$photo = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create();
+
+		$details = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", ['photo_ids' => [$photo->id]])->assertOk()->json();
+
+		$this->assertArrayNotHasKey('durations', $details);
+		$this->assertArrayNotHasKey('fps', $details);
+	}
+
+	public function testDateFlagsMatchPreComputedPhotoData(): void
+	{
+		$album = Album::factory()->as_root()->owned_by($this->userMayUpload1)->create();
+		$modified = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create([
+			'taken_at' => Carbon::parse('2024-05-01 10:00:00'),
+			'initial_taken_at' => Carbon::parse('2024-04-01 10:00:00'),
+		]);
+		$untouched = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create([
+			'taken_at' => Carbon::parse('2024-05-01 10:00:00'),
+			'initial_taken_at' => Carbon::parse('2024-05-01 10:00:00'),
+		]);
+		$no_date = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create(['taken_at' => null, 'initial_taken_at' => null]);
+
+		$details = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", [
+			'photo_ids' => [$modified->id, $untouched->id, $no_date->id],
+		])->assertOk()->json();
+
+		$by_id = [];
+		foreach ($details['ids'] as $i => $id) {
+			$by_id[$id] = [$details['is_camera_dates'][$i], $details['is_taken_at_modifieds'][$i]];
+		}
+		$this->assertSame([true, true], $by_id[$modified->id]);
+		$this->assertSame([true, false], $by_id[$untouched->id]);
+		$this->assertSame([false, false], $by_id[$no_date->id]);
+	}
+
+	// ── Description rendering ─────────────────────────────────────
+
+	public function testPreformattedDescriptionsAreMarkdownRenderedWithRawHtmlStripped(): void
+	{
+		$album = Album::factory()->as_root()->owned_by($this->userMayUpload1)->create();
+		$raw = '**bold** <script>alert(1)</script><img src=x onerror=alert(2)>';
+		$photo = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create(['description' => $raw]);
+		$empty = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create(['description' => null]);
+
+		$details = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", ['photo_ids' => [$photo->id, $empty->id]])->assertOk()->json();
+
+		$idx = array_search($photo->id, $details['ids'], true);
+		$empty_idx = array_search($empty->id, $details['ids'], true);
+		$this->assertSame($raw, $details['descriptions'][$idx]);
+		$html = $details['preformatted_descriptions'][$idx];
+		$this->assertStringContainsString('<strong>bold</strong>', $html);
+		$this->assertStringNotContainsString('<script', $html);
+		$this->assertStringNotContainsString('<img', $html);
+		$this->assertSame('', $details['preformatted_descriptions'][$empty_idx]);
+	}
+
 	// ── metrics_access=owner per-row visibility ───────────────────
 
 	public function testMetricsAccessOwnerIsPerRowNotPerRequest(): void
@@ -270,5 +354,30 @@ class PhotoDetailsV3Test extends BaseApiWithDataTest
 		$response = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", ['bucket_id' => 'unknown']);
 		$this->assertOk($response);
 		$response->assertJson(['ids' => []]);
+	}
+
+	/**
+	 * FR-092-07: a details window on a month id over hour keys returns the
+	 * whole month, `unknown` the photos without key.
+	 */
+	public function testMonthWindowOverHourKeys(): void
+	{
+		DB::table('configs')->where('key', '=', 'sorting_photos_col')->update(['value' => 'taken_at']);
+		DB::table('configs')->where('key', '=', 'timeline_photos_granularity')->update(['value' => 'month']);
+		$album = Album::factory()->as_root()->owned_by($this->userMayUpload1)->create();
+		$july = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create();
+		$august = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create();
+		$undated = Photo::factory()->owned_by($this->userMayUpload1)->in($album)->create(['taken_at' => null]);
+		DB::table('photos')->where('id', '=', $july->id)->update(['taken_key' => '2026-07-31-23']);
+		DB::table('photos')->where('id', '=', $august->id)->update(['taken_key' => '2026-08-01-00']);
+		(new RecomputeAlbumPhotoBucketsJob($album->id))->handle();
+
+		$response = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", ['bucket_id' => '2026-07']);
+		$this->assertOk($response);
+		$response->assertJson(['ids' => [$july->id]]);
+
+		$response = $this->actingAs($this->userMayUpload1)->getJsonV3("Albums/{$album->id}/Photos/details", ['bucket_id' => 'unknown']);
+		$this->assertOk($response);
+		$response->assertJson(['ids' => [$undated->id]]);
 	}
 }

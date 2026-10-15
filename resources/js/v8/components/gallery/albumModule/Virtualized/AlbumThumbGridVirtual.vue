@@ -1,5 +1,5 @@
 <template>
-	<div class="w-full px-4 sm:px-6">
+	<div class="w-full px-4 sm:px-6 pt-4">
 		<div ref="containerRef" data-album-grid-root role="list" class="relative w-full" :style="{ height: `${totalSize}px` }">
 			<!-- Sticky pinned header: only rendered once the active bucket's own
 			     real header row has scrolled past the top — see activeHeaderLabel below. The
@@ -9,10 +9,10 @@
 			     page/window's own scroll, not a nested scroll container. -->
 			<div
 				v-if="activeHeaderLabel !== null"
-				class="sticky top-(--ui-header-height) z-10 pointer-events-none"
+				class="sticky top-(--ui-header-height) z-10 pointer-events-none -mx-4 sm:-mx-6"
 				:style="{ height: `${HEADER_ROW_HEIGHT}px`, marginBottom: `-${HEADER_ROW_HEIGHT}px` }"
 			>
-				<div class="w-full h-full flex items-center font-semibold text-toned text-lg bg-default/50 backdrop-blur">
+				<div class="w-full h-full flex items-center px-4 sm:px-6 font-semibold text-toned text-lg bg-default/50 backdrop-blur">
 					{{ activeHeaderLabel }}
 				</div>
 			</div>
@@ -96,6 +96,8 @@ import { aspectRatioCssToNumber } from "@/v8/utils/aspectRatioNumber";
 import { resolveCssLengthPx } from "@/v8/utils/resolveCssLengthPx";
 import AlbumThumbVirtual from "@/v8/components/gallery/albumModule/Virtualized/AlbumThumbVirtual.vue";
 import type { AdaptedAlbumTile } from "@/v8/utils/adaptAlbumChildTile";
+import type { DateScrubLayout } from "@/v8/utils/dateScrubber";
+import { useAlbumRowsDateScrubber } from "@/v8/composables/album/albumDateScrubber";
 
 const props = defineProps<{
 	selectedAlbums: string[];
@@ -105,6 +107,9 @@ const emits = defineEmits<{
 	clicked: [event: MouseEvent, id: string];
 	selected: [event: MouseEvent, id: string];
 	contexted: [event: MouseEvent, id: string];
+	/** Feature 071 — day-level entries + scroll offset for `AlbumPanel.vue`'s date scrubber rail. */
+	scrubberLayoutChanged: [payload: DateScrubLayout];
+	scrollOffsetChanged: [offset: number];
 }>();
 
 const { propagateClicked, propagateContexted } = usePropagateAlbumEvents(emits);
@@ -168,13 +173,24 @@ const virtualizer = useWindowVirtualizer(
 	computed(() => ({
 		count: rowsResult.value.rows.length,
 		estimateSize: (index: number) => rowsResult.value.rowHeights[index] ?? 0,
-		overscan: 4,
+		overscan: 8,
 		getItemKey: (index: number) => rowsResult.value.rows[index]?.key ?? index,
 		scrollMargin: scrollMargin.value,
 	})),
 );
 
 const totalSize = computed(() => virtualizer.value.getTotalSize());
+const { scrollToPixelOffset } = useAlbumRowsDateScrubber(
+	rowsResult,
+	computed(() => visibleAlbums.value.tiles as AdaptedAlbumTile[]),
+	virtualizer,
+	scrollMargin,
+	(layout) => emits("scrubberLayoutChanged", layout),
+	(offset) => emits("scrollOffsetChanged", offset),
+);
+
+defineExpose({ scrollToPixelOffset });
+
 const virtualRows = computed(() => virtualizer.value.getVirtualItems().map((item) => ({ ...item, row: rowsResult.value.rows[item.index] })));
 
 // tanstack-virtual caches each row's measured size by its getItemKey(), not
