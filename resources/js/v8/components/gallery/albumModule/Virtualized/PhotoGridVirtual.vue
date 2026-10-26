@@ -132,10 +132,11 @@ import {
 	type TimelineLayoutCacheEntry,
 } from "@/v8/composables/photo/analyticPhotoLayout";
 import { resolveCssLengthPx } from "@/v8/utils/resolveCssLengthPx";
-import { deriveDayScrubEntries, formatDayLabel, tileDayKey, type DateScrubberField, type DateScrubLayout } from "@/v8/utils/dateScrubber";
+import { deriveDayScrubEntries, formatDayLabel, tileKey, type DateScrubberField, type DateScrubLayout } from "@/v8/utils/dateScrubber";
 import PhotoThumbVirtual from "@/v8/components/gallery/albumModule/Virtualized/PhotoThumbVirtual.vue";
 import PhotoListItemVirtual from "@/v8/components/gallery/albumModule/Virtualized/PhotoListItemVirtual.vue";
 import { useKenBurnsHover } from "@/v8/composables/photo/kenBurnsHover";
+import { useTileUrlRequests } from "@/v8/composables/photo/useTileUrlRequests";
 
 const props = defineProps<{
 	selectedPhotos: string[];
@@ -400,6 +401,11 @@ const virtualizer = useWindowVirtualizer(
 
 const virtualChunks = computed(() => virtualizer.value.getVirtualItems().map((item) => ({ ...item, chunk: chunks.value[item.index] })));
 
+// Feature 102: ask for the direct URLs of every rendered tile (visible plus overscan).
+useTileUrlRequests(() =>
+	virtualChunks.value.flatMap((item) => (item.chunk === undefined ? [] : tilesForChunk(item.chunk).map((tile) => tile.photo.id))),
+);
+
 /** Sum of `chunk.size` for every chunk entirely above `offset` (i.e. its own bottom is at/before `offset`) — the cumulative height of "already scrolled past" content. */
 function cumulativeChunkHeightAbove(chunkList: (PhotoChunk | TimelineChunk)[], offset: number): number {
 	let total = 0;
@@ -568,15 +574,19 @@ watch(
  * scroll tick (NFR-071-03). `null` when the album's photo ordering is not
  * date-based.
  */
+/** Feature 094 (FR-094-10): hour runs when the album's photo headers are hour buckets (`Y-m-d-H`, 13 characters), day runs otherwise. */
+const isPhotoGranularityHourly = computed(() => albumStore.photoBucketsV3?.bucket_ids.find((id) => id !== "unknown")?.length === 13);
+
 const scrubberLayout = computed<DateScrubLayout | null>(() => {
 	const field = (albumStore.config?.photo_date_scrubber_field ?? null) as DateScrubberField | null;
 	if (source.value !== "album" || field === null) {
 		return null;
 	}
 	const format = lycheeStore.date_scrubber_label_format;
-	const items = layoutResult.value.positioned.map((p) => ({ day: tileDayKey(p.photo, field), top: p.box.top }));
+	const hourly = isPhotoGranularityHourly.value;
+	const items = layoutResult.value.positioned.map((p) => ({ day: tileKey(p.photo, field, hourly), top: p.box.top }));
 	const separatorTops = layoutResult.value.headerTops.map((h) => h.top);
-	return deriveDayScrubEntries(items, layoutResult.value.totalHeight, separatorTops, (day) => formatDayLabel(day, format));
+	return deriveDayScrubEntries(items, layoutResult.value.totalHeight, separatorTops, (key) => formatDayLabel(key.slice(0, 10), format));
 });
 
 watch(

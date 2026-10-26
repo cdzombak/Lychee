@@ -42,6 +42,7 @@ class BucketSchemeTest extends AbstractTestCase
 		'timeline_photo_date_format_month' => 'M Y',
 		'timeline_photo_date_format_day' => 'j M Y',
 		'timeline_photo_date_format_hour' => 'g:i',
+		'timeline_photo_date_format_hour_multi_day' => 'j M Y H:00',
 		'title_bucket_mode' => TitleBucketMode::DATE_PREFIX,
 		'title_bucket_prefix_length' => 1,
 		'timeline_album_date_format_year' => 'Y',
@@ -184,6 +185,27 @@ class BucketSchemeTest extends AbstractTestCase
 		self::assertSame(['2026', 'Jul 2026', '1 Jul 2026', '4:00', 'unknown'], $scheme->labels(['2026', '2026-07', '2026-07-01', '2026-07-01-16', 'unknown']));
 	}
 
+	public function testHourLabelsOnOneDayUseTheSameDayFormat(): void
+	{
+		$scheme = $this->photos(ColumnSortingType::TAKEN_AT, TimelinePhotoGranularity::HOUR, ['timeline_photo_date_format_hour' => 'H:00']);
+
+		self::assertSame(['18:00', '09:00', 'unknown'], $scheme->labels(['2026-10-14-18', '2026-10-14-09', 'unknown']));
+	}
+
+	public function testHourLabelsOverSeveralDaysUseTheMultiDayFormat(): void
+	{
+		$scheme = $this->photos(ColumnSortingType::CREATED_AT, TimelinePhotoGranularity::HOUR, ['timeline_photo_date_format_hour' => 'H:00']);
+
+		self::assertSame(['14 Oct 2026 01:00', '13 Oct 2026 22:00', 'unknown'], $scheme->labels(['2026-10-14-01', '2026-10-13-22', 'unknown']));
+	}
+
+	public function testDayLabelsIgnoreTheHourFormats(): void
+	{
+		$scheme = $this->photos(ColumnSortingType::TAKEN_AT, TimelinePhotoGranularity::DAY);
+
+		self::assertSame(['14 Oct 2026', '13 Oct 2026'], $scheme->labels(['2026-10-14', '2026-10-13']));
+	}
+
 	public function testTitleDateLabelsAtHourGranularityAreDays(): void
 	{
 		$scheme = $this->photos(ColumnSortingType::TITLE, TimelinePhotoGranularity::HOUR);
@@ -204,6 +226,19 @@ class BucketSchemeTest extends AbstractTestCase
 		self::assertSame(['1', '0'], $this->photos(ColumnSortingType::IS_HIGHLIGHTED)->labels(['1', '0']));
 		self::assertSame(['image/jpeg'], $this->photos(ColumnSortingType::TYPE)->labels(['image/jpeg']));
 		self::assertSame(['4'], $this->photos(ColumnSortingType::RATING_AVG)->labels(['4']));
+	}
+
+	/**
+	 * S-092-23: keys written for another scheme, read before the recompute
+	 * job has run.
+	 */
+	public function testDateSchemeIdsThatAreNotDateShapedAreTheirOwnLabels(): void
+	{
+		$albums = $this->albums(ColumnSortingType::TITLE, TimelineAlbumGranularity::DAY);
+		self::assertSame(['2019', 'alph', '2020-03 tr', '2', '1 Jul'], $albums->labels(['2019', 'alph', '2020-03 tr', '2', '2026-07-01']));
+
+		$photos = $this->photos(ColumnSortingType::TAKEN_AT, TimelinePhotoGranularity::HOUR);
+		self::assertSame(['4:00', 'ab-cd-ef-gh'], $photos->labels(['2026-07-01-16', 'ab-cd-ef-gh']));
 	}
 
 	// ── Id normalisation ────────────────────────────────────────────

@@ -19,6 +19,7 @@ use App\Exceptions\Internal\LycheeLogicException;
 use App\Repositories\ConfigManager;
 use Illuminate\Support\Facades\DB;
 use function Safe\gmmktime;
+use function Safe\preg_match;
 
 /**
  * Read-time bucket ids (ADR-092-01): one scheme per listing request,
@@ -57,12 +58,14 @@ final class BucketScheme
 
 	private const DATE_LENGTHS = [4, 7, 10, 13];
 	private const TITLE_DATE_LENGTH = 10;
+	/** Shape of a date id: `Y`, `Y-m`, `Y-m-d` or `Y-m-d-H`. */
+	private const DATE_ID_PATTERN = '/^\d{4}(?:-\d{2}){0,3}$/';
 
 	/**
 	 * @param string   $kind          one of the private kind constants
 	 * @param int|null $length        id prefix length, `null` for whole values
 	 * @param string   $source_column photo column the id derives from on sources without stored key, `''` for albums
-	 * @param string[] $date_formats  label formats by id precision: year, month, day, hour
+	 * @param string[] $date_formats  label formats by id precision: year, month, day, hour (same day), then the multi-day hour format (FR-095-08)
 	 */
 	private function __construct(
 		private readonly string $kind,
@@ -79,6 +82,7 @@ final class BucketScheme
 			$config->getValueAsString('timeline_photo_date_format_month'),
 			$config->getValueAsString('timeline_photo_date_format_day'),
 			$config->getValueAsString('timeline_photo_date_format_hour'),
+			$config->getValueAsString('timeline_photo_date_format_hour_multi_day'),
 		];
 
 		return match ($column) {
@@ -267,21 +271,45 @@ final class BucketScheme
 	 */
 	public function labels(array $bucket_ids): array
 	{
-		return array_map(fn (string $bucket_id): string => $this->label($bucket_id), $bucket_ids);
+		$hour_format = self::spansSeveralDays($bucket_ids) ? ($this->date_formats[4] ?? null) : null;
+
+		return array_map(fn (string $bucket_id): string => $this->label($bucket_id, $hour_format), $bucket_ids);
+	}
+
+	/**
+	 * FR-095-08: whether the hour ids of a listing fall on more than one day.
+	 * Their headers then need the date; on a single day the hour alone is
+	 * unambiguous.
+	 *
+	 * @param string[] $bucket_ids
+	 */
+	private static function spansSeveralDays(array $bucket_ids): bool
+	{
+		$days = [];
+		foreach ($bucket_ids as $bucket_id) {
+			if (self::isDateId($bucket_id) && substr_count($bucket_id, '-') === 3) {
+				$days[substr($bucket_id, 0, 10)] = true;
+			}
+		}
+
+		return count($days) > 1;
 	}
 
 	/**
 	 * Label of one id: date ids are formatted by their own precision (year,
-	 * month, day, hour); other ids and `unknown` are returned as is.
+	 * month, day, hour); other ids, `unknown` and ids of a date scheme that
+	 * are not date-shaped (keys written for another scheme, FR-092-13) are
+	 * returned as is. Hour ids use `$hour_format` when given (the multi-day
+	 * format, FR-095-08).
 	 */
-	public function label(string $bucket_id): string
+	public function label(string $bucket_id, ?string $hour_format = null): string
 	{
-		if ($bucket_id === self::UNKNOWN || ($this->kind !== self::DATE && $this->kind !== self::CREATED)) {
+		if (($this->kind !== self::DATE && $this->kind !== self::CREATED) || !self::isDateId($bucket_id)) {
 			return $bucket_id;
 		}
 
 		[$year, $month, $day, $hour, $precision] = self::dateParts($bucket_id);
-		$format = $this->date_formats[min($precision, count($this->date_formats)) - 1];
+		$format = $precision === 4 && $hour_format !== null ? $hour_format : $this->date_formats[min($precision, 4, count($this->date_formats)) - 1];
 
 		return gmdate($format, gmmktime($hour, 0, 0, $month, $day, $year));
 	}
@@ -339,6 +367,11 @@ final class BucketScheme
 			self::RATING => $query->where($column, '>=', (int) $bucket_id - 0.5)->where($column, '<', (int) $bucket_id + 0.5),
 			default => $this->whereStoredId($query, $column, $bucket_id),
 		};
+	}
+
+	private static function isDateId(string $bucket_id): bool
+	{
+		return preg_match(self::DATE_ID_PATTERN, $bucket_id) === 1;
 	}
 
 	/**

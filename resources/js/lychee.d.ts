@@ -56,7 +56,15 @@ declare namespace App {
 		export type ColumnSortingAlbumType = "created_at" | "title" | "min_taken_at" | "max_taken_at";
 		export type ColumnSortingPhotoType = "owner_id" | "created_at" | "title" | "taken_at" | "is_highlighted" | "type" | "rating_avg";
 		export type ColumnSortingType =
-			"owner_id" | "created_at" | "title" | "min_taken_at" | "max_taken_at" | "taken_at" | "is_highlighted" | "type" | "rating_avg";
+			| "owner_id"
+			| "created_at"
+			| "title"
+			| "min_taken_at"
+			| "max_taken_at"
+			| "taken_at"
+			| "is_highlighted"
+			| "type"
+			| "rating_avg";
 		export type ConfigType =
 			| "int"
 			| "positive"
@@ -199,7 +207,7 @@ declare namespace App {
 		export type ShiftX = "left" | "right";
 		export type ShiftY = "up" | "down";
 		export type SizeVariantAssetType = "small2x" | "small" | "thumb2x" | "thumb" | "placeholder";
-		export type SizeVariantFormat = "original" | "jpeg" | "webp";
+		export type SizeVariantFormat = "original" | "jpeg" | "webp" | "jxl";
 		export type SizeVariantType = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 		export type SmallLargeType = "small" | "large";
 		export type SmartAlbumType =
@@ -220,7 +228,14 @@ declare namespace App {
 			| "timeline";
 		export type StorageDiskType = "images" | "s3";
 		export type ThumbAlbumSubtitleType =
-			"disabled" | "description" | "takedate" | "creation" | "oldstyle" | "num_photos" | "num_albums" | "num_photos_albums";
+			| "disabled"
+			| "description"
+			| "takedate"
+			| "creation"
+			| "oldstyle"
+			| "num_photos"
+			| "num_albums"
+			| "num_photos_albums";
 		export type TimelineAlbumGranularity = "default" | "disabled" | "year" | "month" | "day";
 		export type TimelineCategory = "first_last" | "device" | "milestone" | "record" | "break";
 		export type TimelineEventKind =
@@ -702,6 +717,11 @@ declare namespace App {
 					date_format_sidebar_uploaded: string;
 					date_format_sidebar_taken_at: string;
 					date_scrubber_label_format: string;
+					date_scrubber_album_label_format: string;
+					date_scrubber_format_year: string;
+					date_scrubber_format_month: string;
+					date_scrubber_format_day: string;
+					date_scrubber_format_hour: string;
 					album_layout: App.Enum.AlbumLayoutType;
 					is_raw_download_enabled: boolean;
 					is_thumb_download_enabled: boolean;
@@ -865,6 +885,8 @@ declare namespace App {
 					is_header_bar_transparent: boolean;
 					is_header_bar_gradient: boolean;
 					shared_albums_visibility_mode: App.Enum.SharedAlbumsVisibility;
+					is_tag_albums_separate_category_enabled: boolean;
+					is_person_albums_separate_category_enabled: boolean;
 				};
 				export type SettingsConfig = {
 					default_old_settings: boolean;
@@ -2211,6 +2233,11 @@ declare namespace App {
 					rating_users?: (number | null)[];
 					thumb_infos?: (string | null)[];
 					tags?: string[][];
+				};
+				export type PhotoUrlResource = {
+					ids: string[];
+					grid_urls: (string | null)[];
+					thumb_urls: (string | null)[];
 				};
 				export type SearchPhotoResource = {
 					ids: string[];

@@ -182,7 +182,8 @@
 	</UMain>
 </template>
 <script setup lang="ts">
-import { computed, ref, ComponentPublicInstance } from "vue";
+import { computed, ref, ComponentPublicInstance, provide } from "vue";
+import { MOTION_URL_LOADER } from "@/v8/composables/photo/motionUrlLoader";
 import AlbumThumbPanel from "@/v8/components/gallery/albumModule/AlbumThumbPanel.vue";
 import AlbumThumbPanelVirtual from "@/v8/components/gallery/albumModule/Virtualized/AlbumThumbPanelVirtual.vue";
 import PhotoThumbPanel from "@/v8/components/gallery/albumModule/PhotoThumbPanel.vue";
@@ -195,6 +196,7 @@ import AlbumNavPanel from "@/v8/components/gallery/albumModule/AlbumNavPanel.vue
 import TimelineDatesV3 from "@/v8/components/gallery/timelineModule/TimelineDatesV3.vue";
 import { useAlbumDateScrubberState } from "@/v8/composables/album/albumDateScrubberState";
 import { toRailBuckets, type DateScrubLayout } from "@/v8/utils/dateScrubber";
+import { hourlyLensLabels } from "@/v8/utils/railTicks";
 import { useLycheeStateStore } from "@/stores/LycheeState";
 import { storeToRefs } from "pinia";
 import { useSelection } from "@/composables/selections/selections";
@@ -237,6 +239,8 @@ const props = defineProps<{
 
 const userStore = useUserStore();
 const albumStore = useAlbumStore();
+// Feature 100: thumbnails fetch their live photo video URL on hover.
+provide(MOTION_URL_LOADER, (ids) => albumStore.loadPhotoDetails(ids));
 const photosStore = usePhotosStore();
 const catalogStore = useCatalogStore();
 const albumsStore = useAlbumsStore();
@@ -280,7 +284,14 @@ const albumPanelVirtualRef = ref<InstanceType<typeof AlbumThumbPanelVirtual> | n
 const photoPanelVirtualRef = ref<InstanceType<typeof PhotoThumbPanelVirtual> | null>(null);
 
 const isDateScrubberVisible = computed(() => isDateScrubberAvailable.value && !isDateScrubberHidden.value && !props.isPhotoOpen);
-const dateScrubberBuckets = computed(() => toRailBuckets(dateScrubberLayout.value?.entries ?? []));
+// Feature 094 (FR-094-10): hour runs get the hourly lens and pill labels of `/timeline`; day runs are returned unchanged.
+const dateScrubberBuckets = computed(() =>
+	hourlyLensLabels(
+		toRailBuckets(dateScrubberLayout.value?.entries ?? []),
+		lycheeStore.date_scrubber_label_format,
+		lycheeStore.date_scrubber_format_hour,
+	),
+);
 
 function onAlbumScrubberLayout(layout: DateScrubLayout): void {
 	albumLayout.value = layout;
