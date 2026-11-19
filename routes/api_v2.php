@@ -138,6 +138,7 @@ Route::post('/Photo::fromUrl', [Gallery\PhotoController::class, 'fromUrl']);
 Route::post('/Photo', [Gallery\PhotoController::class, 'upload'])
 	->withoutMiddleware(['content_type:json'])
 	->middleware(['content_type:multipart']);
+Route::get('/Photo::uploadStatus', [Gallery\PhotoController::class, 'uploadStatus']);
 Route::patch('/Photo', [Gallery\PhotoController::class, 'update']);
 Route::patch('/Photo::rename', [Gallery\PhotoController::class, 'rename']);
 Route::patch('/Photo::tags', [Gallery\PhotoController::class, 'tags']);
@@ -352,6 +353,8 @@ Route::post('/Maintenance::flushQueue', [Admin\Maintenance\FlushQueue::class, 'd
 Route::get('/Maintenance::backfillAlbumSizes', [Admin\Maintenance\BackfillAlbumSizes::class, 'check']);
 Route::post('/Maintenance::backfillAlbumSizes', [Admin\Maintenance\BackfillAlbumSizes::class, 'do']);
 Route::post('/Maintenance::recomputeBuckets', [Admin\Maintenance\RecomputeBuckets::class, 'do']);
+Route::get('/Maintenance::recomputeTakenAtRange', [Admin\Maintenance\RecomputeTakenAtRange::class, 'check']);
+Route::post('/Maintenance::recomputeTakenAtRange', [Admin\Maintenance\RecomputeTakenAtRange::class, 'do']);
 
 /**
  * STATISTICS.

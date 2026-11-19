@@ -22,8 +22,9 @@
 		<MaintenanceOldOrders v-if="rights?.modules.is_mod_webshop_enabled" />
 		<MaintenanceFulfillOrders v-if="rights?.modules.is_mod_webshop_enabled" />
 		<MaintenanceFulfillPrecompute />
+		<MaintenanceRecomputeTakenAtRange />
 		<MaintenanceBackfillAlbumSizes />
-		<MaintenanceRecomputeBuckets v-if="is_struct_of_array_enabled" />
+		<MaintenanceRecomputeBuckets />
 		<MaintenanceFlushQueue />
 		<MaintenanceMissingPalettes />
 		<StatisticsIntegrity />
@@ -55,6 +56,7 @@ import MaintenanceMissingPalettes from "@/v8/components/maintenance/MaintenanceM
 import MaintenanceOldOrders from "@/v8/components/maintenance/MaintenanceOldOrders.vue";
 import MaintenanceFulfillOrders from "@/v8/components/maintenance/MaintenanceFulfillOrders.vue";
 import MaintenanceFulfillPrecompute from "@/v8/components/maintenance/MaintenanceFulfillPrecompute.vue";
+import MaintenanceRecomputeTakenAtRange from "@/v8/components/maintenance/MaintenanceRecomputeTakenAtRange.vue";
 import MaintenanceBackfillAlbumSizes from "@/v8/components/maintenance/MaintenanceBackfillAlbumSizes.vue";
 import MaintenanceRecomputeBuckets from "@/v8/components/maintenance/MaintenanceRecomputeBuckets.vue";
 import MaintenanceFlushQueue from "@/v8/components/maintenance/MaintenanceFlushQueue.vue";
@@ -72,6 +74,6 @@ import { useLycheeStateStore } from "@/stores/LycheeState";
 
 const lycheeStore = useLycheeStateStore();
 const { rights } = useGlobalRights();
-const { is_face_recognition_enabled, is_struct_of_array_enabled } = storeToRefs(lycheeStore);
+const { is_face_recognition_enabled } = storeToRefs(lycheeStore);
 const syncFaceEmbeddingsRef = useTemplateRef<InstanceType<typeof MaintenanceSyncFaceEmbeddings>>("syncFaceEmbeddingsRef");
 </script>
